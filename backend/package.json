@@ -1,0 +1,35 @@
+{
+	"name": "backend",
+	"type": "module",
+	"version": "1.0.0",
+	"description": "",
+	"author": "",
+	"license": "ISC",
+	"keywords": [],
+	"main": "index.js",
+	"scripts": {
+		"lint": "eslint . && tsc --noEmit --project tsconfig.json",
+		"lint:fix": "eslint . --fix",
+		"lint:types": "tsc --noEmit --project tsconfig.json",
+		"lint:eslint": "eslint .",
+		"build": "tsc --build",
+		"start": "node --env-file=.env.production ./dist/index.js",
+		"dev": "nodemon"
+	},
+	"dependencies": {
+		"cors": "^2.8.5",
+		"express": "^5.1.0",
+		"helmet": "^8.1.0"
+	},
+	"devDependencies": {
+		"@antfu/eslint-config": "^4.13.2",
+		"@types/cors": "^2.8.18",
+		"@types/express": "^5.0.2",
+		"@types/node": "^22.15.21",
+		"eslint": "^9.27.0",
+		"eslint-plugin-format": "^1.0.1",
+		"nodemon": "^3.1.10",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.8.3"
+	}
+}
