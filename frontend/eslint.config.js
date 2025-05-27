@@ -10,7 +10,7 @@ export default antfu({
 		semi: true,
 		quotes: "double",
 	},
-	ignores: ["dist", "node_modules", "package-lock.json"],
+	ignores: ["dist", "node_modules", "package-lock.json", "src/routeTree.gen.ts"],
 }, {
 	rules: {
 		// Dissalow sort keys
