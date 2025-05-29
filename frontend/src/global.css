@@ -103,7 +103,7 @@
   
 @layer base {
   body {
-    @apply text-foreground font-base bg-background;
+    @apply container mx-auto text-foreground font-base bg-background px-4;
   }
 
   h1, h2, h3, h4, h5, h6{
