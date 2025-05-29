@@ -8,11 +8,17 @@ export default antfu({
 	stylistic: {
 		indent: "tab",
 		semi: true,
-		quotes: "double",
+		quotes: "double"
 	},
-	ignores: ["dist", "node_modules", "package-lock.json", "src/routeTree.gen.ts"],
+	ignores: ["dist", "node_modules", "package-lock.json", "src/routeTree.gen.ts"]
 }, {
 	rules: {
+		// Allow to export not only component (shadcn Button & ButtonVariants)
+		"react-refresh/only-export-components": "off",
+		// Disallow trailing commas
+		"style/comma-dangle": ["error", "never"],
+		// Allow to use 'type' instead of 'interface' event if type is object
+		"ts/consistent-type-definitions": "off",
 		// Dissalow sort keys
 		"jsonc/sort-keys": "off",
 		// Allow using an JSX expression per line ({' '}).
@@ -29,12 +35,12 @@ export default antfu({
 		"node/prefer-global/process": ["off"],
 		"node/no-process-env": ["error"],
 		"perfectionist/sort-imports": ["error", {
-			tsconfigRootDir: ".",
+			tsconfigRootDir: "."
 		}],
 		"unicorn/filename-case": ["error", {
 			case: "kebabCase",
-			ignore: ["README.md"],
-		}],
+			ignore: ["README.md"]
+		}]
 
-	},
+	}
 });
