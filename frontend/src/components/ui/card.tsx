@@ -4,13 +4,13 @@ import * as React from "react";
 import { cn } from "@/lib/utils/cn";
 
 const cardVariants = cva(
-	"rounded-base flex flex-col border-2 gap-6 py-6 border-border font-base",
+	"flex flex-col gap-6 rounded-xl border py-6",
 	{
 		variants: {
 			variant: {
-				default: "bg-white text-foreground shadow-shadow",
-				ghost: "bg-transparent border-transparent",
-				outline: "bg-transparent"
+				default: "bg-card text-card-foreground shadow-sm",
+				secondary: "bg-white border-none",
+				ghost: "border-none bg-white/80 backdrop-blur-lg shadow-none"
 			}
 		},
 		defaultVariants: {
@@ -19,9 +19,7 @@ const cardVariants = cva(
 	}
 );
 
-interface CardProps extends React.ComponentProps<"div">, VariantProps<typeof cardVariants> {}
-
-function Card({ className, variant, ...props }: CardProps) {
+function Card({ className, variant, ...props }: React.ComponentProps<"div"> & VariantProps<typeof cardVariants>) {
 	return (
 		<div
 			data-slot="card"
@@ -36,7 +34,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
 		<div
 			data-slot="card-header"
 			className={cn(
-				"@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-[data-slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+				"@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
 				className
 			)}
 			{...props}
@@ -48,7 +46,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
 			data-slot="card-title"
-			className={cn("font-heading leading-none", className)}
+			className={cn("leading-none font-semibold", className)}
 			{...props}
 		/>
 	);
@@ -58,7 +56,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
 			data-slot="card-description"
-			className={cn("text-sm font-base", className)}
+			className={cn("text-muted-foreground text-sm", className)}
 			{...props}
 		/>
 	);

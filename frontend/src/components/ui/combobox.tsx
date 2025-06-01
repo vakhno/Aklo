@@ -28,9 +28,9 @@ const DEFAULT_EMPTY_TEXT: string = "" as const;
 
 export type ComboboxValueType = { value: string; label: string };
 
-interface ComboboxTypes { className?: string; values?: ComboboxValueType[]; value?: string; placeholder?: string; label?: string; emptyText?: string }
+interface ComboboxTypes { className?: string; values?: ComboboxValueType[]; value?: string; placeholder?: string; label?: string; emptyText?: string; onChange?: (value: string) => void }
 
-export function Combobox({ className = DEFAULT_CLASSNAME, values = DEFAULT_VALUES, value = DEFAULT_VALUE, placeholder = DEFAULT_PLACEHOLDER, label = DEFAULT_LABEL, emptyText = DEFAULT_EMPTY_TEXT }: ComboboxTypes) {
+export function Combobox({ className = DEFAULT_CLASSNAME, values = DEFAULT_VALUES, value = DEFAULT_VALUE, placeholder = DEFAULT_PLACEHOLDER, label = DEFAULT_LABEL, emptyText = DEFAULT_EMPTY_TEXT, onChange }: ComboboxTypes) {
 	const [open, setOpen] = React.useState(false);
 	const [selected, setSelected] = React.useState(value);
 
@@ -38,10 +38,9 @@ export function Combobox({ className = DEFAULT_CLASSNAME, values = DEFAULT_VALUE
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button
-					variant="noShadow"
 					role="combobox"
 					aria-expanded={open}
-					className={className}
+					className={cn("justify-between", className)}
 				>
 					{selected
 						? values.find(item => item.value === selected)?.label
@@ -61,6 +60,7 @@ export function Combobox({ className = DEFAULT_CLASSNAME, values = DEFAULT_VALUE
 									value={item.value}
 									onSelect={(currentValue) => {
 										setSelected(currentValue === selected ? "" : currentValue);
+										onChange && onChange(currentValue);
 										setOpen(false);
 									}}
 								>
