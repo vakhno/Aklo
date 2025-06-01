@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 
 import type { Room } from "@/lib/types/room";
 
+import CreateRoomModal from "@/components/compound/create-room-modal";
 import RoomCard from "@/components/compound/room-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -140,30 +142,34 @@ const filteredRooms: Room[] = [
 ];
 
 function Home() {
+	const [isCreateRoomModalOpen, setCreateRoomModalOpen] = useState(false);
 	const categoriesValues = convertCategoriesToComboboxValues(CATEGORY_LIST);
 	const languagesValues = convertLanguagesToComboboxValues(LANGUAGE_LIST);
 
+	const handleOpenCreateRoomModal = () => {
+		setCreateRoomModalOpen(true);
+	};
+
 	return (
 		<>
-			<Card className="bg-white mb-4">
-				<CardHeader>
+			<Card variant="secondary" className="mb-4">
+				<CardHeader className="flex justify-between items-center">
 					<CardTitle className="text-2xl font-black text-black">FILTERS</CardTitle>
+					<Button>RANDOMIZE</Button>
 				</CardHeader>
 				<CardContent>
 					<div className="flex gap-4">
-						<Combobox className="flex-1 justify-between" values={categoriesValues} placeholder="Select category" label="Select category..." emptyText="No categories..." />
-						<Combobox className="flex-1 justify-between" values={languagesValues} placeholder="Select language" label="Select language..." emptyText="No languages..." />
+						<Combobox className="flex-1" values={categoriesValues} placeholder="Select category" label="Select category..." emptyText="No categories..." />
+						<Combobox className="flex-1" values={languagesValues} placeholder="Select language" label="Select language..." emptyText="No languages..." />
 					</div>
 				</CardContent>
 			</Card>
-			<Card className=" bg-white">
-				<CardHeader>
-					<div className="flex justify-between items-center">
-						<CardTitle className="text-2xl font-black text-black">AVAILABLE ROOMS</CardTitle>
-						<Button>
-							RANDOMIZE
-						</Button>
-					</div>
+			<Card variant="ghost" className=" bg-white">
+				<CardHeader className="flex justify-between items-center">
+					<CardTitle className="text-2xl font-black text-black">AVAILABLE ROOMS</CardTitle>
+					<Button onClick={handleOpenCreateRoomModal}>
+						CREATE
+					</Button>
 				</CardHeader>
 				<CardContent>
 					{filteredRooms.length === 0
@@ -183,6 +189,7 @@ function Home() {
 							)}
 				</CardContent>
 			</Card>
+			<CreateRoomModal isOpen={isCreateRoomModalOpen} setOpen={setCreateRoomModalOpen} />
 		</>
 	);
 }
