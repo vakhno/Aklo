@@ -1,10 +1,17 @@
-import { Moon, Sun } from "lucide-react";
+import { MessageCircleWarning, Moon, Sun } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils/cn";
 
-const Header = () => {
+interface HeaderProps {
+	className?: string;
+}
+
+const DEFAULT_CLASSNAME: string = "" as const;
+
+const Header = ({ className = DEFAULT_CLASSNAME }: HeaderProps) => {
 	const [isDarkMode, setDarkMode] = useState(false);
 
 	const toggleDarkMode = () => {
@@ -12,10 +19,10 @@ const Header = () => {
 	};
 
 	return (
-		<header className="px-4 mx-auto container fixed top-0 right-0 left-0 z-40 h-20">
-			<Card>
+		<header className={cn("px-4 mx-auto container sticky top-0 z-40 h-20", className)}>
+			<Card variant="ghost">
 				<CardContent className="w-full h-full flex justify-between items-center">
-					<h2 className="text-2xl text-shadow-chart-1 text-shadow-[2px_2px_0px_rgb(0_0_0_/_1)]">CHAT-ROOMS</h2>
+					<MessageCircleWarning height={36} width={36} />
 					<Button onClick={toggleDarkMode}>{isDarkMode ? <Moon /> : <Sun />}</Button>
 				</CardContent>
 			</Card>
