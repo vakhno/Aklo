@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
 const filteredRooms: Room[] = [
 	{
 		id: "1",
-		title: "General Chat",
+		title: "Only mic",
 		category: "general",
 		language: "ukranian",
 		maxGuestCount: 20,
@@ -31,7 +31,7 @@ const filteredRooms: Room[] = [
 	},
 	{
 		id: "2",
-		title: "React Developers",
+		title: "Camera and mic",
 		category: "programing",
 		language: "english",
 		maxGuestCount: 10,
@@ -42,13 +42,13 @@ const filteredRooms: Room[] = [
 	},
 	{
 		id: "3",
-		title: "Gaming Night",
+		title: "Only camera",
 		category: "gaming",
 		language: "english",
 		maxGuestCount: 15,
 		currentGuestCount: 12,
-		isCameraRequired: false,
-		isMicRequired: true,
+		isCameraRequired: true,
+		isMicRequired: false,
 		createdAt: new Date()
 	},
 	{
@@ -155,7 +155,6 @@ function Home() {
 			<Card variant="secondary" className="mb-4">
 				<CardHeader className="flex justify-between items-center">
 					<CardTitle className="text-2xl font-black text-black">FILTERS</CardTitle>
-					<Button>RANDOMIZE</Button>
 				</CardHeader>
 				<CardContent>
 					<div className="flex gap-4">
@@ -167,9 +166,12 @@ function Home() {
 			<Card variant="ghost" className=" bg-white">
 				<CardHeader className="flex justify-between items-center">
 					<CardTitle className="text-2xl font-black text-black">AVAILABLE ROOMS</CardTitle>
-					<Button onClick={handleOpenCreateRoomModal}>
-						CREATE
-					</Button>
+					<div className="flex gap-4">
+						<Button>RANDOMIZE</Button>
+						<Button onClick={handleOpenCreateRoomModal}>
+							CREATE
+						</Button>
+					</div>
 				</CardHeader>
 				<CardContent>
 					{filteredRooms.length === 0

@@ -114,11 +114,20 @@
   * {
     @apply border-border outline-ring/50;
   }
+  
   html {
-    @apply bg-neutral-100
+    @apply bg-neutral-100 h-full;
   }
   
+  #root {
+    @apply h-full flex flex-col;
+  }
+
   body {
-    @apply  flex flex-col justify-center
+    @apply  h-full;
+  }
+
+  main {
+    @apply flex-1;
   }
 }
