@@ -1,9 +1,9 @@
 import { MessageCircleWarning, Moon, Sun } from "lucide-react";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils/cn";
+import useThemeStore from "@/store/theme-store";
 
 interface HeaderProps {
 	className?: string;
@@ -12,10 +12,10 @@ interface HeaderProps {
 const DEFAULT_CLASSNAME: string = "" as const;
 
 const Header = ({ className = DEFAULT_CLASSNAME }: HeaderProps) => {
-	const [isDarkMode, setDarkMode] = useState(false);
+	const { state: { theme }, toggleTheme } = useThemeStore();
 
-	const toggleDarkMode = () => {
-		setDarkMode(!isDarkMode);
+	const handleToggleTheme = () => {
+		toggleTheme();
 	};
 
 	return (
@@ -23,7 +23,7 @@ const Header = ({ className = DEFAULT_CLASSNAME }: HeaderProps) => {
 			<Card variant="ghost">
 				<CardContent className="w-full h-full flex justify-between items-center">
 					<MessageCircleWarning height={36} width={36} />
-					<Button onClick={toggleDarkMode}>{isDarkMode ? <Moon /> : <Sun />}</Button>
+					<Button onClick={handleToggleTheme}>{theme === "dark" ? <Moon /> : <Sun />}</Button>
 				</CardContent>
 			</Card>
 		</header>
