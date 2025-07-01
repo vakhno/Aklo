@@ -1,5 +1,4 @@
 import tailwindcss from "@tailwindcss/vite";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -8,7 +7,11 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
 	server: {
 		host: "0.0.0.0",
-		port: 5173
+		port: 5173,
+		watch: {
+			usePolling: true,
+			interval: 100
+		}
 	},
-	plugins: [TanStackRouterVite({ target: "react", autoCodeSplitting: true }), react(), tailwindcss(), tsconfigPaths()]
+	plugins: [react(), tailwindcss(), tsconfigPaths()]
 });
