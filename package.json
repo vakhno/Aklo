@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "npm run lint --prefix frontend && npm run lint --prefix backend",
+    "lint:fix": "npm run lint:fix --prefix frontend && npm run lint:fix --prefix backend",
     "lint:frontend": "npm run lint --prefix frontend",
     "lint:backend": "npm run lint --prefix backend",
     "prepare": "husky"
@@ -14,8 +15,5 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^16.0.0"
-  },
-  "lint-staged": {
-    "*": "npm run lint"
   }
 }
