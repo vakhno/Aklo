@@ -1,38 +1,38 @@
 export const LANGUAGE_LIST = {
 	english: {
 		value: "english",
-		label: "English"
+		label: "English",
 	},
 	hindi: {
 		value: "hindi",
-		label: "Hindi"
+		label: "Hindi",
 	},
 	japanese: {
 		value: "japanese",
-		label: "Japanese"
+		label: "Japanese",
 	},
 	turkish: {
 		value: "turkish",
-		label: "Turkish"
+		label: "Turkish",
 	},
 	spanish: {
 		value: "spanish",
-		label: "Spanish"
+		label: "Spanish",
 	},
 	chinese: {
 		value: "chinese",
-		label: "Chinese"
+		label: "Chinese",
 	},
 	french: {
 		value: "french",
-		label: "French"
+		label: "French",
 	},
 	ukrainian: {
 		value: "ukrainian",
-		label: "Ukrainian"
+		label: "Ukrainian",
 	},
 	polish: {
 		value: "polish",
-		label: "Polish"
-	}
+		label: "Polish",
+	},
 } as const;

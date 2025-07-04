@@ -25,12 +25,13 @@ const DEFAULT_VALUE: string = "" as const;
 const DEFAULT_LABEL: string = "" as const;
 const DEFAULT_PLACEHOLDER: string = "" as const;
 const DEFAULT_EMPTY_TEXT: string = "" as const;
+const DEFAULT_DISABLED: boolean = false as const;
 
 export type ComboboxValueType = { value: string; label: string };
 
-interface ComboboxTypes { className?: string; values?: ComboboxValueType[]; value?: string; placeholder?: string; label?: string; emptyText?: string; onChange?: (value: string) => void }
+interface ComboboxTypes { className?: string; values?: ComboboxValueType[]; value?: string; placeholder?: string; label?: string; emptyText?: string; disabled?: boolean; onChange?: (value: string) => void }
 
-export function Combobox({ className = DEFAULT_CLASSNAME, values = DEFAULT_VALUES, value = DEFAULT_VALUE, placeholder = DEFAULT_PLACEHOLDER, label = DEFAULT_LABEL, emptyText = DEFAULT_EMPTY_TEXT, onChange }: ComboboxTypes) {
+export function Combobox({ className = DEFAULT_CLASSNAME, values = DEFAULT_VALUES, value = DEFAULT_VALUE, placeholder = DEFAULT_PLACEHOLDER, label = DEFAULT_LABEL, emptyText = DEFAULT_EMPTY_TEXT, disabled = DEFAULT_DISABLED, onChange }: ComboboxTypes) {
 	const [open, setOpen] = React.useState(false);
 	const [selected, setSelected] = React.useState(value);
 
@@ -38,6 +39,7 @@ export function Combobox({ className = DEFAULT_CLASSNAME, values = DEFAULT_VALUE
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button
+					disabled={disabled}
 					role="combobox"
 					aria-expanded={open}
 					className={cn("justify-between", className)}

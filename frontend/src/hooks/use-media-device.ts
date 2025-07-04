@@ -26,14 +26,8 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 		if (videoStream) {
 			videoStream.getTracks().forEach((track) => {
 				track.stop();
-				track.enabled = false;
-			});
-
-			videoStream.getTracks().forEach((track) => {
-				videoStream.removeTrack(track);
 			});
 		}
-
 		setVideoStream(null);
 	};
 
@@ -41,14 +35,8 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 		if (audioStream) {
 			audioStream.getTracks().forEach((track) => {
 				track.stop();
-				track.enabled = false;
-			});
-
-			audioStream.getTracks().forEach((track) => {
-				audioStream.removeTrack(track);
 			});
 		}
-
 		setAudioStream(null);
 	};
 
@@ -144,11 +132,19 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 
 	useEffect(() => {
 		return () => {
-			cleanVideoStream();
-
-			cleanAudioStream();
+			if (videoStream) {
+				videoStream.getTracks().forEach(track => track.stop());
+			}
 		};
-	}, []);
+	}, [videoStream]);
+
+	useEffect(() => {
+		return () => {
+			if (audioStream) {
+				audioStream.getTracks().forEach(track => track.stop());
+			}
+		};
+	}, [audioStream]);
 
 	return {
 		videoStream,

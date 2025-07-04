@@ -1,20 +1,20 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Globe, Hash, Mic, Users, Video } from "lucide-react";
+import { Globe, Hash, Mic, Video } from "lucide-react";
 import { useState } from "react";
 
-import type { Room as RoomInterface } from "@/lib/types/room";
+import type { RoomType } from "@/lib/types/room";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { CATEGORY_LIST } from "@/lib/constants/category-list";
+import { LANGUAGE_LIST } from "@/lib/constants/language-list";
 import { cn } from "@/lib/utils/cn";
-import { getCategoryByKey } from "@/lib/utils/get-category-by-key";
-import { getLanguageByKey } from "@/lib/utils/get-language-by-key";
 
 import JoinRoomModal from "./join-room-modal";
 
 interface RoomCardTypes {
-	room: RoomInterface;
+	room: RoomType;
 }
 
 const RoomCard = ({ room }: RoomCardTypes) => {
@@ -22,10 +22,9 @@ const RoomCard = ({ room }: RoomCardTypes) => {
 
 	const [isJoinRoomModalOpen, setJoinRoomModalOpen] = useState(false);
 
-	const roomCategory = getCategoryByKey(room.category)?.name || "";
-	const roomLanguage = getLanguageByKey(room.language)?.name || "";
-	const roomMaxGuestCount = room.maxGuestCount || 0;
-	const roomCurrentGuestCount = room.currentGuestCount || 0;
+	const roomCategory = CATEGORY_LIST[room.category]?.label;
+	const roomLanguage = LANGUAGE_LIST[room.language]?.label;
+	const isRoomAvailable = room.isAvailable;
 	const isRoomCameraRequired = room.isCameraRequired || false;
 	const isRoomMicRequired = room.isMicRequired || false;
 
@@ -58,21 +57,13 @@ const RoomCard = ({ room }: RoomCardTypes) => {
 
 					<div className="flex items-center justify-between">
 						<div className="flex items-center space-x-4">
-							<div className="flex items-center text-gray-700">
-								<Users className="mr-1 h-4 w-4" />
-								<span className="font-bold">
-									{roomCurrentGuestCount}
-									/
-									{roomMaxGuestCount}
-								</span>
-							</div>
 							<div className="flex space-x-1">
 								<Video className={cn("h-4 w-4", { "text-green-600": isRoomCameraRequired, "text-red-600": !isRoomCameraRequired })} />
 								<Mic className={cn("h-4 w-4", { "text-green-600": isRoomMicRequired, "text-red-600": !isRoomMicRequired })} />
 							</div>
 						</div>
 
-						<Button onClick={handleOpenJoinRoomModal} disabled={roomCurrentGuestCount >= roomMaxGuestCount}>SELECT</Button>
+						<Button onClick={handleOpenJoinRoomModal} disabled={!isRoomAvailable}>SELECT</Button>
 					</div>
 				</CardContent>
 			</Card>

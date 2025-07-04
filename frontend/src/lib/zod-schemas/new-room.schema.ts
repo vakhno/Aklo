@@ -1,0 +1,9 @@
+import { z } from "zod";
+
+export const NewRoomSchema = z.object({
+	title: z.string().min(10, "Title is too short"),
+	language: z.string().min(1, "Please select a language"),
+	category: z.string().min(1, "Please select a category"),
+	isCameraRequired: z.boolean(),
+	isMicRequired: z.boolean()
+});

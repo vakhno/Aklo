@@ -1,34 +1,34 @@
 export const CATEGORY_LIST = {
 	general: {
 		value: "general",
-		label: "General"
+		label: "General",
 	},
 	programming: {
 		value: "programming",
-		label: "Programming"
+		label: "Programming",
 	},
 	tech: {
 		value: "tech",
-		label: "Technology"
+		label: "Technology",
 	},
 	gaming: {
 		value: "gaming",
-		label: "Gaming"
+		label: "Gaming",
 	},
 	movies: {
 		value: "movies",
-		label: "Movies"
+		label: "Movies",
 	},
 	news: {
 		value: "news",
-		label: "News"
+		label: "News",
 	},
 	study: {
 		value: "study",
-		label: "Study"
+		label: "Study",
 	},
 	books: {
 		value: "books",
-		label: "Books"
-	}
+		label: "Books",
+	},
 } as const;
