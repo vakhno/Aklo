@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useId } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+
+import type { NewRoomType } from "@/lib/types/room";
 
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
@@ -19,30 +20,17 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { CATEGORY_LIST } from "@/lib/constants/category-list";
 import { LANGUAGE_LIST } from "@/lib/constants/language-list";
-import { convertLanguagesToComboboxValues } from "@/lib/utils/convert-categories-to-combobox-values copy";
-import { convertCategoriesToComboboxValues } from "@/lib/utils/convert-languages-to-combobox-values";
+import { convertListToComboboxValues } from "@/lib/utils/convert-list-to-combobox-values";
+import { NewRoomSchema } from "@/lib/zod-schemas/new-room.schema";
 
 interface CreateRoomModalProps {
 	isOpen: boolean;
 	setOpen: (value: boolean) => void;
-	submitAction?: (data: NewRoomSchemaType) => Promise<void>;
+	submitAction?: (data: NewRoomType) => Promise<void>;
 }
-
-const NewRoomSchema = z.object({
-	title: z.string().min(10, "Title is too short"),
-	language: z.string().min(1, "Please select a language"),
-	category: z.string().min(1, "Please select a category"),
-	isCameraRequired: z.boolean(),
-	isMicRequired: z.boolean(),
-	countOfGuests: z.number().min(1, "Minimum 1 guest").max(4, "Maximum 4 guests")
-});
-
-type NewRoomSchemaType = z.infer<typeof NewRoomSchema>;
 
 const CreateRoomModal = ({ isOpen, setOpen, submitAction }: CreateRoomModalProps) => {
 	const newRoomFormId = useId();
-	const categoriesValues = convertCategoriesToComboboxValues(CATEGORY_LIST);
-	const languagesValues = convertLanguagesToComboboxValues(LANGUAGE_LIST);
 
 	const {
 		register,
@@ -50,19 +38,18 @@ const CreateRoomModal = ({ isOpen, setOpen, submitAction }: CreateRoomModalProps
 		formState: { errors },
 		setValue,
 		watch
-	} = useForm<NewRoomSchemaType>({
+	} = useForm<NewRoomType>({
 		resolver: zodResolver(NewRoomSchema),
 		defaultValues: {
 			title: "",
 			language: "",
 			category: "",
 			isCameraRequired: true,
-			isMicRequired: true,
-			countOfGuests: 1
+			isMicRequired: true
 		}
 	});
 
-	const onSubmit = async (data: NewRoomSchemaType) => {
+	const onSubmit = async (data: NewRoomType) => {
 		submitAction && await submitAction(data);
 
 		setOpen(false);
@@ -95,7 +82,7 @@ const CreateRoomModal = ({ isOpen, setOpen, submitAction }: CreateRoomModalProps
 
 						<Combobox
 							label="Select language"
-							values={languagesValues}
+							values={convertListToComboboxValues(LANGUAGE_LIST)}
 							value={watch("language")}
 							onChange={value => setValue("language", value)}
 							placeholder="Select language..."
@@ -107,7 +94,7 @@ const CreateRoomModal = ({ isOpen, setOpen, submitAction }: CreateRoomModalProps
 						)}
 						<Combobox
 							label="Select category"
-							values={categoriesValues}
+							values={convertListToComboboxValues(CATEGORY_LIST)}
 							value={watch("category")}
 							onChange={value => setValue("category", value)}
 							placeholder="Select category..."
@@ -133,22 +120,6 @@ const CreateRoomModal = ({ isOpen, setOpen, submitAction }: CreateRoomModalProps
 								checked={watch("isMicRequired")}
 								onCheckedChange={checked => setValue("isMicRequired", checked)}
 							/>
-						</div>
-
-						<div className="grid gap-2">
-							<Input
-								placeholder="Guests count..."
-								id="countOfGuests"
-								type="number"
-								min={1}
-								max={4}
-								{...register("countOfGuests", { valueAsNumber: true })}
-							/>
-							{errors.countOfGuests && (
-								<p className="text-sm text-red-500">
-									{errors.countOfGuests.message}
-								</p>
-							)}
 						</div>
 					</div>
 

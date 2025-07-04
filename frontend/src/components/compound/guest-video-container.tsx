@@ -13,7 +13,7 @@ interface VideoContainerProps {
 
 const GuestVideoContainer = ({ className, stream }: VideoContainerProps) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
-	const [isMuted, setIsMuted] = useState(true);
+	const [isMuted, setIsMuted] = useState(false);
 	const [volume, setVolume] = useState(0.5);
 	const [isHovered, setIsHovered] = useState(false);
 
