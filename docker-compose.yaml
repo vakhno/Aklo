@@ -2,17 +2,6 @@ version: "v2.36.0-desktop.1"
 
 services:
 
-  redis:
-    image: redis/redis-stack:latest
-    container_name: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - ./redis_data:/data
-    networks:
-      - app-network
-    restart: unless-stopped
-
   backend:
     develop:
       watch:
@@ -30,8 +19,6 @@ services:
     env_file:
       - path: ./backend/.env
         required: true
-    depends_on:
-      - redis
     networks:
       - app-network
 
