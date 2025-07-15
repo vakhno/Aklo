@@ -8,6 +8,9 @@ router.post("/", roomController.createRoom);
 router.get("/", roomController.getAllRooms);
 router.get("/:id", roomController.getRoom);
 router.delete("/:id", roomController.deleteRoom);
+router.post("/:id/join", roomController.joinRoom);
+router.get("/:id/is-creator", roomController.checkIsCreator);
+router.delete("/:id", roomController.deleteRoom);
 // router.post("/:id/join", roomController.joinRoom);
 // router.post("/:id/leave", roomController.leaveRoom);
 

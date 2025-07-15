@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CATEGORY_LIST } from "@/lib/constants/category-list";
 import { LANGUAGE_LIST } from "@/lib/constants/language-list";
 import { cn } from "@/lib/utils/cn";
+import { useJoinRoom } from "@/queries/room";
 
 import JoinRoomModal from "./join-room-modal";
 
@@ -22,18 +23,27 @@ const RoomCard = ({ room }: RoomCardTypes) => {
 
 	const [isJoinRoomModalOpen, setJoinRoomModalOpen] = useState(false);
 
+	const roomId = room.id;
+	const roomTitle = room.title;
 	const roomCategory = CATEGORY_LIST[room.category]?.label;
 	const roomLanguage = LANGUAGE_LIST[room.language]?.label;
 	const isRoomAvailable = room.isAvailable;
 	const isRoomCameraRequired = room.isCameraRequired || false;
 	const isRoomMicRequired = room.isMicRequired || false;
 
+	const { mutate: joinRoom } = useJoinRoom({
+		onSuccess: () => {
+			navigate({ to: "/room/$id", params: { id: roomId } });
+		},
+		onError: () => {}
+	});
+
 	const handleOpenJoinRoomModal = () => {
 		setJoinRoomModalOpen(true);
 	};
 
 	const handleSubmitAction = () => {
-		navigate({ to: "/room/$id", params: { id: room.id } });
+		joinRoom({ roomId });
 	};
 
 	return (
@@ -51,8 +61,8 @@ const RoomCard = ({ room }: RoomCardTypes) => {
 						</div>
 					</div>
 
-					<h3 className="text-xl font-black text-black mb-3 line-clamp-2">
-						{room.title}
+					<h3 className="text-xl font-black text-black mb-3 line-clamp-2 truncate">
+						{roomTitle}
 					</h3>
 
 					<div className="flex items-center justify-between">

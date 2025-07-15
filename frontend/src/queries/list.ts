@@ -24,7 +24,6 @@ const getUsedLanguages = async (): Promise<LanguagesType> => {
 	if (!response.ok) {
 		throw new Error("Failed to fetch languages!");
 	}
-
 	const result = await response.json() as LanguagesType;
 
 	return result;

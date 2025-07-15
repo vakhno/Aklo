@@ -4,13 +4,14 @@ import type { NewRoomSchema } from "../zod-schemas/new-room.schema";
 
 export interface CreatedRoomType {
 	id: string;
+	creatorId: string;
 	title: string;
 	category: string;
 	language: string;
 	isCameraRequired: boolean;
 	isMicRequired: boolean;
 	isAvailable: boolean;
-	createdAt: Date;
+	createdAt: number;
 }
 
 export interface GetAllRoomsPropsType {

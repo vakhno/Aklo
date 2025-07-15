@@ -22,6 +22,7 @@ const Video = ({ className, stream }: VideoProps) => {
 				ref={videoRef}
 				muted
 				autoPlay
+				disablePictureInPicture={true}
 				className="w-full h-full max-w-full max-h-full rounded-lg border-2 border-gray-300 object-cover"
 			/>
 		</div>

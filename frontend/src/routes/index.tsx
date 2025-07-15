@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -23,8 +23,14 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+	const navigate = useNavigate();
+
 	const { mutate: handleCreateRoom } = useCreateRoom({
-		onSuccess: () => {},
+		onSuccess: (room) => {
+			const { id } = room;
+
+			navigate({ to: "/room/$id", params: { id } });
+		},
 		onError: () => {}
 	});
 	const [isCreateRoomModalOpen, setCreateRoomModalOpen] = useState(false);
@@ -70,7 +76,7 @@ function Home() {
 				</CardHeader>
 				<CardContent>
 					<Form {...filterForm}>
-						<form className="flex gap-4">
+						<form className="flex-col flex gap-4 md:flex-row">
 							<FormField
 								control={control}
 								name="category"
