@@ -19,6 +19,15 @@ export async function createRoom(req: Request, res: Response) {
 		const roomData = validator.data;
 		const room = await roomService.createRoom(roomData);
 
+		const { id, creatorId } = room;
+
+		res.cookie(id, creatorId, {
+			httpOnly: true,
+			sameSite: "strict",
+			// maxAge: 12 * 60 * 60 * 1000,
+			path: "/",
+		});
+
 		res.status(201).json(room);
 	}
 	catch (error) {
@@ -37,6 +46,34 @@ export async function getRoom(req: Request, res: Response) {
 		}
 
 		res.status(200).json(room);
+	}
+	catch (error) {
+		res.status(500).json({ error });
+	}
+}
+
+export async function joinRoom(req: Request, res: Response) {
+	try {
+		const { id } = req.params;
+		const room = await roomService.getRoom(id);
+
+		if (!room) {
+			res.status(404).json({ error: "Room not found" });
+			return;
+		}
+
+		const { isAvailable } = room;
+
+		if (!isAvailable) {
+			res.status(409).json({ error: "Room is unavailable" });
+			return;
+		}
+
+		const roomUpdates = { isAvailable: false };
+
+		await roomService.updateRoom(id, roomUpdates);
+
+		res.status(200).json({});
 	}
 	catch (error) {
 		res.status(500).json({ error });
@@ -73,34 +110,26 @@ export async function deleteRoom(req: Request, res: Response) {
 	}
 }
 
-// export async function joinRoom(req: Request, res: Response) {
-// 	try {
-// 		const { id } = req.params;
-// 		const room = await roomService.updateRoomGuestCount(id, true);
+export async function checkIsCreator(req: Request, res: Response) {
+	try {
+		const { id } = req.params;
 
-// 		if (!room) {
-// 			return res.status(404).json({ error: "Room not found or is full" });
-// 		}
+		const room = await roomService.getRoom(id);
 
-// 		res.json(room);
-// 	}
-// 	catch (error) {
-// 		res.status(500).json({ error });
-// 	}
-// }
+		if (!room) {
+			res.status(404).json({ error: "Room not found" });
+			return;
+		}
 
-// export async function leaveRoom(req: Request, res: Response) {
-// 	try {
-// 		const { id } = req.params;
-// 		const room = await roomService.updateRoomGuestCount(id, false);
+		const { creatorId } = room;
 
-// 		if (!room) {
-// 			return res.status(204).send(); // Room was deleted
-// 		}
+		const isCreator = !!req.cookies[`${id}`] && req.cookies[`${id}`] === creatorId;
 
-// 		res.json(room);
-// 	}
-// 	catch (error) {
-// 		res.status(500).json({ error });
-// 	}
-// }
+		res.status(200).json({
+			isCreator,
+		});
+	}
+	catch (error) {
+		res.status(500).json({ error });
+	}
+}

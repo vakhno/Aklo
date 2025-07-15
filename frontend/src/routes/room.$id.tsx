@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, useParams } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 import GuestVideoContainer from "@/components/compound/guest-video-container";
+import OwnerVideoContainer from "@/components/compound/own-video-container";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,8 +11,9 @@ import {
 	ResizablePanel,
 	ResizablePanelGroup
 } from "@/components/ui/resizable";
-import Video from "@/components/ui/video";
 import { useMediaDevice } from "@/hooks/use-media-device";
+import { useWebRTC } from "@/hooks/use-webrtc";
+import { useCheckIsCreator } from "@/queries/room";
 import useMediaDeviceStore from "@/store/media-device-store";
 
 export const Route = createFileRoute("/room/$id")({
@@ -19,13 +21,40 @@ export const Route = createFileRoute("/room/$id")({
 });
 
 function Room() {
+	const { id } = useParams({ from: "/room/$id" });
+
 	const { state: mediaDeviceStoreState } = useMediaDeviceStore();
-	const { videoStream, setupDeviceStreams } = useMediaDevice({ isAudioAvailable: true, isVideoAvailable: true, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
+	const { setupDeviceStreams, selectedVideoDevice, selectedAudioDevice } = useMediaDevice({ isAudioAvailable: true, isVideoAvailable: true, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
+
+	const videoDeviceId = selectedVideoDevice?.deviceId;
+	const audioDeviceId = selectedAudioDevice?.deviceId;
+
+	const { myStream, remoteStream } = useWebRTC(id, videoDeviceId, audioDeviceId);
+
+	const [isCreator, setIsCreator] = useState(false);
+
+	const { mutate: checkIsCreator } = useCheckIsCreator({
+		onSuccess: (value) => {
+			setIsCreator(value);
+		},
+		onError: () => {}
+	});
 
 	useEffect(() => {
 		(async () => {
+			await checkIsCreator({ roomId: id });
 			await setupDeviceStreams();
 		})();
+	}, [id]);
+
+	useEffect(() => {
+		const handleBeforeUnload = () => {};
+
+		window.addEventListener("beforeunload", handleBeforeUnload);
+
+		return () => {
+			window.removeEventListener("beforeunload", handleBeforeUnload);
+		};
 	}, []);
 
 	return (
@@ -39,13 +68,15 @@ function Room() {
 						<ResizablePanelGroup direction="horizontal" className="h-full">
 							<ResizablePanel defaultSize={50} minSize={15}>
 								<div className="relative h-full w-full">
-									<Video className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" stream={videoStream} />
+									{isCreator
+										? <OwnerVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" stream={myStream} roomId={id} />
+										: <GuestVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" stream={myStream} />}
 								</div>
 							</ResizablePanel>
 							<ResizableHandle className="mx-4" />
 							<ResizablePanel defaultSize={50} minSize={15}>
 								<div className="relative h-full w-full">
-									<GuestVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" stream={videoStream} />
+									<GuestVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" stream={remoteStream} isKickUserAvailable={isCreator} isVolumeSliderAvailable />
 								</div>
 							</ResizablePanel>
 						</ResizablePanelGroup>

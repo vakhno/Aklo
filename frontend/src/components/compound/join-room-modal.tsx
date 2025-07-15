@@ -1,7 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useId } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ import {
 	SelectValue
 } from "@/components/ui/select";
 import { useMediaDevice } from "@/hooks/use-media-device";
-import { catchError } from "@/lib/utils/catch-error";
 import useMediaDeviceStore from "@/store/media-device-store";
 
 import AudioVisualizer from "../ui/audio-visualizer";
@@ -95,13 +93,7 @@ const JoinRoomModal = ({ isOpen, setOpen, submitAction, isCameraAvailable, isMic
 
 	useEffect(() => {
 		(async () => {
-			const [setupDeviceStreamsError] = await catchError({ promise: setupDeviceStreams() });
-			if (setupDeviceStreamsError) {
-				toast.error("Error", {
-					description: setupDeviceStreamsError.message,
-					position: "top-center"
-				});
-			}
+			await setupDeviceStreams();
 		})();
 	}, []);
 

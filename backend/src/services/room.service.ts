@@ -11,9 +11,10 @@ export async function createRoom(roomData: NewRoomType): Promise<CreatedRoomType
 	try {
 		const room: CreatedRoomType = {
 			id: uuidv4(),
+			creatorId: uuidv4(),
 			...roomData,
 			isAvailable: true,
-			createdAt: new Date(),
+			createdAt: new Date().getTime(),
 		};
 
 		const convertedRoom = convertObjToRedisHset(room);
@@ -92,11 +93,17 @@ export async function getAllRooms({ category, language, limit, page }: { categor
 	}
 }
 
-export async function getRoom(roomId: string): Promise<CreatedRoomType | null> {
+export async function getRoom(roomId: string): Promise<CreatedRoomType> {
 	try {
-		const roomData = await redisClient.get(`${ROOM_PREFIX}${roomId}`);
+		const room = await redisClient.hGetAll(`${ROOM_PREFIX}${roomId}`) as Record<keyof CreatedRoomType, string>;
 
-		return roomData ? JSON.parse(roomData) : null;
+		if (!room || Object.keys(room).length === 0) {
+			throw new Error("No room found");
+		}
+
+		const parsedRoom = convertRedisHsetToCreatedRoom(room);
+
+		return parsedRoom;
 	}
 	catch (error) {
 		// eslint-disable-next-line no-console
@@ -126,6 +133,29 @@ export async function deleteRoom(roomId: string): Promise<void> {
 		console.log(error);
 
 		throw new Error("Delete room error!");
+	}
+}
+
+export async function updateRoom(roomId: string, updates: Partial<CreatedRoomType>): Promise<CreatedRoomType> {
+	try {
+		const room = await getRoom(roomId);
+
+		if (!room) {
+			throw new Error("Room not found");
+		}
+
+		const updatedRoom = { ...room, ...updates };
+		const convertedRoom = convertObjToRedisHset(updatedRoom);
+
+		await redisClient.hSet(`${ROOM_PREFIX}${roomId}`, convertedRoom);
+
+		return updatedRoom;
+	}
+	catch (error) {
+		// eslint-disable-next-line no-console
+		console.log(error);
+
+		throw new Error("Update room error");
 	}
 }
 

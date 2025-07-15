@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { useIsMobile } from "@/hooks/use-is-mobile";
 import { catchError } from "@/lib/utils/catch-error";
 
 interface useMediaDeviceProps {
@@ -17,10 +18,13 @@ const DEFAULT_AUDIO_DEVICE_ID = "";
 export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, isAudioAvailable = DEFAULT_IS_AUDIO_AVAILABLE, videoDeviceId = DEFAULT_VIDEO_DEVICE_ID, audioDeviceId = DEFAULT_AUDIO_DEVICE_ID }: useMediaDeviceProps) => {
 	const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
 	const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+	const [combinedStream, setCombinedStream] = useState<MediaStream | null>(null);
 	const [selectedVideoDevice, setSelectedVideoDevice] = useState<MediaDeviceInfo | null>(null);
 	const [selectedAudioDevice, setSelectedAudioDevice] = useState<MediaDeviceInfo | null>(null);
 	const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
 	const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+	const [isPermissionDenied, setIsPermissionDenied] = useState(false);
+	const isMobileDevice = useIsMobile();
 
 	const cleanVideoStream = () => {
 		if (videoStream) {
@@ -45,15 +49,17 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 			cleanVideoStream();
 
 			const constraints = {
-				video: isVideoAvailable ? deviceId && deviceId.length ? { deviceId: { exact: deviceId } } : true : false
+				video: isVideoAvailable ? isMobileDevice ? { facingMode: "user" } : deviceId && deviceId.length ? { deviceId: { exact: deviceId } } : true : false
 			};
-
 			const [userMediaError, stream] = await catchError({ promise: navigator.mediaDevices.getUserMedia(constraints) });
 
 			if (userMediaError) {
+				setIsPermissionDenied(true);
+
 				throw userMediaError;
 			}
 			else {
+				setIsPermissionDenied(false);
 				setVideoStream(stream);
 
 				const [enumerateDevicesError, allDevices] = await catchError({ promise: navigator.mediaDevices.enumerateDevices() });
@@ -66,13 +72,26 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 
 					setVideoDevices(allVideoDevices);
 
-					const selectedDevice = allVideoDevices.find(device => device.deviceId === deviceId);
-
-					if (selectedDevice) {
-						setSelectedVideoDevice(selectedDevice);
+					if (isMobileDevice) {
+						const activeDevice = allVideoDevices.length > 0
+							? allVideoDevices[0]
+							: {
+									deviceId: "default",
+									groupId: "default",
+									kind: "videoinput" as MediaDeviceKind,
+									label: "Camera"
+								} as MediaDeviceInfo;
+						setSelectedVideoDevice(activeDevice);
 					}
 					else {
-						setSelectedVideoDevice(allVideoDevices[0]);
+						const selectedDevice = allVideoDevices.find(device => device.deviceId === deviceId);
+
+						if (selectedDevice) {
+							setSelectedVideoDevice(selectedDevice);
+						}
+						else {
+							setSelectedVideoDevice(allVideoDevices[0]);
+						}
 					}
 				}
 			}
@@ -84,15 +103,17 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 			cleanAudioStream();
 
 			const constraints = {
-				audio: isAudioAvailable ? deviceId && deviceId.length ? { deviceId: { exact: deviceId } } : true : false
+				audio: isAudioAvailable ? isMobileDevice ? true : deviceId && deviceId.length ? { deviceId: { exact: deviceId } } : true : false
 			};
 
 			const [userMediaError, stream] = await catchError({ promise: navigator.mediaDevices.getUserMedia(constraints) });
 
 			if (userMediaError) {
+				setIsPermissionDenied(true);
 				throw userMediaError;
 			}
 			else {
+				setIsPermissionDenied(false);
 				setAudioStream(stream);
 
 				const [enumerateDevicesError, allDevices] = await catchError({ promise: navigator.mediaDevices.enumerateDevices() });
@@ -105,13 +126,27 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 
 					setAudioDevices(allAudioDevices);
 
-					const selectedDevice = allAudioDevices.find(device => device.deviceId === deviceId);
+					if (isMobileDevice) {
+						const activeDevice = allAudioDevices.length > 0
+							? allAudioDevices[0]
+							: {
+									deviceId: "default",
+									groupId: "default",
+									kind: "audioinput" as MediaDeviceKind,
+									label: "Microphone"
+								} as MediaDeviceInfo;
 
-					if (selectedDevice) {
-						setSelectedAudioDevice(selectedDevice);
+						setSelectedAudioDevice(activeDevice);
 					}
 					else {
-						setSelectedAudioDevice(allAudioDevices[0]);
+						const selectedDevice = allAudioDevices.find(device => device.deviceId === deviceId);
+
+						if (selectedDevice) {
+							setSelectedAudioDevice(selectedDevice);
+						}
+						else {
+							setSelectedAudioDevice(allAudioDevices[0]);
+						}
 					}
 				}
 			}
@@ -129,6 +164,17 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 			throw audioDeviceError;
 		}
 	};
+
+	useEffect(() => {
+		const newCombinedStream = new MediaStream();
+		if (videoStream) {
+			videoStream.getVideoTracks().forEach(track => newCombinedStream.addTrack(track));
+		}
+		if (audioStream) {
+			audioStream.getAudioTracks().forEach(track => newCombinedStream.addTrack(track));
+		}
+		setCombinedStream(newCombinedStream.getTracks().length > 0 ? newCombinedStream : null);
+	}, [videoStream, audioStream]);
 
 	useEffect(() => {
 		return () => {
@@ -149,10 +195,13 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 	return {
 		videoStream,
 		audioStream,
+		combinedStream,
 		selectedVideoDevice,
 		selectedAudioDevice,
 		videoDevices,
 		audioDevices,
+		isMobileDevice,
+		isPermissionDenied,
 		cleanVideoStream,
 		cleanAudioStream,
 		setupVideoDevice,

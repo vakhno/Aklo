@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, ChevronsUpDown } from "lucide-react";
-import * as React from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,11 +29,41 @@ const DEFAULT_DISABLED: boolean = false as const;
 
 export type ComboboxValueType = { value: string; label: string };
 
-interface ComboboxTypes { className?: string; values?: ComboboxValueType[]; value?: string; placeholder?: string; label?: string; emptyText?: string; disabled?: boolean; onChange?: (value: string) => void }
+interface ComboboxTypes {
+	className?: string;
+	values?: ComboboxValueType[];
+	value?: string;
+	placeholder?: string;
+	label?: string;
+	emptyText?: string;
+	disabled?: boolean;
+	onChange?: (value: string) => void;
+}
 
-export function Combobox({ className = DEFAULT_CLASSNAME, values = DEFAULT_VALUES, value = DEFAULT_VALUE, placeholder = DEFAULT_PLACEHOLDER, label = DEFAULT_LABEL, emptyText = DEFAULT_EMPTY_TEXT, disabled = DEFAULT_DISABLED, onChange }: ComboboxTypes) {
-	const [open, setOpen] = React.useState(false);
-	const [selected, setSelected] = React.useState(value);
+export function Combobox({
+	className = DEFAULT_CLASSNAME,
+	values = DEFAULT_VALUES,
+	value = DEFAULT_VALUE,
+	placeholder = DEFAULT_PLACEHOLDER,
+	label = DEFAULT_LABEL,
+	emptyText = DEFAULT_EMPTY_TEXT,
+	disabled = DEFAULT_DISABLED,
+	onChange
+}: ComboboxTypes) {
+	const [open, setOpen] = useState(false);
+	const [selected, setSelected] = useState(value);
+
+	// Sync internal state with prop changes
+	useEffect(() => {
+		setSelected(value);
+	}, [value]);
+
+	const handleSelect = (currentValue: string) => {
+		const newValue = currentValue === selected ? "" : currentValue;
+		setSelected(newValue);
+		onChange?.(newValue);
+		setOpen(false);
+	};
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
@@ -60,11 +90,7 @@ export function Combobox({ className = DEFAULT_CLASSNAME, values = DEFAULT_VALUE
 								<CommandItem
 									key={item.value}
 									value={item.value}
-									onSelect={(currentValue) => {
-										setSelected(currentValue === selected ? "" : currentValue);
-										onChange && onChange(currentValue);
-										setOpen(false);
-									}}
+									onSelect={handleSelect}
 								>
 									<Check
 										className={cn(
