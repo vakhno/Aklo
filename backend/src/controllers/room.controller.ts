@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 
 import { NewRoomSchema } from "../libs/zod-schemas/new-room.schema";
 import * as roomService from "../services/room.service";
+import { getCookies } from "../utils/get-cookies";
 import { parseGetAllRoomsQueries } from "../utils/parse-get-all-rooms-queries";
 
 export async function createRoom(req: Request, res: Response) {
@@ -23,8 +24,9 @@ export async function createRoom(req: Request, res: Response) {
 
 		res.cookie(id, creatorId, {
 			httpOnly: true,
-			sameSite: "strict",
-			// maxAge: 12 * 60 * 60 * 1000,
+			secure: true,
+			sameSite: "none",
+			maxAge: 7200000,
 			path: "/",
 		});
 
@@ -69,10 +71,6 @@ export async function joinRoom(req: Request, res: Response) {
 			return;
 		}
 
-		const roomUpdates = { isAvailable: false };
-
-		await roomService.updateRoom(id, roomUpdates);
-
 		res.status(200).json({});
 	}
 	catch (error) {
@@ -101,7 +99,23 @@ export async function getAllRooms(req: Request, res: Response) {
 export async function deleteRoom(req: Request, res: Response) {
 	try {
 		const { id } = req.params;
+
 		await roomService.deleteRoom(id);
+
+		const sockets = await req.app.get("io").in(id).fetchSockets();
+
+		for (const socket of sockets) {
+			socket.data.roomDeleted = true;
+		}
+
+		req.app.get("io").to(id).emit("room-deleted", { roomId: id });
+
+		res.clearCookie(id, {
+			path: "/",
+			sameSite: "none",
+			secure: true,
+			httpOnly: true,
+		});
 
 		res.status(204).send();
 	}
@@ -123,7 +137,8 @@ export async function checkIsCreator(req: Request, res: Response) {
 
 		const { creatorId } = room;
 
-		const isCreator = !!req.cookies[`${id}`] && req.cookies[`${id}`] === creatorId;
+		const cookies = getCookies({ req });
+		const isCreator = !!cookies[id] && cookies[id] === creatorId;
 
 		res.status(200).json({
 			isCreator,

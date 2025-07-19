@@ -17,6 +17,7 @@ interface AlertDialogProps {
 	description?: string;
 	triggerText?: string;
 	triggerComponent?: React.ReactNode;
+	isCancelVisible?: boolean;
 	cancelText?: string;
 	actionText: string;
 	onAction: () => void;
@@ -31,6 +32,7 @@ export function AlertDialogComponent({
 	triggerText,
 	triggerComponent,
 	cancelText = "Cancel",
+	isCancelVisible,
 	actionText,
 	onAction,
 	onCancel
@@ -66,9 +68,13 @@ export function AlertDialogComponent({
 					<AlertDialogDescription>{description}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel onClick={handleCancel}>
-						{cancelText}
-					</AlertDialogCancel>
+					{isCancelVisible
+						? (
+								<AlertDialogCancel onClick={handleCancel}>
+									{cancelText}
+								</AlertDialogCancel>
+							)
+						: null}
 					<AlertDialogAction
 						onClick={handleAction}
 					>

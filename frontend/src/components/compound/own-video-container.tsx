@@ -54,8 +54,6 @@ const OwnerVideoContainer = ({ className, stream, roomId, isCreator }: VideoCont
 			>
 				<Video
 					className="aspect-square"
-
-					// className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"
 					stream={stream}
 				/>
 				{isHovered && (

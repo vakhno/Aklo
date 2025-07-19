@@ -13,6 +13,7 @@ export type RoomType = {
 	isCameraRequired: boolean;
 	isMicRequired: boolean;
 	isAvailable: boolean;
+	maxGuestCount: number;
 	createdAt: number;
 };
 

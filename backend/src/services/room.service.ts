@@ -14,12 +14,14 @@ export async function createRoom(roomData: NewRoomType): Promise<CreatedRoomType
 			creatorId: uuidv4(),
 			...roomData,
 			isAvailable: true,
+			maxGuestCount: 1,
 			createdAt: new Date().getTime(),
 		};
 
 		const convertedRoom = convertObjToRedisHset(room);
 
 		await redisClient.hSet(`${ROOM_PREFIX}${convertedRoom.id}`, convertedRoom);
+		await redisClient.expire(`${ROOM_PREFIX}${convertedRoom.id}`, 7200);
 
 		return room;
 	}
