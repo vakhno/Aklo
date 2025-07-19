@@ -71,7 +71,8 @@ export const useCreateRoom = ({ onSuccess, onError }: useCreateRoomProps) => {
 
 const deleteRoom = async ({ roomId }: { roomId: string }) => {
 	const response = await fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`, {
-		method: "DELETE"
+		method: "DELETE",
+		credentials: "include"
 	});
 
 	const { ok } = response;
@@ -162,7 +163,8 @@ export const useJoinRoom = ({ onSuccess, onError }: useJoinRoomProps) => {
 
 const checkIsCreator = async ({ roomId }: { roomId: string }): Promise<boolean> => {
 	const response = await fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}/is-creator`, {
-		method: "GET"
+		method: "GET",
+		credentials: "include"
 	});
 
 	const { ok } = response;
@@ -171,9 +173,9 @@ const checkIsCreator = async ({ roomId }: { roomId: string }): Promise<boolean> 
 		throw new Error("Failed to check is creator!");
 	}
 
-	const result = await response.json();
+	const { isCreator } = await response.json();
 
-	return result;
+	return isCreator;
 };
 
 type useCheckIsCreatorProps = {

@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import { catchError } from "@/lib/utils/catch-error";
 import { useGetRoom } from "@/queries/room";
 
-export function useWebRTC(roomId: string, videoDeviceId?: string, audioDeviceId?: string) {
+export function useWebRTC(roomId: string, videoDeviceId?: string, audioDeviceId?: string, onRoomExpired?: () => void, onRoomDeleted?: () => void) {
 	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 	const [myStream, setMyStream] = useState<MediaStream | null>(null);
 	const socketRef = useRef<Socket | null>(null);
@@ -54,17 +54,23 @@ export function useWebRTC(roomId: string, videoDeviceId?: string, audioDeviceId?
 
 			socket.on("join-fail", () => {});
 
-			// socket.on("join-success", () => {
-			// 	if (!peerRef.current) {
-			// 		peerRef.current = createPeer(socket, stream, roomId, true); // isInitiator = true
-			// 	}
-			// });
-
 			socket.on("ready", () => {
 				if (!peerRef.current) {
 					peerRef.current = createPeer(socket, stream, roomId, true); // isInitiator = true
 				}
 			});
+
+			socket.on("room-expired", () => {
+				onRoomExpired && onRoomExpired();
+				peerRef.current?.close();
+			});
+
+			socket.on("room-deleted", () => {
+				onRoomDeleted && onRoomDeleted();
+				peerRef.current?.close();
+			});
+
+			socket.on("leave", () => peerRef.current = null);
 
 			socket.on("signal", async ({ data }) => {
 				if (!peerRef.current) {
@@ -134,7 +140,14 @@ export function useWebRTC(roomId: string, videoDeviceId?: string, audioDeviceId?
 			await setupSocket();
 		})();
 
+		const handleBeforeUnload = () => {
+			socketRef.current?.emit("leave", roomId);
+		};
+
+		window.addEventListener("beforeunload", handleBeforeUnload);
+
 		return () => {
+			window.removeEventListener("beforeunload", handleBeforeUnload);
 			socketRef.current?.disconnect();
 			peerRef.current?.close();
 		};

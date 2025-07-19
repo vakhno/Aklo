@@ -1,6 +1,7 @@
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
+import { AlertDialogComponent } from "@/components/compound/alert-dialog";
 import GuestVideoContainer from "@/components/compound/guest-video-container";
 import OwnerVideoContainer from "@/components/compound/own-video-container";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,8 @@ export const Route = createFileRoute("/room/$id")({
 });
 
 function Room() {
+	const navigate = useNavigate();
+
 	const { id } = useParams({ from: "/room/$id" });
 
 	const { state: mediaDeviceStoreState } = useMediaDeviceStore();
@@ -29,9 +32,11 @@ function Room() {
 	const videoDeviceId = selectedVideoDevice?.deviceId;
 	const audioDeviceId = selectedAudioDevice?.deviceId;
 
-	const { myStream, remoteStream } = useWebRTC(id, videoDeviceId, audioDeviceId);
+	const { myStream, remoteStream } = useWebRTC(id, videoDeviceId, audioDeviceId, onExpiredCall, onExpiredCall);
 
 	const [isCreator, setIsCreator] = useState(false);
+
+	const [isRoomExpired, setIsRoomExpired] = useState(false);
 
 	const { mutate: checkIsCreator } = useCheckIsCreator({
 		onSuccess: (value) => {
@@ -57,6 +62,14 @@ function Room() {
 		};
 	}, []);
 
+	function onExpiredCall() {
+		setIsRoomExpired(true);
+	}
+
+	const handleRoomExpiredAdoption = () => {
+		navigate({ to: "/" });
+	};
+
 	return (
 		<>
 			<div className="w-full h-full">
@@ -69,7 +82,7 @@ function Room() {
 							<ResizablePanel defaultSize={50} minSize={15}>
 								<div className="relative h-full w-full">
 									{isCreator
-										? <OwnerVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" stream={myStream} roomId={id} />
+										? <OwnerVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" stream={myStream} roomId={id} isCreator />
 										: <GuestVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" stream={myStream} />}
 								</div>
 							</ResizablePanel>
@@ -102,6 +115,13 @@ function Room() {
 					</ResizablePanel>
 				</ResizablePanelGroup>
 			</div>
+			<AlertDialogComponent
+				isOpen={isRoomExpired}
+				onOpenChange={setIsRoomExpired}
+				title="Room no longer available"
+				actionText="Ok"
+				onAction={handleRoomExpiredAdoption}
+			/>
 		</>
 	);
 }
