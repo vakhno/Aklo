@@ -3,10 +3,9 @@ import type { Socket } from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
-import { catchError } from "@/lib/utils/catch-error";
 import { useGetRoom } from "@/queries/room";
 
-export function useWebRTC(roomId: string, videoDeviceId?: string, audioDeviceId?: string, onRoomExpired?: () => void, onRoomDeleted?: () => void) {
+export function useWebRTC(stream: MediaStream | null, roomId: string, onRoomExpired?: () => void, onRoomDeleted?: () => void) {
 	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 	const [myStream, setMyStream] = useState<MediaStream | null>(null);
 	const socketRef = useRef<Socket | null>(null);
@@ -17,36 +16,8 @@ export function useWebRTC(roomId: string, videoDeviceId?: string, audioDeviceId?
 	async function setupSocket() {
 		const socket = io(import.meta.env.VITE_SOCKET_URL, { transports: ["websocket"] });
 
-		if (socket) {
+		if (socket && stream) {
 			socketRef.current = socket;
-
-			// const constraints = {
-			// 	video: videoDeviceId
-			// 		? isMobileDevice
-			// 			? { facingMode: "user" }
-			// 			: videoDeviceId && videoDeviceId.length
-			// 				? { deviceId: { exact: videoDeviceId } }
-			// 				: true
-			// 		: false,
-			// 	audio: audioDeviceId
-			// 		? { deviceId: { exact: audioDeviceId } }
-			// 		: true
-			// };
-
-			const constraints = {
-				video: videoDeviceId
-					? { deviceId: { exact: videoDeviceId } }
-					: true,
-				audio: audioDeviceId
-					? { deviceId: { exact: audioDeviceId } }
-					: true
-			};
-
-			const [userMediaError, stream] = await catchError({ promise: navigator.mediaDevices.getUserMedia(constraints) });
-
-			if (userMediaError) {
-				throw userMediaError;
-			}
 
 			setMyStream(stream);
 
@@ -134,12 +105,21 @@ export function useWebRTC(roomId: string, videoDeviceId?: string, audioDeviceId?
 		return peer;
 	};
 
-	useEffect(() => {
-		(async () => {
-			await getRoom({ roomId });
-			await setupSocket();
-		})();
+	const setupPeerConnection = async () => {
+		if (socketRef.current) {
+			socketRef.current.disconnect();
+			socketRef.current = null;
+		}
+		if (peerRef.current) {
+			peerRef.current.close();
+			peerRef.current = null;
+		}
 
+		await getRoom({ roomId });
+		await setupSocket();
+	};
+
+	useEffect(() => {
 		const handleBeforeUnload = () => {
 			socketRef.current?.emit("leave", roomId);
 		};
@@ -150,8 +130,9 @@ export function useWebRTC(roomId: string, videoDeviceId?: string, audioDeviceId?
 			window.removeEventListener("beforeunload", handleBeforeUnload);
 			socketRef.current?.disconnect();
 			peerRef.current?.close();
+			peerRef.current = null;
 		};
 	}, []);
 
-	return { myStream, remoteStream };
+	return { myStream, remoteStream, setupPeerConnection };
 }

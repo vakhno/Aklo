@@ -18,6 +18,9 @@ export function registerSocketEvents(io: Server) {
 					socket.join(roomId);
 
 					const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+					const roomUpdates = { isCreatorActive: true };
+
+					await updateRoom(roomId, roomUpdates);
 
 					if (clients.length === 2) {
 						const [firstClientId] = clients;
@@ -73,10 +76,13 @@ export function registerSocketEvents(io: Server) {
 
 		socket.on("disconnect", async () => {
 			const isRoomDeleted = socket.data.roomDeleted;
+
 			if (isRoomDeleted) {
 				return;
 			}
+
 			const roomId = socket.data.roomId;
+
 			if (!roomId) {
 				return;
 			}
@@ -87,18 +93,12 @@ export function registerSocketEvents(io: Server) {
 			const isCreator = !!cookies[roomId] && cookies[roomId] === creatorId;
 
 			if (!isCreator) {
-				try {
-					const roomUpdates = { isAvailable: true };
+				const roomUpdates = { isAvailable: true };
 
-					await updateRoom(roomId, roomUpdates);
-				}
-				catch (error) {
-					// eslint-disable-next-line no-console
-					console.log(error);
-				}
+				await updateRoom(roomId, roomUpdates);
 			}
 			else {
-				const roomUpdates = { isAvailable: true };
+				const roomUpdates = { isCreatorActive: false };
 
 				await updateRoom(roomId, roomUpdates);
 			}

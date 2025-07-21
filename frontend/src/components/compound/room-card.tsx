@@ -16,9 +16,10 @@ import JoinRoomModal from "./join-room-modal";
 
 interface RoomCardTypes {
 	room: RoomType;
+	isOwner?: boolean;
 }
 
-const RoomCard = ({ room }: RoomCardTypes) => {
+const RoomCard = ({ room, isOwner }: RoomCardTypes) => {
 	const navigate = useNavigate();
 
 	const [isJoinRoomModalOpen, setJoinRoomModalOpen] = useState(false);
@@ -28,8 +29,10 @@ const RoomCard = ({ room }: RoomCardTypes) => {
 	const roomCategory = CATEGORY_LIST[room.category]?.label;
 	const roomLanguage = LANGUAGE_LIST[room.language]?.label;
 	const isRoomAvailable = room.isAvailable;
+	const isCreatorActive = room.isCreatorActive;
 	const isRoomCameraRequired = room.isCameraRequired || false;
 	const isRoomMicRequired = room.isMicRequired || false;
+	const isDisabled = isOwner ? isCreatorActive : !isRoomAvailable;
 
 	const { mutate: joinRoom } = useJoinRoom({
 		onSuccess: () => {
@@ -73,7 +76,7 @@ const RoomCard = ({ room }: RoomCardTypes) => {
 							</div>
 						</div>
 
-						<Button onClick={handleOpenJoinRoomModal} disabled={!isRoomAvailable}>SELECT</Button>
+						<Button onClick={handleOpenJoinRoomModal} disabled={isDisabled}>SELECT</Button>
 					</div>
 				</CardContent>
 			</Card>

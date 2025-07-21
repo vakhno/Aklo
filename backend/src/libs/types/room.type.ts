@@ -11,6 +11,7 @@ export interface CreatedRoomType {
 	isCameraRequired: boolean;
 	isMicRequired: boolean;
 	isAvailable: boolean;
+	isCreatorActive: boolean;
 	maxGuestCount: number;
 	createdAt: number;
 }

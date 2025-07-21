@@ -16,7 +16,7 @@ import { ROOMS_LIMIT } from "@/lib/constants/room";
 import { convertListToComboboxValues } from "@/lib/utils/convert-list-to-combobox-values";
 import { FilterRoomSchema } from "@/lib/zod-schemas/filter-room.schema";
 import { useUsedCategories, useUsedLanguages } from "@/queries/list";
-import { useCreateRoom, useGetRooms } from "@/queries/room";
+import { useCreateRoom, useGetIdListOfOwnRooms, useGetRooms } from "@/queries/room";
 
 export const Route = createFileRoute("/")({
 	component: Home
@@ -24,6 +24,8 @@ export const Route = createFileRoute("/")({
 
 function Home() {
 	const navigate = useNavigate();
+
+	const { mutateAsync: getOwnIds } = useGetIdListOfOwnRooms({});
 
 	const { mutate: handleCreateRoom } = useCreateRoom({
 		onSuccess: (room) => {
@@ -48,6 +50,7 @@ function Home() {
 	const { isPending, fetchNextPage, refetch, data: fetchedRooms, hasNextPage, isFetchingNextPage } = useGetRooms({ limit: ROOMS_LIMIT, language: getValues("language"), category: getValues("category") });
 	const rooms = fetchedRooms?.pages.flatMap(page => page?.rooms || []) || [];
 	const filterFormValues = getValues();
+	const [ownIds, setOwnIds] = useState<string[]>([]);
 
 	const handleOpenCreateRoomModalClick = () => {
 		setCreateRoomModalOpen(true);
@@ -67,6 +70,14 @@ function Home() {
 			reset(filterFormValues);
 		}
 	}, [isDirty]);
+
+	useEffect(() => {
+		(async () => {
+			const ids = await getOwnIds();
+
+			setOwnIds(ids);
+		})();
+	}, []);
 
 	return (
 		<>
@@ -135,7 +146,7 @@ function Home() {
 										: (
 												<div className="flex flex-col gap-6">
 													{rooms.map(room => (
-														<RoomCard room={room} key={room.id} />
+														<RoomCard room={room} key={room.id} isOwner={ownIds.includes(room.creatorId)} />
 													))}
 													{hasNextPage
 														? (
