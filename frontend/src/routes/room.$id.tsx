@@ -23,21 +23,12 @@ export const Route = createFileRoute("/room/$id")({
 
 function Room() {
 	const navigate = useNavigate();
-
 	const { id } = useParams({ from: "/room/$id" });
-
 	const { state: mediaDeviceStoreState } = useMediaDeviceStore();
-	const { setupDeviceStreams, selectedVideoDevice, selectedAudioDevice } = useMediaDevice({ isAudioAvailable: true, isVideoAvailable: true, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
-
-	const videoDeviceId = selectedVideoDevice?.deviceId;
-	const audioDeviceId = selectedAudioDevice?.deviceId;
-
-	const { myStream, remoteStream } = useWebRTC(id, videoDeviceId, audioDeviceId, onExpiredCall, onExpiredCall);
-
+	const { setupCombinedDevice, combinedStream } = useMediaDevice({ isAudioAvailable: true, isVideoAvailable: true, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
+	const { myStream, remoteStream, setupPeerConnection } = useWebRTC(combinedStream, id, onExpiredCall, onExpiredCall);
 	const [isCreator, setIsCreator] = useState(false);
-
 	const [isRoomExpired, setIsRoomExpired] = useState(false);
-
 	const { mutate: checkIsCreator } = useCheckIsCreator({
 		onSuccess: (value) => {
 			setIsCreator(value);
@@ -48,9 +39,17 @@ function Room() {
 	useEffect(() => {
 		(async () => {
 			await checkIsCreator({ roomId: id });
-			await setupDeviceStreams();
+			await setupCombinedDevice();
 		})();
-	}, [id]);
+	}, []);
+
+	useEffect(() => {
+		(async () => {
+			if (combinedStream) {
+				await setupPeerConnection();
+			}
+		})();
+	}, [combinedStream]);
 
 	useEffect(() => {
 		const handleBeforeUnload = () => {};

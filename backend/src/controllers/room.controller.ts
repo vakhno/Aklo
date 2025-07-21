@@ -64,13 +64,6 @@ export async function joinRoom(req: Request, res: Response) {
 			return;
 		}
 
-		const { isAvailable } = room;
-
-		if (!isAvailable) {
-			res.status(409).json({ error: "Room is unavailable" });
-			return;
-		}
-
 		res.status(200).json({});
 	}
 	catch (error) {
@@ -143,6 +136,18 @@ export async function checkIsCreator(req: Request, res: Response) {
 		res.status(200).json({
 			isCreator,
 		});
+	}
+	catch (error) {
+		res.status(500).json({ error });
+	}
+}
+
+export async function getOwnRoomIds(req: Request, res: Response) {
+	try {
+		const cookies = getCookies({ req });
+		const ownRoomIds = Object.values(cookies);
+
+		res.status(200).json({ ids: ownRoomIds });
 	}
 	catch (error) {
 		res.status(500).json({ error });

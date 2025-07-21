@@ -68,8 +68,7 @@ type JoinRoomSchemaType = z.infer<typeof JoinRoomSchema>;
 const JoinRoomModal = ({ isOpen, setOpen, submitAction, isCameraAvailable, isMicAvailable }: CreateRoomModalProps) => {
 	const joinRoomFormId = useId();
 	const { addDevice, state: mediaDeviceStoreState } = useMediaDeviceStore();
-	const { videoDevices, audioDevices, videoStream, audioStream, selectedVideoDevice, selectedAudioDevice, setupVideoDevice, setupAudioDevice, setupDeviceStreams } = useMediaDevice({ isAudioAvailable: isMicAvailable, isVideoAvailable: isCameraAvailable, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
-
+	const { videoDevices, audioDevices, videoStream, audioStream, selectedVideoDevice, selectedAudioDevice, setupVideoDevice, setupAudioDevice } = useMediaDevice({ isAudioAvailable: isMicAvailable, isVideoAvailable: isCameraAvailable, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
 	const form = useForm<JoinRoomSchemaType>({
 		resolver: zodResolver(JoinRoomSchema),
 		defaultValues: {
@@ -93,7 +92,8 @@ const JoinRoomModal = ({ isOpen, setOpen, submitAction, isCameraAvailable, isMic
 
 	useEffect(() => {
 		(async () => {
-			await setupDeviceStreams();
+			await setupVideoDevice(mediaDeviceStoreState.video || "");
+			await setupAudioDevice(mediaDeviceStoreState.audio || "");
 		})();
 	}, []);
 

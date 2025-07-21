@@ -10,6 +10,7 @@ export const convertRedisHsetToCreatedRoom = (redisRoom: Record<keyof CreatedRoo
 		isCameraRequired: redisRoom.isCameraRequired === "true",
 		isMicRequired: redisRoom.isMicRequired === "true",
 		isAvailable: redisRoom.isAvailable === "true",
+		isCreatorActive: redisRoom.isCreatorActive === "true",
 		maxGuestCount: Number(redisRoom.maxGuestCount),
 		createdAt: Number(redisRoom.createdAt),
 	};

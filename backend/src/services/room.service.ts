@@ -14,6 +14,7 @@ export async function createRoom(roomData: NewRoomType): Promise<CreatedRoomType
 			creatorId: uuidv4(),
 			...roomData,
 			isAvailable: true,
+			isCreatorActive: true,
 			maxGuestCount: 1,
 			createdAt: new Date().getTime(),
 		};

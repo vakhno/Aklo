@@ -190,3 +190,37 @@ export const useCheckIsCreator = ({ onSuccess, onError }: useCheckIsCreatorProps
 		onError
 	});
 };
+
+const getIdListOfOwnRooms = async (): Promise<[string]> => {
+	const response = await fetch(`${import.meta.env.VITE_API_URL}/room/own-room-ids`, {
+		method: "GET",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		credentials: "include"
+	});
+
+	const { ok } = response;
+
+	if (!ok) {
+		throw new Error("Failed to load list of ids!");
+	}
+
+	const { ids } = await response.json();
+
+	return ids || [];
+};
+
+type useGetIdListOfOwnRoomsProps = {
+
+	onSuccess?: (ids: string[]) => void;
+	onError?: () => void;
+};
+
+export const useGetIdListOfOwnRooms = ({ onSuccess, onError }: useGetIdListOfOwnRoomsProps) => {
+	return useMutation({
+		mutationFn: getIdListOfOwnRooms,
+		onSuccess,
+		onError
+	});
+};
