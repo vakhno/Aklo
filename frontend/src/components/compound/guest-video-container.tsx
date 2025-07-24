@@ -11,9 +11,10 @@ interface VideoContainerProps {
 	stream: MediaStream | null;
 	isKickUserAvailable?: boolean;
 	isVolumeSliderAvailable?: boolean;
+	handleKickClick?: () => void;
 }
 
-const GuestVideoContainer = ({ className, stream, isKickUserAvailable, isVolumeSliderAvailable }: VideoContainerProps) => {
+const GuestVideoContainer = ({ className, stream, isKickUserAvailable, isVolumeSliderAvailable, handleKickClick }: VideoContainerProps) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [isMuted, setIsMuted] = useState(false);
 	const [volume, setVolume] = useState(0.5);
@@ -99,6 +100,7 @@ const GuestVideoContainer = ({ className, stream, isKickUserAvailable, isVolumeS
 								<Button
 									variant="destructive"
 									aria-label="Kick user"
+									onClick={handleKickClick}
 								>
 									<UserMinus className="w-10 h-10" />
 								</Button>

@@ -26,7 +26,7 @@ function Room() {
 	const { id } = useParams({ from: "/room/$id" });
 	const { state: mediaDeviceStoreState } = useMediaDeviceStore();
 	const { setupCombinedDevice, combinedStream } = useMediaDevice({ isAudioAvailable: true, isVideoAvailable: true, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
-	const { myStream, remoteStream, setupPeerConnection } = useWebRTC(combinedStream, id, onExpiredCall, onExpiredCall);
+	const { myStream, remoteStream, guestSocket, setupPeerConnection, cancelPeerConnection } = useWebRTC(combinedStream, id, onExpiredCall, onExpiredCall, onExpiredCall);
 	const [isCreator, setIsCreator] = useState(false);
 	const [isRoomExpired, setIsRoomExpired] = useState(false);
 	const { mutate: checkIsCreator } = useCheckIsCreator({
@@ -69,6 +69,10 @@ function Room() {
 		navigate({ to: "/" });
 	};
 
+	const handleKickClick = () => {
+		cancelPeerConnection(guestSocket);
+	};
+
 	return (
 		<>
 			<div className="w-full h-full">
@@ -88,7 +92,7 @@ function Room() {
 							<ResizableHandle className="mx-4" />
 							<ResizablePanel defaultSize={50} minSize={15}>
 								<div className="relative h-full w-full">
-									<GuestVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" stream={remoteStream} isKickUserAvailable={isCreator} isVolumeSliderAvailable />
+									<GuestVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" stream={remoteStream} isKickUserAvailable={isCreator} isVolumeSliderAvailable handleKickClick={handleKickClick} />
 								</div>
 							</ResizablePanel>
 						</ResizablePanelGroup>

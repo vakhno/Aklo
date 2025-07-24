@@ -74,6 +74,23 @@ export function registerSocketEvents(io: Server) {
 			socket.to(roomId).emit("signal", { sender: socket.id, data });
 		});
 
+		socket.on("handle-kicked", async ({ roomId, socketId }) => {
+			const room = await getRoom(roomId);
+			const cookies = getCookies({ socket });
+			const isCreator = !!cookies[roomId] && cookies[roomId] === room.creatorId;
+
+			if (!isCreator)
+				return;
+
+			const guestSocket = io.sockets.sockets.get(socketId);
+
+			if (guestSocket) {
+				guestSocket.emit("handle-kicked");
+				guestSocket.leave(roomId);
+				guestSocket.disconnect(true);
+			}
+		});
+
 		socket.on("disconnect", async () => {
 			const isRoomDeleted = socket.data.roomDeleted;
 
