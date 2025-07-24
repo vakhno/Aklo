@@ -5,13 +5,14 @@ import { io } from "socket.io-client";
 
 import { useGetRoom } from "@/queries/room";
 
-export function useWebRTC(stream: MediaStream | null, roomId: string, onRoomExpired?: () => void, onRoomDeleted?: () => void) {
+export function useWebRTC(stream: MediaStream | null, roomId: string, onRoomExpired?: () => void, onRoomDeleted?: () => void, onHandleKicked?: () => void) {
 	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 	const [myStream, setMyStream] = useState<MediaStream | null>(null);
 	const socketRef = useRef<Socket | null>(null);
 	const peerRef = useRef<RTCPeerConnection | null>(null);
 	const pendingCandidates = useRef<RTCIceCandidateInit[]>([]);
 	const { mutateAsync: getRoom } = useGetRoom({});
+	const [guestSocket, setGuestSocket] = useState("");
 
 	async function setupSocket() {
 		const socket = io(import.meta.env.VITE_SOCKET_URL, { transports: ["websocket"] });
@@ -41,9 +42,16 @@ export function useWebRTC(stream: MediaStream | null, roomId: string, onRoomExpi
 				peerRef.current?.close();
 			});
 
+			socket.on("handle-kicked", () => {
+				onHandleKicked && onHandleKicked();
+				peerRef.current?.close();
+			});
+
 			socket.on("leave", () => peerRef.current = null);
 
-			socket.on("signal", async ({ data }) => {
+			socket.on("signal", async ({ sender, data }) => {
+				setGuestSocket(sender);
+
 				if (!peerRef.current) {
 					peerRef.current = createPeer(socket, stream, roomId, false);
 				}
@@ -134,5 +142,11 @@ export function useWebRTC(stream: MediaStream | null, roomId: string, onRoomExpi
 		};
 	}, []);
 
-	return { myStream, remoteStream, setupPeerConnection };
+	const cancelPeerConnection = (socketId: string) => {
+		if (socketRef.current) {
+			socketRef.current.emit("handle-kicked", { roomId, socketId });
+		}
+	};
+
+	return { myStream, remoteStream, guestSocket, setupPeerConnection, cancelPeerConnection };
 }
