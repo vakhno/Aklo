@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { CategoriesType, LanguagesType } from "@/lib/types/list.type";
 
 const getUsedCategories = async (): Promise<CategoriesType> => {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}/list/used-categories`, {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/list/used-categories`, {
 		method: "GET"
 	});
 
@@ -17,7 +17,7 @@ const getUsedCategories = async (): Promise<CategoriesType> => {
 };
 
 const getUsedLanguages = async (): Promise<LanguagesType> => {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}/list/used-languages`, {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/list/used-languages`, {
 		method: "GET"
 	});
 

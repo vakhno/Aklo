@@ -20,7 +20,7 @@ interface AlertDialogProps {
 	isCancelVisible?: boolean;
 	cancelText?: string;
 	actionText: string;
-	onAction: () => void;
+	onAction?: () => void;
 	onCancel?: () => void;
 }
 
@@ -38,7 +38,9 @@ export function AlertDialogComponent({
 	onCancel
 }: AlertDialogProps) {
 	const handleAction = () => {
-		onAction();
+		if (onAction) {
+			onAction();
+		}
 		onOpenChange(false);
 	};
 

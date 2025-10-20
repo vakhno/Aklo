@@ -27,7 +27,7 @@ export async function getUsedCategories(): Promise<CategoriesType> {
 		const total = result[0];
 		const usedCategories = {} as CategoriesType;
 
-		if (total > 1) {
+		if (total >= 1) {
 			result.forEach((item) => {
 				if (Array.isArray(item)) {
 					const key = item[1] as CategoryKeyType;
@@ -70,7 +70,7 @@ export async function getUsedLanguages(): Promise<LanguagesType> {
 		const total = result[0];
 		const usedLanguages = {} as LanguagesType;
 
-		if (total > 1) {
+		if (total >= 1) {
 			result.forEach((item) => {
 				if (Array.isArray(item)) {
 					const key = item[1] as LanguageKeyType;

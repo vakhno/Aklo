@@ -19,10 +19,12 @@ const OwnerVideoContainer = ({ className, stream, roomId }: VideoContainerProps)
 	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(false);
 	const { mutate: deleteRoom } = useDeleteRoom({
-		onSuccess: () => {
-			navigate({ to: "/" });
-		},
-		onError: () => {}
+		options: {
+			onSuccess: () => {
+				navigate({ to: "/" });
+			},
+			onError: () => {}
+		}
 	});
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [isHovered, setIsHovered] = useState(false);
@@ -34,7 +36,7 @@ const OwnerVideoContainer = ({ className, stream, roomId }: VideoContainerProps)
 	}, [stream]);
 
 	const handleDeleteRoom = async () => {
-		await deleteRoom({ roomId });
+		await deleteRoom({ id: roomId });
 	};
 
 	const handleDeleteRoomClick = async () => {

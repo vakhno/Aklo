@@ -1,9 +1,13 @@
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, type UseMutationOptions, useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
-import type { NewRoomType, RoomType } from "@/lib/types/room";
+import type { NewRoomSchemaType, RoomType } from "@/lib/types/room";
 
-const getRoom = async ({ roomId }: { roomId: string }): Promise<RoomType> => {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`, {
+type getRoomProps = {
+	id: string;
+};
+
+const getRoom = async ({ id }: getRoomProps): Promise<RoomType> => {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/${id}`, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
@@ -16,27 +20,30 @@ const getRoom = async ({ roomId }: { roomId: string }): Promise<RoomType> => {
 		throw new Error("Failed to load room!");
 	}
 
-	const { room } = await response.json();
+	const room = await response.json();
 
 	return room;
 };
 
 type useGetRoomProps = {
-
-	onSuccess?: (room: RoomType) => void;
-	onError?: () => void;
+	id: string;
+	options?: UseQueryOptions<RoomType, Error>;
 };
 
-export const useGetRoom = ({ onSuccess, onError }: useGetRoomProps) => {
-	return useMutation({
-		mutationFn: getRoom,
-		onSuccess,
-		onError
+export const useGetRoom = ({ id, options }: useGetRoomProps) => {
+	return useQuery({
+		queryKey: ["room", id],
+		queryFn: () => getRoom({ id }),
+		...options
 	});
 };
 
-const createRoom = async ({ newRoomData }: { newRoomData: NewRoomType }) => {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}/room`, {
+type createRoomProps = {
+	newRoomData: NewRoomSchemaType;
+};
+
+const createRoom = async ({ newRoomData }: createRoomProps): Promise<RoomType> => {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json"
@@ -51,26 +58,28 @@ const createRoom = async ({ newRoomData }: { newRoomData: NewRoomType }) => {
 		throw new Error("Failed to create a room!");
 	}
 
-	const result = await response.json();
+	const room = await response.json();
 
-	return result;
+	return room;
 };
 
 type useCreateRoomProps = {
-	onSuccess?: (room: RoomType) => void;
-	onError?: () => void;
+	options?: UseMutationOptions<RoomType, Error, createRoomProps>;
 };
 
-export const useCreateRoom = ({ onSuccess, onError }: useCreateRoomProps) => {
+export const useCreateRoom = ({ options }: useCreateRoomProps) => {
 	return useMutation({
 		mutationFn: createRoom,
-		onSuccess,
-		onError
+		...options
 	});
 };
 
-const deleteRoom = async ({ roomId }: { roomId: string }) => {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}`, {
+type deleteRoomProps = {
+	id: string;
+};
+
+const deleteRoom = async ({ id }: deleteRoomProps): Promise<boolean> => {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/${id}`, {
 		method: "DELETE",
 		credentials: "include"
 	});
@@ -80,23 +89,23 @@ const deleteRoom = async ({ roomId }: { roomId: string }) => {
 	if (!ok) {
 		throw new Error("Failed to delete a room!");
 	}
+
+	return true;
 };
 
 type useDeleteRoomProps = {
-	onSuccess?: () => void;
-	onError?: () => void;
+	options?: UseMutationOptions<boolean, Error, deleteRoomProps>;
 };
 
-export const useDeleteRoom = ({ onSuccess, onError }: useDeleteRoomProps) => {
+export const useDeleteRoom = ({ options }: useDeleteRoomProps) => {
 	return useMutation({
 		mutationFn: deleteRoom,
-		onSuccess,
-		onError
+		...options
 	});
 };
 
 const getAllRooms = async ({ limit, page, language, category }: { limit: number; page: number; language?: string; category?: string }) => {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}/room?page=${page}&limit=${limit}${language ? `&language=${language}` : ""}${category ? `&category=${category}` : ""}`, {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room?page=${page}&limit=${limit}${language ? `&language=${language}` : ""}${category ? `&category=${category}` : ""}`, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
@@ -130,7 +139,7 @@ export const useGetRooms = ({ language, category, limit }: UseGetRoomsProps) => 
 };
 
 const joinRoom = async ({ roomId }: { roomId: string }): Promise<RoomType> => {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}/join`, {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/${roomId}/join`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json"
@@ -161,8 +170,12 @@ export const useJoinRoom = ({ onSuccess, onError }: useJoinRoomProps) => {
 	});
 };
 
-const checkIsCreator = async ({ roomId }: { roomId: string }): Promise<boolean> => {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}/room/${roomId}/is-creator`, {
+type checkIsCreatorProps = {
+	id: string;
+};
+
+const checkIsCreator = async ({ id }: checkIsCreatorProps): Promise<boolean> => {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/${id}/is-creator`, {
 		method: "GET",
 		credentials: "include"
 	});
@@ -179,20 +192,20 @@ const checkIsCreator = async ({ roomId }: { roomId: string }): Promise<boolean> 
 };
 
 type useCheckIsCreatorProps = {
-	onSuccess?: (isCreator: boolean) => void;
-	onError?: () => void;
+	id: string;
+	options?: UseQueryOptions<boolean, Error>;
 };
 
-export const useCheckIsCreator = ({ onSuccess, onError }: useCheckIsCreatorProps) => {
-	return useMutation({
-		mutationFn: checkIsCreator,
-		onSuccess,
-		onError
+export const useCheckIsCreator = ({ id, options }: useCheckIsCreatorProps) => {
+	return useQuery({
+		queryKey: ["is-creator", id],
+		queryFn: () => checkIsCreator({ id }),
+		...options
 	});
 };
 
 const getIdListOfOwnRooms = async (): Promise<[string]> => {
-	const response = await fetch(`${import.meta.env.VITE_API_URL}/room/own-room-ids`, {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/own-room-ids`, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
