@@ -55,6 +55,37 @@ const searchRoomIndexInit = async () => {
 	}
 };
 
+const searchRouletteIndexInit = async () => {
+	try {
+		await redisClient.sendCommand([
+			"FT.INFO",
+			"roulettes_idx",
+		]);
+	}
+	catch (error) {
+		console.warn(error);
+		await redisClient.sendCommand([
+			"FT.CREATE",
+			"roulettes_idx",
+			"ON",
+			"HASH",
+			"PREFIX",
+			"1",
+			"roulette:",
+			"SCHEMA",
+			"language",
+			"TAG",
+			"isCameraRequired",
+			"TAG",
+			"isMicRequired",
+			"TAG",
+			"currentUserCount",
+			"NUMERIC",
+			"SORTABLE",
+		]);
+	}
+};
+
 export const setupExpirationListener = async (io: Server) => {
 	await redisClient.configSet("notify-keyspace-events", "Ex");
 
@@ -78,6 +109,7 @@ export const setupExpirationListener = async (io: Server) => {
 export const connectRedis = async (io: Server) => {
 	await redisClient.connect();
 	await searchRoomIndexInit();
+	await searchRouletteIndexInit();
 	await setupExpirationListener(io);
 };
 

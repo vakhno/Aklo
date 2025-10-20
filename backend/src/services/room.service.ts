@@ -15,6 +15,7 @@ export async function createRoom(roomData: NewRoomType): Promise<CreatedRoomType
 			...roomData,
 			isAvailable: true,
 			isCreatorActive: true,
+			currentGuestCount: 0,
 			maxGuestCount: 1,
 			createdAt: new Date().getTime(),
 		};
@@ -22,6 +23,7 @@ export async function createRoom(roomData: NewRoomType): Promise<CreatedRoomType
 		const convertedRoom = convertObjToRedisHset(room);
 
 		await redisClient.hSet(`${ROOM_PREFIX}${convertedRoom.id}`, convertedRoom);
+
 		await redisClient.expire(`${ROOM_PREFIX}${convertedRoom.id}`, 7200);
 
 		return room;
@@ -99,7 +101,6 @@ export async function getAllRooms({ category, language, limit, page }: { categor
 export async function getRoom(roomId: string): Promise<CreatedRoomType> {
 	try {
 		const room = await redisClient.hGetAll(`${ROOM_PREFIX}${roomId}`) as Record<keyof CreatedRoomType, string>;
-
 		if (!room || Object.keys(room).length === 0) {
 			throw new Error("No room found");
 		}
@@ -161,97 +162,3 @@ export async function updateRoom(roomId: string, updates: Partial<CreatedRoomTyp
 		throw new Error("Update room error");
 	}
 }
-
-// export async function updateRoomGuestCount(roomId: string, increment: boolean): Promise<Room | null> {
-// 	try {
-// 		const room = await getRoom(roomId);
-
-// 		if (!room) {
-// 			throw new Error("Room is not exist!");
-// 		}
-
-// 		room.currentGuestCount += increment ? 1 : -1;
-
-// 		if (room.currentGuestCount <= 0) {
-// 			await deleteRoom(roomId);
-
-// 			return null;
-// 		}
-
-// 		const multi = redisClient.multi();
-
-// 		multi.hSet(ROOMS_KEY, roomId, JSON.stringify(room));
-// 		multi.set(`${ROOM_PREFIX}${roomId}`, JSON.stringify(room));
-
-// 		multi.exec();
-
-// 		return room;
-// 	}
-// 	catch (error) {
-// 		// eslint-disable-next-line no-console
-// 		console.log(error);
-
-// 		throw new Error("Delete room error!");
-// 	}
-// }
-
-// [
-// 	5,
-// 	"room:82889741-38d4-405c-99a5-f4f5fbd7b866",
-// 	[
-// 		"createdAt",
-// 		"1750875203631",
-// 		"id",
-// 		"82889741-38d4-405c-99a5-f4f5fbd7b866",
-// 		"title",
-// 		"#555555555555555",
-// 		"category",
-// 		"news",
-// 		"language",
-// 		"chinese",
-// 		"isCameraRequired",
-// 		"true",
-// 		"isMicRequired",
-// 		"true",
-// 		"isAvailable",
-// 		"true",
-// 	],
-// 	"room:7d819d18-9e5b-46a8-a6e3-9b7b0cb4ed47",
-// 	[
-// 		"createdAt",
-// 		"1750875154056",
-// 		"id",
-// 		"7d819d18-9e5b-46a8-a6e3-9b7b0cb4ed47",
-// 		"title",
-// 		"#44444444444444444",
-// 		"category",
-// 		"gaming",
-// 		"language",
-// 		"turkish",
-// 		"isCameraRequired",
-// 		"true",
-// 		"isMicRequired",
-// 		"true",
-// 		"isAvailable",
-// 		"true",
-// 	],
-// 	"room:a491d8b2-0974-4848-86d0-8ef334e323d7",
-// 	[
-// 		"createdAt",
-// 		"1750875136580",
-// 		"id",
-// 		"a491d8b2-0974-4848-86d0-8ef334e323d7",
-// 		"title",
-// 		"#333333333333333",
-// 		"category",
-// 		"tech",
-// 		"language",
-// 		"japanese",
-// 		"isCameraRequired",
-// 		"true",
-// 		"isMicRequired",
-// 		"true",
-// 		"isAvailable",
-// 		"true",
-// 	],
-// ];

@@ -11,7 +11,6 @@ export function initSocketIo(app: Express) {
 			origin: process.env.CORS_ORIGIN,
 			credentials: true,
 		},
-		// serveClient: false,
 	});
 
 	return { io, server };

@@ -23,7 +23,9 @@ const Video = ({ className, stream }: VideoProps) => {
 				muted
 				autoPlay
 				disablePictureInPicture={true}
-				className="w-full h-full max-w-full max-h-full rounded-lg border-2 border-gray-300 object-cover"
+				controls={false}
+				playsInline
+				className="w-full h-full max-w-full max-h-full rounded-lg border-2 border-gray-300 object-cover bg-black"
 			/>
 		</div>
 	);

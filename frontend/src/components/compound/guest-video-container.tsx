@@ -1,20 +1,27 @@
-import { UserMinus, Volume2, VolumeX } from "lucide-react";
+import { Loader, RefreshCw, UserMinus, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import type { RoomType } from "@/lib/types/room";
+
+import Audio from "@/components/ui/audio-visualizer";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import Video from "@/components/ui/video";
 import { cn } from "@/lib/utils/cn";
 
 interface VideoContainerProps {
+	room: RoomType;
 	className?: string;
+	isLoading?: boolean;
+	isRecovering?: boolean;
 	stream: MediaStream | null;
 	isKickUserAvailable?: boolean;
 	isVolumeSliderAvailable?: boolean;
 	handleKickClick?: () => void;
 }
 
-const GuestVideoContainer = ({ className, stream, isKickUserAvailable, isVolumeSliderAvailable, handleKickClick }: VideoContainerProps) => {
+const GuestVideoContainer = ({ room, className, isLoading, isRecovering, stream, isKickUserAvailable, isVolumeSliderAvailable, handleKickClick }: VideoContainerProps) => {
+	const { isCameraRequired } = room;
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [isMuted, setIsMuted] = useState(false);
 	const [volume, setVolume] = useState(0.5);
@@ -61,10 +68,21 @@ const GuestVideoContainer = ({ className, stream, isKickUserAvailable, isVolumeS
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
-			<Video
-				className="aspect-square"
-				stream={stream}
-			/>
+			{ isCameraRequired
+				? <Video stream={stream} className="aspect-square" />
+				: <Audio stream={stream} className="aspect-square" />}
+			{isLoading && (
+				<div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] z-10 bg-black/50 rounded-full p-2">
+					<Loader className="w-6 h-6 text-white animate-spin" />
+				</div>
+			)}
+
+			{isRecovering && (
+				<div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] z-10 bg-black/50 rounded-full p-2">
+					<RefreshCw className="w-6 h-6 text-white animate-spin" />
+				</div>
+			)}
+
 			{isHovered && (
 				<div className="absolute bottom-4 right-4 flex items-center gap-2">
 					{isVolumeSliderAvailable

@@ -2,7 +2,7 @@ import { useEffect, useId } from "react";
 
 import type { JoinRoomSchemaType } from "@/lib/types/room";
 
-import JoinRoomForm from "@/components/compound/join-room-form";
+import SettingsForm from "@/components/compound/settings-form";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -16,7 +16,7 @@ import {
 import { useMediaDevice } from "@/hooks/use-media-device";
 import useMediaDeviceStore from "@/store/media-device-store";
 
-interface CreateRoomModalProps {
+interface SettingsModalProps {
 	isOpen: boolean;
 	setOpen: (value: boolean) => void;
 	submitAction?: (data: JoinRoomSchemaType) => void;
@@ -24,7 +24,7 @@ interface CreateRoomModalProps {
 	isMicAvailable: boolean;
 }
 
-const JoinRoomModal = ({ isOpen, setOpen, submitAction, isCameraAvailable, isMicAvailable }: CreateRoomModalProps) => {
+const SettingsModal = ({ isOpen, setOpen, submitAction, isCameraAvailable, isMicAvailable }: SettingsModalProps) => {
 	const formId = useId();
 	const { addDevice, state: mediaDeviceStoreState } = useMediaDeviceStore();
 	const { videoDevices, audioDevices, videoStream, audioStream, selectedVideoDevice, selectedAudioDevice, setupCombinedDevice, setupVideoDevice, setupAudioDevice } = useMediaDevice({ isAudioAvailable: isMicAvailable, isVideoAvailable: isCameraAvailable, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
@@ -59,24 +59,24 @@ const JoinRoomModal = ({ isOpen, setOpen, submitAction, isCameraAvailable, isMic
 		<Dialog open={isOpen} onOpenChange={setOpen}>
 			<DialogContent className="max-w-sm">
 				<DialogHeader>
-					<DialogTitle>Join Room</DialogTitle>
+					<DialogTitle>Settings</DialogTitle>
 					<DialogDescription>
-						Select your camera and microphone to join the room.
+						Change your settings.
 					</DialogDescription>
 				</DialogHeader>
 
 				<div className="flex flex-col gap-4 py-4 h-full overflow-auto">
-					<JoinRoomForm formId={formId} onHandleFormChange={onHandleFormChange} onHandleSubmit={onHandleSubmit} isCameraAvailable={isCameraAvailable} isMicAvailable={isMicAvailable} audioDevices={audioDevices} videoDevices={videoDevices} videoStream={videoStream} audioStream={audioStream} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} />
+					<SettingsForm formId={formId} onHandleFormChange={onHandleFormChange} onHandleSubmit={onHandleSubmit} isCameraAvailable={isCameraAvailable} isMicAvailable={isMicAvailable} audioDevices={audioDevices} videoDevices={videoDevices} videoStream={videoStream} audioStream={audioStream} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} />
 				</div>
 				<DialogFooter>
 					<DialogClose asChild>
 						<Button variant="outline">Cancel</Button>
 					</DialogClose>
-					<Button type="submit" form={formId}>Join Room</Button>
+					<Button type="submit" form={formId}>Ok</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	);
 };
 
-export default JoinRoomModal;
+export default SettingsModal;

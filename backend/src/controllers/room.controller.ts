@@ -74,7 +74,6 @@ export async function joinRoom(req: Request, res: Response) {
 export async function getAllRooms(req: Request, res: Response) {
 	try {
 		const { category, language, limit, page } = parseGetAllRoomsQueries(req);
-
 		const { rooms, isHasMore } = await roomService.getAllRooms({
 			category,
 			language,

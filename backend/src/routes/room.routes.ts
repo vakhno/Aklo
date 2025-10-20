@@ -12,7 +12,5 @@ router.delete("/:id", roomController.deleteRoom);
 router.post("/:id/join", roomController.joinRoom);
 router.get("/:id/is-creator", roomController.checkIsCreator);
 router.delete("/:id", roomController.deleteRoom);
-// router.post("/:id/join", roomController.joinRoom);
-// router.post("/:id/leave", roomController.leaveRoom);
 
 export default router;

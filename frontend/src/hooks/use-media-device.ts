@@ -114,7 +114,6 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 			const constraints = {
 				audio: isAudioAvailable ? isMobileDevice ? true : deviceId && deviceId.length ? { deviceId: { exact: deviceId } } : true : false
 			};
-
 			const [userMediaError, stream] = await catchError({ promise: navigator.mediaDevices.getUserMedia(constraints) });
 
 			if (userMediaError) {
@@ -163,90 +162,88 @@ export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, 
 	};
 
 	const setupCombinedDevice = async () => {
-		if (isVideoAvailable && isAudioAvailable) {
-			cleanCombinedStream();
+		cleanCombinedStream();
 
-			const constraints = {
-				video: isVideoAvailable ? isMobileDevice ? { facingMode: "user" } : videoDeviceId && videoDeviceId.length ? { deviceId: { exact: videoDeviceId } } : true : false,
-				audio: isAudioAvailable ? isMobileDevice ? true : audioDeviceId && audioDeviceId.length ? { deviceId: { exact: audioDeviceId } } : true : false
-			};
+		const constraints = {
+			video: isVideoAvailable ? isMobileDevice ? { facingMode: "user" } : videoDeviceId && videoDeviceId.length ? { deviceId: { exact: videoDeviceId } } : true : false,
+			audio: isAudioAvailable ? isMobileDevice ? true : audioDeviceId && audioDeviceId.length ? { deviceId: { exact: audioDeviceId } } : true : false
+		};
 
-			const [userMediaError, stream] = await catchError({ promise: navigator.mediaDevices.getUserMedia(constraints) });
+		const [userMediaError, stream] = await catchError({ promise: navigator.mediaDevices.getUserMedia(constraints) });
 
-			if (userMediaError) {
-				setIsPermissionDenied(true);
-				throw userMediaError;
+		if (userMediaError) {
+			setIsPermissionDenied(true);
+			throw userMediaError;
+		}
+		else {
+			setIsPermissionDenied(false);
+
+			const videoTracks = stream.getVideoTracks();
+			const audioTracks = stream.getAudioTracks();
+
+			if (videoTracks.length > 0) {
+				const videoStream = new MediaStream(videoTracks);
+				setVideoStream(videoStream);
+			}
+
+			if (audioTracks.length > 0) {
+				const audioStream = new MediaStream(audioTracks);
+				setAudioStream(audioStream);
+			}
+
+			setCombinedStream(stream);
+
+			const [enumerateDevicesError, allDevices] = await catchError({ promise: navigator.mediaDevices.enumerateDevices() });
+
+			if (enumerateDevicesError) {
+				throw enumerateDevicesError;
 			}
 			else {
-				setIsPermissionDenied(false);
+				const allVideoDevices = allDevices.filter(device => device.kind === "videoinput");
+				const allAudioDevices = allDevices.filter(device => device.kind === "audioinput");
 
-				const videoTracks = stream.getVideoTracks();
-				const audioTracks = stream.getAudioTracks();
+				setVideoDevices(allVideoDevices);
+				setAudioDevices(allAudioDevices);
 
-				if (videoTracks.length > 0) {
-					const videoStream = new MediaStream(videoTracks);
-					setVideoStream(videoStream);
-				}
+				if (isMobileDevice) {
+					const activeAudioDevice = allAudioDevices.length > 0
+						? allAudioDevices[0]
+						: {
+								deviceId: "default",
+								groupId: "default",
+								kind: "audioinput" as MediaDeviceKind,
+								label: "Microphone"
+							} as MediaDeviceInfo;
 
-				if (audioTracks.length > 0) {
-					const audioStream = new MediaStream(audioTracks);
-					setAudioStream(audioStream);
-				}
+					setSelectedAudioDevice(activeAudioDevice);
 
-				setCombinedStream(stream);
-
-				const [enumerateDevicesError, allDevices] = await catchError({ promise: navigator.mediaDevices.enumerateDevices() });
-
-				if (enumerateDevicesError) {
-					throw enumerateDevicesError;
+					const activeVideoDevice = allVideoDevices.length > 0
+						? allVideoDevices[0]
+						: {
+								deviceId: "default",
+								groupId: "default",
+								kind: "videoinput" as MediaDeviceKind,
+								label: "Camera"
+							} as MediaDeviceInfo;
+					setSelectedVideoDevice(activeVideoDevice);
 				}
 				else {
-					const allVideoDevices = allDevices.filter(device => device.kind === "videoinput");
-					const allAudioDevices = allDevices.filter(device => device.kind === "audioinput");
+					const selectedAudioDevice = allAudioDevices.find(device => device.deviceId === audioDeviceId);
 
-					setVideoDevices(allVideoDevices);
-					setAudioDevices(allAudioDevices);
-
-					if (isMobileDevice) {
-						const activeAudioDevice = allAudioDevices.length > 0
-							? allAudioDevices[0]
-							: {
-									deviceId: "default",
-									groupId: "default",
-									kind: "audioinput" as MediaDeviceKind,
-									label: "Microphone"
-								} as MediaDeviceInfo;
-
-						setSelectedAudioDevice(activeAudioDevice);
-
-						const activeVideoDevice = allVideoDevices.length > 0
-							? allVideoDevices[0]
-							: {
-									deviceId: "default",
-									groupId: "default",
-									kind: "videoinput" as MediaDeviceKind,
-									label: "Camera"
-								} as MediaDeviceInfo;
-						setSelectedVideoDevice(activeVideoDevice);
+					if (selectedAudioDevice) {
+						setSelectedAudioDevice(selectedAudioDevice);
 					}
 					else {
-						const selectedAudioDevice = allAudioDevices.find(device => device.deviceId === audioDeviceId);
+						setSelectedAudioDevice(allAudioDevices[0]);
+					}
 
-						if (selectedAudioDevice) {
-							setSelectedAudioDevice(selectedAudioDevice);
-						}
-						else {
-							setSelectedAudioDevice(allAudioDevices[0]);
-						}
+					const selectedVideoDevice = allVideoDevices.find(device => device.deviceId === videoDeviceId);
 
-						const selectedVideoDevice = allVideoDevices.find(device => device.deviceId === videoDeviceId);
-
-						if (selectedVideoDevice) {
-							setSelectedVideoDevice(selectedVideoDevice);
-						}
-						else {
-							setSelectedVideoDevice(allVideoDevices[0]);
-						}
+					if (selectedVideoDevice) {
+						setSelectedVideoDevice(selectedVideoDevice);
+					}
+					else {
+						setSelectedVideoDevice(allVideoDevices[0]);
 					}
 				}
 			}

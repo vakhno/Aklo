@@ -12,6 +12,7 @@ export interface CreatedRoomType {
 	isMicRequired: boolean;
 	isAvailable: boolean;
 	isCreatorActive: boolean;
+	currentGuestCount: number;
 	maxGuestCount: number;
 	createdAt: number;
 }
