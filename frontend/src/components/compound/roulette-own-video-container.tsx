@@ -1,11 +1,15 @@
 import { Settings } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
+import type { JoinRoomSchemaType } from "@/lib/types/room";
+
+import DialogModal from "@/components/compound/dialog-modal";
+import SettingsForm from "@/components/compound/settings-form";
 import { Button } from "@/components/ui/button";
 import Video from "@/components/ui/video";
+import { useMediaDevice } from "@/hooks/use-media-device";
 import { cn } from "@/lib/utils/cn";
-
-import SettingsModal from "./settings-modal";
+import useMediaDeviceStore from "@/store/media-device-store";
 
 interface VideoContainerProps {
 	className?: string;
@@ -20,12 +24,17 @@ interface VideoContainerProps {
 	setupVideoDevice?: (value?: string) => Promise<void>;
 	setupAudioDevice?: (value?: string) => Promise<void>;
 	onHandleStopClick: () => void;
+	handleSettingsSubmit?: (value: JoinRoomSchemaType) => void;
 }
 
-const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudioAvailable = false, isStreamValid, stream }: VideoContainerProps) => {
+const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudioAvailable = false, isStreamValid, stream, handleSettingsSubmit }: VideoContainerProps) => {
+	const formId = useId();
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [isHovered, setIsHovered] = useState(false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
+
+	const { addDevice, state: mediaDeviceStoreState } = useMediaDeviceStore();
+	const { videoDevices, audioDevices, videoStream, audioStream, selectedVideoDevice, selectedAudioDevice, setupCombinedDevice, setupVideoDevice, setupAudioDevice } = useMediaDevice({ isAudioAvailable, isVideoAvailable, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
 
 	useEffect(() => {
 		if (videoRef.current) {
@@ -36,6 +45,30 @@ const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudi
 	const handleOpenJoinRoomModal = () => {
 		setSettingsModalOpen(true);
 	};
+
+	const onHandleSubmit = (data: JoinRoomSchemaType) => {
+		handleSettingsSubmit && handleSettingsSubmit(data);
+	};
+
+	const onHandleFormChange = async (data: JoinRoomSchemaType) => {
+		const { videoDeviceId, audioDeviceId } = data;
+
+		if (videoDeviceId !== selectedVideoDevice?.deviceId) {
+			await setupVideoDevice(videoDeviceId);
+			addDevice({ type: "video", value: videoDeviceId });
+		}
+
+		if (audioDeviceId !== selectedAudioDevice?.deviceId) {
+			await setupAudioDevice(audioDeviceId);
+			addDevice({ type: "audio", value: audioDeviceId });
+		}
+	};
+
+	useEffect(() => {
+		(async () => {
+			await setupCombinedDevice();
+		})();
+	}, []);
 
 	return (
 		<>
@@ -61,8 +94,9 @@ const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudi
 				</div>
 				{isHovered}
 			</div>
-			{ isSettingsModalOpen
-				&& <SettingsModal isCameraAvailable={isVideoAvailable} isMicAvailable={isAudioAvailable} isOpen={isSettingsModalOpen} setOpen={setSettingsModalOpen} />}
+			<DialogModal isOpen={isSettingsModalOpen} setOpen={setSettingsModalOpen} title="Settings" description="Change your settings." submitTitle="Submit" cancelTitle="Cancel" isCancelVisible formId={formId}>
+				<SettingsForm formId={formId} onHandleFormChange={onHandleFormChange} onHandleSubmit={onHandleSubmit} isCameraAvailable={isVideoAvailable} isMicAvailable={isAudioAvailable} audioDevices={audioDevices} videoDevices={videoDevices} videoStream={videoStream} audioStream={audioStream} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} />
+			</DialogModal>
 		</>
 	);
 };

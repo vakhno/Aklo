@@ -21,22 +21,28 @@ export function registerRoomSocketEvents(io: Server) {
 			socket.emit("self-room-join-success");
 		});
 
-		socket.on("opponents-room-send-offer", ({ offer }) => {
+		socket.on("opponents-room-send-offer", ({ offer }: { offer: RTCSessionDescription }) => {
 			const { roomId } = socket.data;
 
 			socket.to(roomId).emit("opponents-room-receive-offer", { offer });
 		});
 
-		socket.on("opponents-room-send-answer", ({ answer }) => {
+		socket.on("opponents-room-send-answer", ({ answer }: { answer: RTCSessionDescriptionInit }) => {
 			const { roomId } = socket.data;
 
 			socket.to(roomId).emit("opponents-room-receive-answer", { answer });
 		});
 
-		socket.on("opponents-room-send-ice-candidate", ({ candidate }) => {
+		socket.on("opponents-room-send-ice-candidate", ({ candidate }: { candidate: RTCIceCandidate }) => {
 			const { roomId } = socket.data;
 
 			socket.to(roomId).emit("opponents-room-receive-ice-candidate", { candidate });
+		});
+
+		socket.on("self-kick-all", () => {
+			const { roomId } = socket.data;
+
+			socket.to(roomId).emit("opponents-room-user-kick");
 		});
 
 		socket.on("disconnect", () => {

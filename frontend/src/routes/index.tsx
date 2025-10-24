@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 import type { FilterRoomSchemaType, NewRoomSchemaType } from "@/lib/types/room";
 
-import CreateRoomModal from "@/components/compound/create-room-modal";
+import CreateRoomForm from "@/components/compound/create-room-form";
+import DialogModal from "@/components/compound/dialog-modal";
 import RoomCardList from "@/components/compound/room-card-list";
 import RoomFilters from "@/components/compound/room-filters";
 import RouletteCardList from "@/components/compound/roulette-card-list";
@@ -39,6 +40,7 @@ function Home() {
 	const { isPending: isPendingRooms, fetchNextPage, refetch, data: fetchedRooms, hasNextPage, isFetchingNextPage } = useGetRooms({ limit: ROOMS_LIMIT, language: filters.language, category: filters.category });
 	const rooms = fetchedRooms?.pages.flatMap(page => page?.rooms || []) || [];
 	const [ownIds, setOwnIds] = useState<string[]>([]);
+	const createRoomFormId = useId();
 
 	const handleOpenCreateRoomModalClick = () => {
 		setCreateRoomModalOpen(true);
@@ -87,7 +89,9 @@ function Home() {
 					<RoomCardList isFetchingNextPage={isFetchingNextPage} hasNextPage={hasNextPage} handleNewPageUpload={handleNewPageUpload} isPending={isPendingRooms} rooms={rooms} ROOMS_LIMIT={ROOMS_LIMIT} ownIds={ownIds} />
 				</CardContent>
 			</Card>
-			<CreateRoomModal isOpen={isCreateRoomModalOpen} setOpen={setCreateRoomModalOpen} submitAction={handleCreateRoomSubmit} />
+			<DialogModal isOpen={isCreateRoomModalOpen} setOpen={setCreateRoomModalOpen} title="Create New Room" description="Fill out the form to create your new conversation room." submitTitle="Submit" cancelTitle="Cancel" isCancelVisible formId={createRoomFormId}>
+				<CreateRoomForm formId={createRoomFormId} onHandleSubmit={handleCreateRoomSubmit} />
+			</DialogModal>
 		</>
 	);
 }

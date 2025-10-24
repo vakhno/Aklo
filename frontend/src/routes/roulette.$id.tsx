@@ -1,6 +1,8 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useEffect } from "react";
 
+import type { JoinRoomSchemaType } from "@/lib/types/room";
+
 import RouletteGuestVideoContainer from "@/components/compound/roulette-guest-video-container";
 import RouletteOwnVideoContainer from "@/components/compound/roulette-own-video-container";
 import RuleWarningMessage from "@/components/compound/rule-warning-message";
@@ -51,6 +53,14 @@ function Roulette() {
 		stopSearch();
 	};
 
+	const handleSettingsSubmit = async (data: JoinRoomSchemaType) => {
+		const { audioDeviceId, videoDeviceId } = data;
+
+		if (selectedAudioDevice?.deviceId !== audioDeviceId || selectedVideoDevice?.deviceId !== videoDeviceId) {
+			await setupCombinedDevice();
+		}
+	};
+
 	return (
 		<div className="w-full h-full">
 			<ResizablePanelGroup
@@ -61,7 +71,7 @@ function Roulette() {
 					<ResizablePanelGroup direction="horizontal" className="h-full">
 						<ResizablePanel defaultSize={50} minSize={15}>
 							<div className="relative h-full w-full">
-								<RouletteOwnVideoContainer isStreamValid={!isPermissionDenied} className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" isVideoAvailable={true} isAudioAvailable={true} stream={myStream} audioDevices={audioDevices} videoDevices={videoDevices} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} setupVideoDevice={setupVideoDevice} setupAudioDevice={setupAudioDevice} onHandleStopClick={handleStopClick} />
+								<RouletteOwnVideoContainer isStreamValid={!isPermissionDenied} className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" isVideoAvailable={true} isAudioAvailable={true} stream={myStream} audioDevices={audioDevices} videoDevices={videoDevices} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} setupVideoDevice={setupVideoDevice} setupAudioDevice={setupAudioDevice} onHandleStopClick={handleStopClick} handleSettingsSubmit={handleSettingsSubmit} />
 							</div>
 						</ResizablePanel>
 						<ResizableHandle className="mx-4" />

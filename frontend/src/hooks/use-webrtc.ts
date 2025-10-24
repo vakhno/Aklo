@@ -12,8 +12,10 @@ interface UseRoomConnectionReturn {
 	remoteStream: MediaStream | null;
 	remoteAudioRef: React.RefObject<HTMLAudioElement | null>;
 	isExpired: boolean;
+	isKicked: boolean;
 	isHasGuest: boolean;
 	socketRef: React.RefObject<Socket | null>;
+	handleKickAll: () => void;
 	disconnectPeer: () => void;
 }
 
@@ -23,6 +25,7 @@ export const useWebRTC = ({
 }: UseRoomConnectionProps): UseRoomConnectionReturn => {
 	const [isHasGuest, setHasGuest] = useState(false);
 	const [isExpired, setExpired] = useState(false);
+	const [isKicked, setKicked] = useState(false);
 	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
 	const socketRef = useRef<Socket | null>(null);
@@ -68,7 +71,7 @@ export const useWebRTC = ({
 			peer.createOffer()
 				.then(offer => peer.setLocalDescription(offer))
 				.then(() => {
-					if (socketRef.current) {
+					if (peer.localDescription && socketRef.current) {
 						socketRef.current.emit("opponents-room-send-offer", {
 							offer: peer.localDescription
 						});
@@ -89,6 +92,16 @@ export const useWebRTC = ({
 		setHasGuest(false);
 	};
 
+	const handleKickAll = () => {
+		if (socketRef.current) {
+			const socket = socketRef.current;
+
+			socket.emit("self-kick-all");
+
+			disconnectPeer();
+		}
+	};
+
 	useEffect(() => {
 		if (!localStream) {
 			return;
@@ -103,7 +116,8 @@ export const useWebRTC = ({
 
 		socket.on("room-expired", () => {
 			setExpired(true);
-			peerRef.current?.close();
+
+			disconnectPeer();
 		});
 
 		socket.on("self-room-join-failed", () => {
@@ -117,15 +131,17 @@ export const useWebRTC = ({
 		socket.on("opponents-room-new-join", () => {
 		});
 
-		socket.on("opponents-room-receive-offer", async ({ offer }) => {
+		socket.on("opponents-room-receive-offer", async ({ offer }: { offer: RTCSessionDescription }) => {
 			const peer = createPeer(localStream, false);
-			await peer.setRemoteDescription(new RTCSessionDescription(offer));
-			const answer = await peer.createAnswer();
-			await peer.setLocalDescription(answer);
-			socket.emit("opponents-room-send-answer", { answer });
+			if (offer) {
+				await peer.setRemoteDescription(new RTCSessionDescription(offer));
+				const answer = await peer.createAnswer();
+				await peer.setLocalDescription(answer);
+				socket.emit("opponents-room-send-answer", { answer });
+			}
 		});
 
-		socket.on("opponents-room-receive-answer", async ({ answer }) => {
+		socket.on("opponents-room-receive-answer", async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
 			if (peerRef.current && peerRef.current.signalingState !== "stable") {
 				await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
 			}
@@ -137,6 +153,11 @@ export const useWebRTC = ({
 
 				setHasGuest(true);
 			}
+		});
+
+		socket.on("opponents-room-user-kick", () => {
+			setKicked(true);
+			disconnectPeer();
 		});
 
 		socket.on("opponents-room-user-disconnect", () => {
@@ -156,7 +177,9 @@ export const useWebRTC = ({
 		remoteAudioRef,
 		isHasGuest,
 		isExpired,
+		isKicked,
 		socketRef,
+		handleKickAll,
 		disconnectPeer
 	};
 };

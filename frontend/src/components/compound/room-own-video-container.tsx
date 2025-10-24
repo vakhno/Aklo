@@ -1,15 +1,17 @@
 import { LogOut, Settings, Trash } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import type { JoinRoomSchemaType, RoomType } from "@/lib/types/room";
 
+import AlertDialogModal from "@/components/compound/alert-dialog-modal";
+import DialogModal from "@/components/compound/dialog-modal";
+import SettingsForm from "@/components/compound/settings-form";
 import Audio from "@/components/ui/audio-visualizer";
 import { Button } from "@/components/ui/button";
 import Video from "@/components/ui/video";
+import { useMediaDevice } from "@/hooks/use-media-device";
 import { cn } from "@/lib/utils/cn";
-
-import { AlertDialogComponent } from "./alert-dialog";
-import SettingsModal from "./settings-modal";
+import useMediaDeviceStore from "@/store/media-device-store";
 
 interface VideoContainerProps {
 	room: RoomType;
@@ -21,7 +23,10 @@ interface VideoContainerProps {
 }
 
 const OwnerVideoContainer = ({ room, className, stream, isCreator, handleDelete, handleSettingsSubmit }: VideoContainerProps) => {
+	const formId = useId();
 	const { isCameraRequired, isMicRequired } = room;
+	const { addDevice, state: mediaDeviceStoreState } = useMediaDeviceStore();
+	const { videoDevices, audioDevices, videoStream, audioStream, selectedVideoDevice, selectedAudioDevice, setupCombinedDevice, setupVideoDevice, setupAudioDevice } = useMediaDevice({ isAudioAvailable: isMicRequired, isVideoAvailable: isCameraRequired, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
 	const [isOpen, setIsOpen] = useState(false);
 	const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
 
@@ -46,9 +51,29 @@ const OwnerVideoContainer = ({ room, className, stream, isCreator, handleDelete,
 		setSettingsModalOpen(true);
 	};
 
-	const submitSettings = (data: JoinRoomSchemaType) => {
+	const onHandleSubmit = (data: JoinRoomSchemaType) => {
 		handleSettingsSubmit && handleSettingsSubmit(data);
 	};
+
+	const onHandleFormChange = async (data: JoinRoomSchemaType) => {
+		const { videoDeviceId, audioDeviceId } = data;
+
+		if (videoDeviceId !== selectedVideoDevice?.deviceId) {
+			await setupVideoDevice(videoDeviceId);
+			addDevice({ type: "video", value: videoDeviceId });
+		}
+
+		if (audioDeviceId !== selectedAudioDevice?.deviceId) {
+			await setupAudioDevice(audioDeviceId);
+			addDevice({ type: "audio", value: audioDeviceId });
+		}
+	};
+
+	useEffect(() => {
+		(async () => {
+			await setupCombinedDevice();
+		})();
+	}, []);
 
 	return (
 		<>
@@ -88,16 +113,20 @@ const OwnerVideoContainer = ({ room, className, stream, isCreator, handleDelete,
 					</div>
 				)}
 			</div>
-			{ isSettingsModalOpen
-				&& <SettingsModal isCameraAvailable={isCameraRequired} isMicAvailable={isMicRequired} isOpen={isSettingsModalOpen} setOpen={setSettingsModalOpen} submitAction={submitSettings} />}
-			<AlertDialogComponent
+
+			<DialogModal isOpen={isSettingsModalOpen} setOpen={setSettingsModalOpen} title="Settings" description="Change your settings." submitTitle="Submit" cancelTitle="Cancel" isCancelVisible formId={formId}>
+				<SettingsForm formId={formId} onHandleFormChange={onHandleFormChange} onHandleSubmit={onHandleSubmit} isCameraAvailable={isCameraRequired} isMicAvailable={isMicRequired} audioDevices={audioDevices} videoDevices={videoDevices} videoStream={videoStream} audioStream={audioStream} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} />
+			</DialogModal>
+
+			<AlertDialogModal
 				isOpen={isOpen}
-				onOpenChange={setIsOpen}
+				setOpen={setIsOpen}
 				title="Delete Room"
 				description="Are you sure you want to delete this room? This action cannot be undone and all participants will be disconnected."
-				actionText="Delete Room"
+				submitTitle="Delete Room"
+				cancelTitle="Cancel"
 				isCancelVisible
-				onAction={handleDeleteRoom}
+				onSubmit={handleDeleteRoom}
 			/>
 		</>
 	);
