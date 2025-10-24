@@ -8,6 +8,9 @@ export const convertObjToRedisHset = <T extends object>(obj: T): { [K in keyof T
 		else if (typeof (obj[field]) === "boolean") {
 			convertedObj[field] = String(obj[field]);
 		}
+		else if (Array.isArray(obj[field])) {
+			convertedObj[field] = JSON.stringify(obj[field]);
+		}
 		else {
 			convertedObj[field] = String(obj[field]);
 		}

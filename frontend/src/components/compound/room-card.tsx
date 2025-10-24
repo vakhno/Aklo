@@ -1,6 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
 import { Globe, Hash, Mic, Video } from "lucide-react";
-import { useState } from "react";
 
 import type { RoomType } from "@/lib/types/room";
 
@@ -10,43 +8,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CATEGORY_LIST } from "@/lib/constants/category-list";
 import { LANGUAGE_LIST } from "@/lib/constants/language-list";
 import { cn } from "@/lib/utils/cn";
-import { useJoinRoom } from "@/queries/room";
-
-import JoinRoomModal from "./join-room-modal";
 
 interface RoomCardTypes {
 	room: RoomType;
-	isOwner?: boolean;
+	isOwn?: boolean;
+	handleRoomSelect: (room: RoomType) => void;
 }
 
-const RoomCard = ({ room, isOwner }: RoomCardTypes) => {
-	const navigate = useNavigate();
+const RoomCard = ({ room, handleRoomSelect }: RoomCardTypes) => {
+	const { title, category, language, isAvailable, isCameraRequired, isMicRequired } = room;
+	const categoryLabel = CATEGORY_LIST[category]?.label;
+	const languageLabel = LANGUAGE_LIST[language]?.label;
 
-	const [isJoinRoomModalOpen, setJoinRoomModalOpen] = useState(false);
-
-	const roomId = room.id;
-	const roomTitle = room.title;
-	const roomCategory = CATEGORY_LIST[room.category]?.label;
-	const roomLanguage = LANGUAGE_LIST[room.language]?.label;
-	const isRoomAvailable = room.isAvailable;
-	const isCreatorActive = room.isCreatorActive;
-	const isRoomCameraRequired = room.isCameraRequired || false;
-	const isRoomMicRequired = room.isMicRequired || false;
-	const isDisabled = isOwner ? isCreatorActive : !isRoomAvailable;
-
-	const { mutate: joinRoom } = useJoinRoom({
-		onSuccess: () => {
-			navigate({ to: "/room/$id", params: { id: roomId } });
-		},
-		onError: () => {}
-	});
-
-	const handleOpenJoinRoomModal = () => {
-		setJoinRoomModalOpen(true);
-	};
-
-	const handleSubmitAction = () => {
-		joinRoom({ roomId });
+	const handleOpenClick = () => {
+		handleRoomSelect(room);
 	};
 
 	return (
@@ -56,33 +31,30 @@ const RoomCard = ({ room, isOwner }: RoomCardTypes) => {
 					<div className="flex justify-between items-start mb-3">
 						<Badge className="border-2 border-black font-black">
 							<Hash className="mr-1 h-3 w-3" />
-							{roomCategory}
+							{categoryLabel}
 						</Badge>
 						<div className="flex items-center text-sm text-gray-600">
 							<Globe className="mr-1 h-4 w-4" />
-							{roomLanguage}
+							{languageLabel}
 						</div>
 					</div>
 
 					<h3 className="text-xl font-black text-black mb-3 line-clamp-2 truncate">
-						{roomTitle}
+						{title}
 					</h3>
 
 					<div className="flex items-center justify-between">
 						<div className="flex items-center space-x-4">
 							<div className="flex space-x-1">
-								<Video className={cn("h-4 w-4", { "text-green-600": isRoomCameraRequired, "text-red-600": !isRoomCameraRequired })} />
-								<Mic className={cn("h-4 w-4", { "text-green-600": isRoomMicRequired, "text-red-600": !isRoomMicRequired })} />
+								<Video className={cn("h-4 w-4", { "text-green-600": isCameraRequired, "text-red-600": !isCameraRequired })} />
+								<Mic className={cn("h-4 w-4", { "text-green-600": isMicRequired, "text-red-600": !isMicRequired })} />
 							</div>
 						</div>
 
-						<Button onClick={handleOpenJoinRoomModal} disabled={isDisabled}>SELECT</Button>
+						<Button onClick={handleOpenClick} disabled={!isAvailable}>SELECT</Button>
 					</div>
 				</CardContent>
 			</Card>
-
-			{ isJoinRoomModalOpen
-				&& <JoinRoomModal isCameraAvailable={isRoomCameraRequired} isMicAvailable={isRoomMicRequired} isOpen={isJoinRoomModalOpen} setOpen={setJoinRoomModalOpen} submitAction={handleSubmitAction} />}
 		</>
 	);
 };

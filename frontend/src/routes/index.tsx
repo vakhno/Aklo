@@ -1,20 +1,16 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useId, useState } from "react";
 
-import type { FilterRoomType, NewRoomType } from "@/lib/types/room";
+import type { FilterRoomSchemaType, NewRoomSchemaType } from "@/lib/types/room";
 
-import CreateRoomModal from "@/components/compound/create-room-modal";
-import RoomCard from "@/components/compound/room-card";
+import CreateRoomForm from "@/components/compound/create-room-form";
+import DialogModal from "@/components/compound/dialog-modal";
+import RoomCardList from "@/components/compound/room-card-list";
+import RoomFilters from "@/components/compound/room-filters";
+import RouletteCardList from "@/components/compound/roulette-card-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Combobox } from "@/components/ui/combobox";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ROOMS_LIMIT } from "@/lib/constants/room";
-import { convertListToComboboxValues } from "@/lib/utils/convert-list-to-combobox-values";
-import { FilterRoomSchema } from "@/lib/zod-schemas/filter-room.schema";
 import { useUsedCategories, useUsedLanguages } from "@/queries/list";
 import { useCreateRoom, useGetIdListOfOwnRooms, useGetRooms } from "@/queries/room";
 
@@ -24,39 +20,33 @@ export const Route = createFileRoute("/")({
 
 function Home() {
 	const navigate = useNavigate();
-
 	const { mutateAsync: getOwnIds } = useGetIdListOfOwnRooms({});
-
 	const { mutate: handleCreateRoom } = useCreateRoom({
-		onSuccess: (room) => {
-			const { id } = room;
+		options: {
+			onSuccess: (room) => {
+				const { id } = room;
 
-			navigate({ to: "/room/$id", params: { id } });
-		},
-		onError: () => {}
+				navigate({ to: "/room/$id", params: { id } });
+			}
+		}
 	});
 	const [isCreateRoomModalOpen, setCreateRoomModalOpen] = useState(false);
-	const filterForm = useForm<FilterRoomType>({
-		resolver: zodResolver(FilterRoomSchema),
-		defaultValues: {
-			language: "",
-			category: ""
-		}
+	const [filters, setFilters] = useState<FilterRoomSchemaType>({
+		language: "",
+		category: ""
 	});
 	const { data: usedCategories, isLoading: isUsedCategoriesLoading } = useUsedCategories();
 	const { data: usedLanguages, isLoading: isUsedLanguagesLoading } = useUsedLanguages();
-
-	const { control, formState: { isDirty }, reset, getValues } = filterForm;
-	const { isPending, fetchNextPage, refetch, data: fetchedRooms, hasNextPage, isFetchingNextPage } = useGetRooms({ limit: ROOMS_LIMIT, language: getValues("language"), category: getValues("category") });
+	const { isPending: isPendingRooms, fetchNextPage, refetch, data: fetchedRooms, hasNextPage, isFetchingNextPage } = useGetRooms({ limit: ROOMS_LIMIT, language: filters.language, category: filters.category });
 	const rooms = fetchedRooms?.pages.flatMap(page => page?.rooms || []) || [];
-	const filterFormValues = getValues();
 	const [ownIds, setOwnIds] = useState<string[]>([]);
+	const createRoomFormId = useId();
 
 	const handleOpenCreateRoomModalClick = () => {
 		setCreateRoomModalOpen(true);
 	};
 
-	const handleCreateRoomSubmit = async (room: NewRoomType) => {
+	const handleCreateRoomSubmit = async (room: NewRoomSchemaType) => {
 		await handleCreateRoom({ newRoomData: room });
 	};
 
@@ -64,12 +54,10 @@ function Home() {
 		fetchNextPage();
 	};
 
-	useEffect(() => {
-		if (isDirty) {
-			refetch();
-			reset(filterFormValues);
-		}
-	}, [isDirty]);
+	const onHandleChange = (data: FilterRoomSchemaType) => {
+		setFilters(data);
+		refetch();
+	};
 
 	useEffect(() => {
 		(async () => {
@@ -81,99 +69,29 @@ function Home() {
 
 	return (
 		<>
-			<Card variant="secondary" className="mb-4">
+			<Card variant="ghost" className="bg-white h-1/2 min-h-[300px]">
 				<CardHeader className="flex justify-between items-center">
-					<CardTitle className="text-2xl font-black text-black">FILTERS</CardTitle>
+					<CardTitle className="text-2xl font-black text-black">CHAT ROULETTES</CardTitle>
 				</CardHeader>
-				<CardContent>
-					<Form {...filterForm}>
-						<form className="flex-col flex gap-4 md:flex-row">
-							<FormField
-								control={control}
-								name="category"
-								render={({ field }) => (
-									<FormItem className="flex-1">
-										<FormControl>
-											<Combobox disabled={isUsedCategoriesLoading} values={[{ value: "", label: "All categories" }, ...convertListToComboboxValues(usedCategories)]} placeholder="Select category" label="Select category..." emptyText="No categories..." value={field.value} onChange={field.onChange} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={control}
-								name="language"
-								render={({ field }) => (
-									<FormItem className="flex-1">
-										<FormControl>
-											<Combobox disabled={isUsedLanguagesLoading} values={[{ value: "", label: "All languages" }, ...convertListToComboboxValues(usedLanguages)]} placeholder="Select language" label="Select language..." emptyText="No languages..." value={field.value} onChange={field.onChange} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</form>
-					</Form>
+				<CardContent className="overflow-auto">
+					<RouletteCardList ROULETTE_LIMIT={ROOMS_LIMIT} />
 				</CardContent>
 			</Card>
-			<Card variant="ghost" className=" bg-white">
-				<CardHeader className="flex justify-between items-center">
-					<CardTitle className="text-2xl font-black text-black">AVAILABLE ROOMS</CardTitle>
-					<Button onClick={handleOpenCreateRoomModalClick}>
-						CREATE
-					</Button>
+			<Card variant="ghost" className=" bg-white h-1/2 min-h-[500px]">
+				<CardHeader className="flex flex-col w-full">
+					<div className="w-full flex justify-between items-center">
+						<CardTitle className="text-2xl font-black text-black">AVAILABLE ROOMS</CardTitle>
+						<Button onClick={handleOpenCreateRoomModalClick}>CREATE</Button>
+					</div>
+					<RoomFilters className="w-full" categoriesList={usedCategories} isCategoriesDisabled={isUsedCategoriesLoading} languagesList={usedLanguages} isLanguagesDisabled={isUsedLanguagesLoading} onHandleChange={onHandleChange} />
 				</CardHeader>
-
-				<CardContent className="flex flex-col">
-					{isPending
-						? (
-								<div className="flex flex-col gap-6">
-									{Array.from({ length: ROOMS_LIMIT }, (_, index) => (
-										<Skeleton className="h-[162px] rounded-xl" key={index} />
-									))}
-								</div>
-
-							)
-						: (
-								<>
-									{rooms.length === 0
-										? (
-												<div className="text-center py-12">
-													<h3 className="text-2xl font-black text-black mb-2">NO ROOMS FOUND</h3>
-													<p className="text-gray-700 text-lg">Try adjusting your filters or create a new room!</p>
-												</div>
-											)
-										: (
-												<div className="flex flex-col gap-6">
-													{rooms.map(room => (
-														<RoomCard room={room} key={room.id} isOwner={ownIds.includes(room.creatorId)} />
-													))}
-													{hasNextPage
-														? (
-																<>
-																	{isFetchingNextPage
-																		? (
-																				<div className="flex flex-col gap-6">
-																					{Array.from({ length: ROOMS_LIMIT }, (_, index) => (
-																						<Skeleton className="h-[162px] rounded-xl" key={`next-${index}`} />
-																					))}
-																				</div>
-																			)
-																		: (
-																				<Button className="m-auto" onClick={handleNewPageUpload}>
-																					Load more
-																				</Button>
-																			)}
-																</>
-															)
-														: null}
-												</div>
-											)}
-								</>
-							)}
+				<CardContent className="overflow-auto">
+					<RoomCardList isFetchingNextPage={isFetchingNextPage} hasNextPage={hasNextPage} handleNewPageUpload={handleNewPageUpload} isPending={isPendingRooms} rooms={rooms} ROOMS_LIMIT={ROOMS_LIMIT} ownIds={ownIds} />
 				</CardContent>
 			</Card>
-			<CreateRoomModal isOpen={isCreateRoomModalOpen} setOpen={setCreateRoomModalOpen} submitAction={handleCreateRoomSubmit} />
+			<DialogModal isOpen={isCreateRoomModalOpen} setOpen={setCreateRoomModalOpen} title="Create New Room" description="Fill out the form to create your new conversation room." submitTitle="Submit" cancelTitle="Cancel" isCancelVisible formId={createRoomFormId}>
+				<CreateRoomForm formId={createRoomFormId} onHandleSubmit={handleCreateRoomSubmit} />
+			</DialogModal>
 		</>
 	);
 }

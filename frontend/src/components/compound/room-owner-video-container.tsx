@@ -2,12 +2,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { Trash } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import AlertDialogModal from "@/components/compound/alert-dialog-modal";
 import { Button } from "@/components/ui/button";
 import Video from "@/components/ui/video";
 import { cn } from "@/lib/utils/cn";
 import { useDeleteRoom } from "@/queries/room";
-
-import { AlertDialogComponent } from "./alert-dialog";
 
 interface VideoContainerProps {
 	className?: string;
@@ -19,10 +18,12 @@ const OwnerVideoContainer = ({ className, stream, roomId }: VideoContainerProps)
 	const navigate = useNavigate();
 	const [isOpen, setIsOpen] = useState(false);
 	const { mutate: deleteRoom } = useDeleteRoom({
-		onSuccess: () => {
-			navigate({ to: "/" });
-		},
-		onError: () => {}
+		options: {
+			onSuccess: () => {
+				navigate({ to: "/" });
+			},
+			onError: () => {}
+		}
 	});
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [isHovered, setIsHovered] = useState(false);
@@ -34,7 +35,7 @@ const OwnerVideoContainer = ({ className, stream, roomId }: VideoContainerProps)
 	}, [stream]);
 
 	const handleDeleteRoom = async () => {
-		await deleteRoom({ roomId });
+		await deleteRoom({ id: roomId });
 	};
 
 	const handleDeleteRoomClick = async () => {
@@ -67,13 +68,15 @@ const OwnerVideoContainer = ({ className, stream, roomId }: VideoContainerProps)
 					</div>
 				)}
 			</div>
-			<AlertDialogComponent
+			<AlertDialogModal
 				isOpen={isOpen}
-				onOpenChange={setIsOpen}
+				setOpen={setIsOpen}
 				title="Delete Room"
 				description="Are you sure you want to delete this room? This action cannot be undone and all participants will be disconnected."
-				actionText="Delete Room"
-				onAction={handleDeleteRoom}
+				submitTitle="Delete Room"
+				isCancelVisible
+				cancelTitle="Cancel"
+				onSubmit={handleDeleteRoom}
 			/>
 		</>
 	);

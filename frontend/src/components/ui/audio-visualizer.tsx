@@ -87,7 +87,7 @@ const AudioVisualizer = ({ stream, className = "" }: AudioVisualizerProps) => {
 		<div className={cn(className)}>
 			<canvas
 				ref={canvasRef}
-				className="w-full h-full rounded-lg border-2 border-gray-300"
+				className="w-full h-full rounded-lg border-2 border-gray-300 bg-black"
 			/>
 		</div>
 	);
