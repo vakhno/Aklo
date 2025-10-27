@@ -25,7 +25,7 @@ export function createPeer({
 
 	peer.onicecandidate = (event) => {
 		if (event.candidate) {
-			socket.emit("signal", { partnerSocketId, data: { candidate: event.candidate } });
+			socket.emit("opponents-roulette-send-ice-candidate", { partnerSocketId, candidate: event.candidate });
 		}
 	};
 
@@ -35,10 +35,9 @@ export function createPeer({
 
 	if (isInitiator) {
 		peer.createOffer().then(async (offer) => {
-			console.warn("peer.createOffer", offer);
 			try {
 				await peer.setLocalDescription(offer);
-				socket.emit("signal", { partnerSocketId, data: offer });
+				socket.emit("opponents-roulette-send-offer", { partnerSocketId, offer });
 			}
 			catch (error) {
 				console.warn("createOffer", error);

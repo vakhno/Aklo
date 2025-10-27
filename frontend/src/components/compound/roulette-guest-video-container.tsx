@@ -1,4 +1,4 @@
-import { CircleArrowRight, CirclePause, Loader, Play, RefreshCw, Volume2, VolumeX } from "lucide-react";
+import { CircleArrowRight, CirclePause, Loader, OctagonMinus, Play, RefreshCw, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,10 @@ interface VideoContainerProps {
 	onHandleSkipClick: () => void;
 	onHandleStopClick: () => void;
 	onHandleStartClick: () => void;
+	onHandlePauseClick: () => void;
 }
 
-const RouletteGuestVideoContainer = ({ className, isLoading, isFound, isRecovering, stream, onHandleSkipClick, onHandleStopClick, onHandleStartClick }: VideoContainerProps) => {
+const RouletteGuestVideoContainer = ({ className, isLoading, isFound, isRecovering, stream, onHandleSkipClick, onHandleStopClick, onHandleStartClick, onHandlePauseClick }: VideoContainerProps) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [isMuted, setIsMuted] = useState(false);
 	const [volume, setVolume] = useState(0.5);
@@ -61,6 +62,10 @@ const RouletteGuestVideoContainer = ({ className, isLoading, isFound, isRecoveri
 		onHandleStartClick();
 	};
 
+	const handlePauseClick = () => {
+		onHandlePauseClick();
+	};
+
 	const handleStopClick = () => {
 		onHandleStopClick();
 	};
@@ -83,16 +88,28 @@ const RouletteGuestVideoContainer = ({ className, isLoading, isFound, isRecoveri
 				<div className="h-full w-full grid grid-rows-[1fr_1fr_1fr]">
 					<div></div>
 					<div className="flex w-full justify-center items-center">
-						{ isLoading
-							? (
-									<div className="flex gap-2">
-										<Button variant="secondary" aria-label="Stop search" onClick={handleStopClick}><CirclePause /></Button>
-										{isFound
-											? <Button variant="destructive" aria-label="Kick user" onClick={onHandleSkipClick}><CircleArrowRight /></Button>
-											: null}
-									</div>
-								)
-							: <Button variant="secondary" onClick={handleStartClick}><Play /></Button>}
+						<div className="flex gap-2">
+							{!isLoading && !isFound && (
+								<Button variant="secondary" onClick={handleStartClick} aria-label="Start search">
+									<Play />
+								</Button>
+							)}
+							{isFound && (
+								<>
+									<Button variant="secondary" onClick={handleStopClick} aria-label="Pause search">
+										<OctagonMinus />
+									</Button>
+									<Button variant="destructive" onClick={onHandleSkipClick} aria-label="Skip user">
+										<CircleArrowRight />
+									</Button>
+								</>
+							)}
+							{isLoading && !isFound && (
+								<Button variant="secondary" onClick={handlePauseClick} aria-label="Stop search">
+									<CirclePause />
+								</Button>
+							)}
+						</div>
 						{isLoading && (
 							<div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] z-[-1] bg-black/50 rounded-full p-2">
 								<Loader className="w-34 h-34 text-white animate-spin" />
