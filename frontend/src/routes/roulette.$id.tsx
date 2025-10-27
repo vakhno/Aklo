@@ -24,13 +24,19 @@ function Roulette() {
 	const { id } = useParams({ from: "/roulette/$id" });
 	const { state: mediaDeviceStoreState } = useMediaDeviceStore();
 	const { setupCombinedDevice, setupVideoDevice, setupAudioDevice, combinedStream, audioDevices, videoDevices, selectedVideoDevice, selectedAudioDevice, isPermissionDenied } = useMediaDevice({ isAudioAvailable: true, isVideoAvailable: true, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
-	const { myStream, remoteStream, isSearching, isFound, startSearch, stopSearch } = useRouletteWebRTC(combinedStream, id);
+	const { myStream, remoteStream, isSearching, isFound, initSocket, startSearch, pauseSearch, stopSearch, skipOpponent } = useRouletteWebRTC(combinedStream, id);
 
 	useEffect(() => {
 		(async () => {
 			await setupCombinedDevice();
 		})();
 	}, []);
+
+	useEffect(() => {
+		if (combinedStream) {
+			initSocket();
+		}
+	}, [combinedStream]);
 
 	useEffect(() => {
 		const handleBeforeUnload = () => {};
@@ -43,10 +49,15 @@ function Roulette() {
 	}, []);
 
 	const handleSkipClick = () => {
+		skipOpponent();
 	};
 
 	const handleStartClick = () => {
 		startSearch();
+	};
+
+	const handlePauseClick = () => {
+		pauseSearch();
 	};
 
 	const handleStopClick = () => {
@@ -77,7 +88,7 @@ function Roulette() {
 						<ResizableHandle className="mx-4" />
 						<ResizablePanel defaultSize={50} minSize={15}>
 							<div className="relative h-full w-full">
-								<RouletteGuestVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" isLoading={isSearching} isFound={isFound} stream={remoteStream} isVolumeSliderAvailable onHandleStartClick={handleStartClick} onHandleStopClick={handleStopClick} onHandleSkipClick={handleSkipClick} />
+								<RouletteGuestVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" isLoading={isSearching} isFound={isFound} stream={remoteStream} isVolumeSliderAvailable onHandleStartClick={handleStartClick} onHandlePauseClick={handlePauseClick} onHandleStopClick={handleStopClick} onHandleSkipClick={handleSkipClick} />
 							</div>
 						</ResizablePanel>
 					</ResizablePanelGroup>
