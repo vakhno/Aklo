@@ -28,9 +28,20 @@ export async function getRoulette(rouletteId: string): Promise<CreatedRouletteTy
 	}
 }
 
-export async function getAllRoulettes(): Promise<{ roulettes: CreatedRouletteType[] }> {
+export async function getAllRoulettes({ language, limit, page }: { language?: string; limit: number; page: number }): Promise<{ roulettes: CreatedRouletteType[]; isHasMore: boolean }> {
 	try {
-		const query = "*";
+		let query = "*";
+		const offset = (page - 1) * limit;
+		const filters = [];
+
+		if (language) {
+			filters.push(`@language:{${language}}`);
+		}
+
+		if (filters.length) {
+			query = filters.join(" ");
+		}
+
 		const result = await redisClient.sendCommand([
 			"FT.SEARCH",
 			"roulettes_idx",
@@ -38,6 +49,9 @@ export async function getAllRoulettes(): Promise<{ roulettes: CreatedRouletteTyp
 			"SORTBY",
 			"currentUserCount",
 			"DESC",
+			"LIMIT",
+			String(offset),
+			String(limit),
 		]);
 
 		if (!Array.isArray(result)) {
@@ -45,6 +59,7 @@ export async function getAllRoulettes(): Promise<{ roulettes: CreatedRouletteTyp
 		}
 
 		const total = result[0];
+		const isHasMore = Number(page) * limit < total;
 		const roulettes: CreatedRouletteType[] = [];
 
 		if (total > 0) {
@@ -61,7 +76,7 @@ export async function getAllRoulettes(): Promise<{ roulettes: CreatedRouletteTyp
 			});
 		}
 
-		return { roulettes };
+		return { roulettes, isHasMore };
 	}
 	catch (error) {
 		// eslint-disable-next-line no-console

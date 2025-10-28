@@ -7,4 +7,10 @@ export interface CreatedRouletteType {
 	availableUsers: string[];
 }
 
+export interface GetAllRoulettesPropsType {
+	language: string;
+	limit: number;
+	page: number;
+}
+
 export type HsetCreatedRouletteType = Record<keyof CreatedRouletteType, string>;

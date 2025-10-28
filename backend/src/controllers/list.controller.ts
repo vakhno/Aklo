@@ -23,3 +23,14 @@ export async function getUsedLanguages(req: Request, res: Response) {
 		res.status(500).json({ error });
 	}
 }
+
+export async function getExistLanguages(req: Request, res: Response) {
+	try {
+		const languages = await listService.getExistLanguages();
+
+		res.status(200).json(languages);
+	}
+	catch (error) {
+		res.status(500).json({ error });
+	}
+}
