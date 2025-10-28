@@ -89,3 +89,46 @@ export async function getUsedLanguages(): Promise<LanguagesType> {
 		throw new Error("Get languages service error!");
 	}
 }
+
+export async function getExistLanguages(): Promise<LanguagesType> {
+	try {
+		const result = await redisClient.sendCommand([
+			"FT.AGGREGATE",
+			"roulettes_idx",
+			"*",
+			"GROUPBY",
+			"1",
+			"@language",
+			"REDUCE",
+			"COUNT",
+			"0",
+			"AS",
+			"count",
+		]);
+
+		if (!Array.isArray(result)) {
+			throw new TypeError("Unexpected FT.AGGREGATE response");
+		}
+
+		const total = result[0];
+		const existLanguages = {} as LanguagesType;
+
+		if (total >= 1) {
+			result.forEach((item) => {
+				if (Array.isArray(item)) {
+					const key = item[1] as LanguageKeyType;
+
+					existLanguages[key] = LANGUAGE_LIST[key];
+				}
+			});
+		}
+
+		return existLanguages;
+	}
+	catch (error) {
+		// eslint-disable-next-line no-console
+		console.log(error);
+
+		throw new Error("Get exist languages service error!");
+	}
+}

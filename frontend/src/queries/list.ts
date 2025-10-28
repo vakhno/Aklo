@@ -29,6 +29,19 @@ const getUsedLanguages = async (): Promise<LanguagesType> => {
 	return result;
 };
 
+const getExistLanguages = async (): Promise<LanguagesType> => {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/list/exist-languages`, {
+		method: "GET"
+	});
+
+	if (!response.ok) {
+		throw new Error("Failed to fetch exist languages!");
+	}
+	const result = await response.json() as LanguagesType;
+
+	return result;
+};
+
 export const useUsedCategories = () => {
 	return useQuery({
 		queryKey: ["used-categories"],
@@ -42,5 +55,13 @@ export const useUsedLanguages = () => {
 		queryKey: ["used-languages"],
 		initialData: {} as LanguagesType,
 		queryFn: getUsedLanguages
+	});
+};
+
+export const useExistLanguages = () => {
+	return useQuery({
+		queryKey: ["exist-languages"],
+		initialData: {} as LanguagesType,
+		queryFn: getExistLanguages
 	});
 };

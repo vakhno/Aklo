@@ -3,17 +3,20 @@ import { useNavigate } from "@tanstack/react-router";
 import type { RouletteType } from "@/lib/types/roulette";
 
 import RouletteCard from "@/components/compound/roulette-card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGetAllRoulettes } from "@/queries/roulette";
 
 interface RouletteCardListTypes {
+	isPending: boolean;
 	ROULETTE_LIMIT: number;
 	roulettes?: RouletteType[];
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+	handleNewPageUpload: () => void;
 }
 
-const RouletteCardList = ({ ROULETTE_LIMIT }: RouletteCardListTypes) => {
+const RouletteCardList = ({ isPending, ROULETTE_LIMIT, roulettes, hasNextPage, isFetchingNextPage, handleNewPageUpload }: RouletteCardListTypes) => {
 	const navigate = useNavigate();
-	const { isPending, data: roulettes } = useGetAllRoulettes();
 
 	const handleSelectRoulette = (roulette: RouletteType) => {
 		const { id } = roulette;
@@ -46,6 +49,25 @@ const RouletteCardList = ({ ROULETTE_LIMIT }: RouletteCardListTypes) => {
 											{roulettes.map(roulette => (
 												<RouletteCard roulette={roulette} key={roulette.id} handleSelectRoulette={handleSelectRoulette} />
 											))}
+											{hasNextPage
+												? (
+														<>
+															{isFetchingNextPage
+																? (
+																		<div className="flex flex-col gap-6">
+																			{Array.from({ length: ROULETTE_LIMIT }, (_, index) => (
+																				<Skeleton className="h-[162px] rounded-xl" key={`next-${index}`} />
+																			))}
+																		</div>
+																	)
+																: (
+																		<Button className="m-auto" onClick={handleNewPageUpload}>
+																			Load more
+																		</Button>
+																	)}
+														</>
+													)
+												: null}
 										</div>
 									)}
 						</>
