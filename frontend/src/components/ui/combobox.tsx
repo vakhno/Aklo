@@ -77,13 +77,13 @@ export function Combobox({
 					{selected
 						? values.find(item => item.value === selected)?.label
 						: label }
-					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+					<ChevronsUpDown />
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
 				<Command className="**:data-[slot=command-input-wrapper]:h-11">
 					<CommandInput placeholder={placeholder} />
-					<CommandList className="p-1">
+					<CommandList>
 						<CommandEmpty>{emptyText}</CommandEmpty>
 						<CommandGroup>
 							{values.map(item => (
@@ -94,7 +94,6 @@ export function Combobox({
 								>
 									<Check
 										className={cn(
-											"mr-2 h-4 w-4",
 											selected === item.value ? "opacity-100" : "opacity-0"
 										)}
 									/>

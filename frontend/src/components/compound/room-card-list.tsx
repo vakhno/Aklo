@@ -19,7 +19,7 @@ interface RoomCardListTypes {
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	handleNewPageUpload: () => void;
-	ownIds: string[];
+	ownIds?: string[];
 }
 
 const RoomCardList = ({ isPending, ROOMS_LIMIT, rooms, hasNextPage, isFetchingNextPage, handleNewPageUpload, ownIds }: RoomCardListTypes) => {
@@ -96,7 +96,7 @@ const RoomCardList = ({ isPending, ROOMS_LIMIT, rooms, hasNextPage, isFetchingNe
 								: (
 										<div className="flex flex-col gap-6">
 											{rooms.map(room => (
-												<RoomCard room={room} isOwn={ownIds.includes(room.id)} key={room.id} handleRoomSelect={handleRoomSelect} />
+												<RoomCard room={room} isOwn={ownIds && ownIds.includes(room.id)} key={room.id} handleRoomSelect={handleRoomSelect} />
 											))}
 											{hasNextPage
 												? (

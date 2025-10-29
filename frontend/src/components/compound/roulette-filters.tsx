@@ -51,7 +51,7 @@ const RouletteFilters = ({ className, languagesList, isLanguagesDisabled, onHand
 					control={control}
 					name="language"
 					render={({ field }) => (
-						<FormItem className="flex-1">
+						<FormItem className="w-full">
 							<FormControl>
 								<Combobox disabled={isLanguagesDisabled} values={[{ value: "", label: "All languages" }, ...convertListToComboboxValues(languagesList)]} placeholder="Select language" label="Select language..." emptyText="No languages..." value={field.value} onChange={field.onChange} />
 							</FormControl>

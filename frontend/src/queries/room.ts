@@ -204,7 +204,7 @@ export const useCheckIsCreator = ({ id, options }: useCheckIsCreatorProps) => {
 	});
 };
 
-const getIdListOfOwnRooms = async (): Promise<[string]> => {
+const getIdListOfOwnRooms = async (): Promise<string[]> => {
 	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/own-room-ids`, {
 		method: "GET",
 		headers: {
@@ -225,15 +225,13 @@ const getIdListOfOwnRooms = async (): Promise<[string]> => {
 };
 
 type useGetIdListOfOwnRoomsProps = {
-
-	onSuccess?: (ids: string[]) => void;
-	onError?: () => void;
+	options?: UseQueryOptions<string[], Error>;
 };
 
-export const useGetIdListOfOwnRooms = ({ onSuccess, onError }: useGetIdListOfOwnRoomsProps) => {
-	return useMutation({
-		mutationFn: getIdListOfOwnRooms,
-		onSuccess,
-		onError
+export const useGetIdListOfOwnRooms = ({ options }: useGetIdListOfOwnRoomsProps) => {
+	return useQuery({
+		queryKey: ["list-of-own-rooms"],
+		queryFn: () => getIdListOfOwnRooms(),
+		...options
 	});
 };
