@@ -18,7 +18,7 @@ const RoomsCard = () => {
 	};
 
 	return (
-		<Card variant="ghost" className="h-1/2">
+		<Card variant="ghost" className="h-[70vh]">
 			<RoomsCardHeader onHandleFilterChange={onHandleFilterChange} />
 			<RoomsCardContent roomFilters={roomFilters} />
 		</Card>

@@ -116,15 +116,11 @@
   }
   
   html {
-    @apply bg-neutral-100 h-full;
-  }
-  
-  #root {
-    @apply h-full flex flex-col;
+    @apply bg-neutral-100;
   }
 
-  body {
-    @apply  h-full;
+  #root {
+    @apply flex flex-col;
   }
 
   main {
