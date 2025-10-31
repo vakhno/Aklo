@@ -17,7 +17,7 @@ const RoulettesCard = () => {
 	};
 
 	return (
-		<Card variant="ghost" className="h-1/2">
+		<Card variant="ghost" className="h-[60vh]">
 			<RoulettesCardHeader onHandleFilterChange={onHandleFilterChange} />
 			<RoulettesCardContent rouletteFilters={rouletteFilters} />
 		</Card>
