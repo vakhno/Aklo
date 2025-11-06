@@ -62,15 +62,15 @@ const GuestVideoContainer = ({ room, className, isLoading, isRecovering, stream,
 	return (
 		<div
 			className={cn(
-				"w-full h-full max-w-max max-h-max relative top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square",
+				"w-full h-full relative",
 				className
 			)}
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
 			{ isCameraRequired
-				? <Video stream={stream} className="aspect-square" />
-				: <Audio stream={stream} className="aspect-square" />}
+				? <Video stream={stream} className="aspect-auto w-full h-full" />
+				: <Audio stream={stream} className="aspect-auto w-full h-full" />}
 			{isLoading && (
 				<div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] z-10 bg-black/50 rounded-full p-2">
 					<Loader className="w-6 h-6 text-white animate-spin" />

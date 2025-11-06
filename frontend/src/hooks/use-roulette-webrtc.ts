@@ -210,5 +210,5 @@ export function useRouletteWebRTC(localStream: MediaStream | null, languageId: s
 		}
 	}
 
-	return { myStream: localStream, remoteStream, guestSocket, isSearching, isFound, initSocket, startSearch, pauseSearch, stopSearch, skipOpponent };
+	return { myStream: localStream, remoteStream, remoteAudioRef, guestSocket, isSearching, isFound, initSocket, startSearch, pauseSearch, stopSearch, skipOpponent };
 }

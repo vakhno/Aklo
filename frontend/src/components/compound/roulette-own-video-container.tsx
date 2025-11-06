@@ -6,6 +6,7 @@ import type { JoinRoomSchemaType } from "@/lib/types/room";
 import DialogModal from "@/components/compound/dialog-modal";
 import SettingsForm from "@/components/compound/settings-form";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import Video from "@/components/ui/video";
 import { useMediaDevice } from "@/hooks/use-media-device";
 import { cn } from "@/lib/utils/cn";
@@ -74,14 +75,14 @@ const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudi
 		<>
 			<div
 				className={cn(
-					"w-full h-full max-w-max max-h-max relative top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square",
+					"w-full h-full relative",
 					className
 				)}
 				onMouseEnter={() => setIsHovered(true)}
 				onMouseLeave={() => setIsHovered(false)}
 			>
 				<Video
-					className="aspect-square"
+					className="aspect-auto w-full h-full"
 					stream={stream}
 				/>
 				<div className="p-4 w-full h-full absolute top-0 left-0 flex flex-col items-center gap-2">
@@ -95,7 +96,9 @@ const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudi
 				{isHovered}
 			</div>
 			<DialogModal isOpen={isSettingsModalOpen} setOpen={setSettingsModalOpen} title="Settings" description="Change your settings." submitTitle="Submit" cancelTitle="Cancel" isCancelVisible formId={formId}>
-				<SettingsForm formId={formId} onHandleFormChange={onHandleFormChange} onHandleSubmit={onHandleSubmit} isCameraAvailable={isVideoAvailable} isMicAvailable={isAudioAvailable} audioDevices={audioDevices} videoDevices={videoDevices} videoStream={videoStream} audioStream={audioStream} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} />
+				<ScrollArea className="h-full">
+					<SettingsForm formId={formId} onHandleFormChange={onHandleFormChange} onHandleSubmit={onHandleSubmit} isCameraAvailable={isVideoAvailable} isMicAvailable={isAudioAvailable} audioDevices={audioDevices} videoDevices={videoDevices} videoStream={videoStream} audioStream={audioStream} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} />
+				</ScrollArea>
 			</DialogModal>
 		</>
 	);

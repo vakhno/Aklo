@@ -15,6 +15,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { CATEGORY_LIST } from "@/lib/constants/category-list";
 import { LANGUAGE_LIST } from "@/lib/constants/language-list";
+import { cn } from "@/lib/utils/cn";
 import { convertListToComboboxValues } from "@/lib/utils/convert-list-to-combobox-values";
 import { NewRoomSchema } from "@/lib/zod-schemas/new-room.schema";
 
@@ -22,11 +23,12 @@ import { Combobox } from "../ui/combobox";
 import { Input } from "../ui/input";
 
 interface CreateRoomFormProps {
+	className?: string;
 	formId: string;
 	onHandleSubmit: (data: NewRoomSchemaType) => void;
 }
 
-const CreateRoomForm = ({ formId, onHandleSubmit }: CreateRoomFormProps) => {
+const CreateRoomForm = ({ className, formId, onHandleSubmit }: CreateRoomFormProps) => {
 	const form = useForm<NewRoomSchemaType>({
 		resolver: zodResolver(NewRoomSchema),
 		defaultValues: {
@@ -42,7 +44,7 @@ const CreateRoomForm = ({ formId, onHandleSubmit }: CreateRoomFormProps) => {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={handleSubmit(onHandleSubmit)} id={formId} className="flex flex-col gap-4">
+			<form onSubmit={handleSubmit(onHandleSubmit)} id={formId} className={cn(className, "flex flex-col gap-4")}>
 				<FormField
 					control={form.control}
 					name="title"

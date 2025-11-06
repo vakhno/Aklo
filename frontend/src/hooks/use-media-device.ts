@@ -6,16 +6,11 @@ import { catchError } from "@/lib/utils/catch-error";
 interface useMediaDeviceProps {
 	isVideoAvailable?: boolean;
 	isAudioAvailable?: boolean;
-	videoDeviceId?: string;
-	audioDeviceId?: string;
+	videoDeviceId?: string | null;
+	audioDeviceId?: string | null;
 }
 
-const DEFAULT_IS_VIDEO_AVAILABLE = false;
-const DEFAULT_IS_AUDIO_AVAILABLE = false;
-const DEFAULT_VIDEO_DEVICE_ID = "";
-const DEFAULT_AUDIO_DEVICE_ID = "";
-
-export const useMediaDevice = ({ isVideoAvailable = DEFAULT_IS_VIDEO_AVAILABLE, isAudioAvailable = DEFAULT_IS_AUDIO_AVAILABLE, videoDeviceId = DEFAULT_VIDEO_DEVICE_ID, audioDeviceId = DEFAULT_AUDIO_DEVICE_ID }: useMediaDeviceProps) => {
+export const useMediaDevice = ({ isVideoAvailable = false, isAudioAvailable = false, videoDeviceId = null, audioDeviceId = null }: useMediaDeviceProps) => {
 	const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
 	const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 	const [combinedStream, setCombinedStream] = useState<MediaStream | null>(null);

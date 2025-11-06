@@ -6,12 +6,7 @@ import type { JoinRoomSchemaType } from "@/lib/types/room";
 import RouletteGuestVideoContainer from "@/components/compound/roulette-guest-video-container";
 import RouletteOwnVideoContainer from "@/components/compound/roulette-own-video-container";
 import RuleWarningMessage from "@/components/compound/rule-warning-message";
-import TextChat from "@/components/compound/text-chat";
-import {
-	ResizableHandle,
-	ResizablePanel,
-	ResizablePanelGroup
-} from "@/components/ui/resizable";
+import { Card, CardContent } from "@/components/ui/card";
 import { useMediaDevice } from "@/hooks/use-media-device";
 import { useRouletteWebRTC } from "@/hooks/use-roulette-webrtc";
 import useMediaDeviceStore from "@/store/media-device-store";
@@ -23,8 +18,8 @@ export const Route = createFileRoute("/roulette/$id")({
 function Roulette() {
 	const { id } = useParams({ from: "/roulette/$id" });
 	const { state: mediaDeviceStoreState } = useMediaDeviceStore();
-	const { setupCombinedDevice, setupVideoDevice, setupAudioDevice, combinedStream, audioDevices, videoDevices, selectedVideoDevice, selectedAudioDevice, isPermissionDenied } = useMediaDevice({ isAudioAvailable: true, isVideoAvailable: true, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
-	const { myStream, remoteStream, isSearching, isFound, initSocket, startSearch, pauseSearch, stopSearch, skipOpponent } = useRouletteWebRTC(combinedStream, id);
+	const { setupCombinedDevice, setupVideoDevice, setupAudioDevice, combinedStream, audioDevices, videoDevices, selectedVideoDevice, selectedAudioDevice, isPermissionDenied } = useMediaDevice({ isAudioAvailable: true, isVideoAvailable: true, videoDeviceId: mediaDeviceStoreState.video, audioDeviceId: mediaDeviceStoreState.audio });
+	const { myStream, remoteStream, remoteAudioRef, isSearching, isFound, initSocket, startSearch, pauseSearch, stopSearch, skipOpponent } = useRouletteWebRTC(combinedStream, id);
 
 	useEffect(() => {
 		(async () => {
@@ -37,16 +32,6 @@ function Roulette() {
 			initSocket();
 		}
 	}, [combinedStream]);
-
-	useEffect(() => {
-		const handleBeforeUnload = () => {};
-
-		window.addEventListener("beforeunload", handleBeforeUnload);
-
-		return () => {
-			window.removeEventListener("beforeunload", handleBeforeUnload);
-		};
-	}, []);
 
 	const handleSkipClick = () => {
 		skipOpponent();
@@ -73,35 +58,25 @@ function Roulette() {
 	};
 
 	return (
-		<div className="w-full h-full">
-			<ResizablePanelGroup
-				direction="vertical"
-				className="w-full h-full rounded-lg border"
-			>
-				<ResizablePanel defaultSize={70} className="p-4">
-					<ResizablePanelGroup direction="horizontal" className="h-full">
-						<ResizablePanel defaultSize={50} minSize={15}>
-							<div className="relative h-full w-full">
-								<RouletteOwnVideoContainer isStreamValid={!isPermissionDenied} className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" isVideoAvailable={true} isAudioAvailable={true} stream={myStream} audioDevices={audioDevices} videoDevices={videoDevices} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} setupVideoDevice={setupVideoDevice} setupAudioDevice={setupAudioDevice} onHandleStopClick={handleStopClick} handleSettingsSubmit={handleSettingsSubmit} />
+		<>
+			<audio ref={remoteAudioRef} autoPlay style={{ display: "none" }} />
+
+			<Card className="h-[calc(100vh-var(--header-height)-var(--header-margin-bottom))]">
+				<CardContent className="w-full h-full">
+					<div className="w-full h-full flex flex-col gap-2">
+						<div className="overflow-hidden flex-1 w-full h-full">
+							<div className="flex max-sm:flex-col gap-2 w-full h-full justify-center">
+								<RouletteOwnVideoContainer isStreamValid={!isPermissionDenied} className="flex-1 w-full h-full overflow-hidden" isVideoAvailable={true} isAudioAvailable={true} stream={myStream} audioDevices={audioDevices} videoDevices={videoDevices} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} setupVideoDevice={setupVideoDevice} setupAudioDevice={setupAudioDevice} onHandleStopClick={handleStopClick} handleSettingsSubmit={handleSettingsSubmit} />
+								<RouletteGuestVideoContainer className="flex-1 w-full h-full overflow-hidden" isLoading={isSearching} isFound={isFound} stream={remoteStream} isVolumeSliderAvailable onHandleStartClick={handleStartClick} onHandlePauseClick={handlePauseClick} onHandleStopClick={handleStopClick} onHandleSkipClick={handleSkipClick} />
 							</div>
-						</ResizablePanel>
-						<ResizableHandle className="mx-4" />
-						<ResizablePanel defaultSize={50} minSize={15}>
-							<div className="relative h-full w-full">
-								<RouletteGuestVideoContainer className="w-full h-full max-w-max max-h-max absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square" isLoading={isSearching} isFound={isFound} stream={remoteStream} isVolumeSliderAvailable onHandleStartClick={handleStartClick} onHandlePauseClick={handlePauseClick} onHandleStopClick={handleStopClick} onHandleSkipClick={handleSkipClick} />
-							</div>
-						</ResizablePanel>
-					</ResizablePanelGroup>
-				</ResizablePanel>
-				<ResizableHandle />
-				<ResizablePanel defaultSize={60} maxSize={80} minSize={40} className="flex flex-col">
-					<div className="flex flex-col h-full w-full items-center justify-center p-4">
-						<RuleWarningMessage />
-						<TextChat />
+						</div>
+						<div className="flex-0">
+							<RuleWarningMessage />
+						</div>
 					</div>
-				</ResizablePanel>
-			</ResizablePanelGroup>
-		</div>
+				</CardContent>
+			</Card>
+		</>
 	);
 }
 
