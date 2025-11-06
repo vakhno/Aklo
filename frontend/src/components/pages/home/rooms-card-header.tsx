@@ -1,42 +1,21 @@
-import { useNavigate } from "@tanstack/react-router";
-import { useId, useState } from "react";
+import type { FilterRoomSchemaType } from "@/lib/types/room";
 
-import type { FilterRoomSchemaType, NewRoomSchemaType } from "@/lib/types/room";
-
-import CreateRoomForm from "@/components/compound/create-room-form";
-import DialogModal from "@/components/compound/dialog-modal";
 import RoomFilters from "@/components/compound/room-filters";
 import { Button } from "@/components/ui/button";
 import { CardHeader, CardTitle } from "@/components/ui/card";
 import { useUsedCategories, useUsedLanguages } from "@/queries/list";
-import { useCreateRoom } from "@/queries/room";
 
 interface RoomsCardHeaderProps {
 	onHandleFilterChange: (data: FilterRoomSchemaType) => void;
+	handleOpenCreateRoomModal: () => void;
 }
 
-const RoomsCardHeader = ({ onHandleFilterChange }: RoomsCardHeaderProps) => {
-	const navigate = useNavigate();
-	const { mutate: handleCreateRoom } = useCreateRoom({
-		options: {
-			onSuccess: (room) => {
-				const { id } = room;
-
-				navigate({ to: "/room/$id", params: { id } });
-			}
-		}
-	});
-	const [isCreateRoomModalOpen, setCreateRoomModalOpen] = useState(false);
+const RoomsCardHeader = ({ onHandleFilterChange, handleOpenCreateRoomModal }: RoomsCardHeaderProps) => {
 	const { data: usedCategories, isLoading: isUsedCategoriesLoading } = useUsedCategories();
 	const { data: usedLanguages, isLoading: isUsedLanguagesLoading } = useUsedLanguages();
-	const createRoomFormId = useId();
 
 	const handleOpenCreateRoomModalClick = () => {
-		setCreateRoomModalOpen(true);
-	};
-
-	const handleCreateRoomSubmit = async (room: NewRoomSchemaType) => {
-		await handleCreateRoom({ newRoomData: room });
+		handleOpenCreateRoomModal();
 	};
 
 	const onHandleRoomFiltersChange = (data: FilterRoomSchemaType) => {
@@ -52,9 +31,6 @@ const RoomsCardHeader = ({ onHandleFilterChange }: RoomsCardHeaderProps) => {
 				</div>
 				<RoomFilters className="w-full" categoriesList={usedCategories} isCategoriesDisabled={isUsedCategoriesLoading} languagesList={usedLanguages} isLanguagesDisabled={isUsedLanguagesLoading} onHandleChange={onHandleRoomFiltersChange} />
 			</CardHeader>
-			<DialogModal isOpen={isCreateRoomModalOpen} setOpen={setCreateRoomModalOpen} title="Create New Room" description="Fill out the form to create your new conversation room." submitTitle="Submit" cancelTitle="Cancel" isCancelVisible formId={createRoomFormId}>
-				<CreateRoomForm formId={createRoomFormId} onHandleSubmit={handleCreateRoomSubmit} />
-			</DialogModal>
 		</>
 	);
 };

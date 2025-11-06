@@ -73,14 +73,14 @@ const RouletteGuestVideoContainer = ({ className, isLoading, isFound, isRecoveri
 	return (
 		<div
 			className={cn(
-				"w-full h-full max-w-max max-h-max relative top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square",
+				"w-full h-full relative",
 				className
 			)}
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
 			<Video
-				className="aspect-square"
+				className="aspect-auto w-full h-full"
 				stream={stream}
 			/>
 

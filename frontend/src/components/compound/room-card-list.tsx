@@ -4,9 +4,11 @@ import { useEffect, useId, useState } from "react";
 import type { JoinRoomSchemaType, RoomType } from "@/lib/types/room";
 
 import DialogModal from "@/components/compound/dialog-modal";
+import EmptyBlock from "@/components/compound/empty-block";
 import JoinRoomForm from "@/components/compound/join-room-form";
 import RoomCard from "@/components/compound/room-card";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMediaDevice } from "@/hooks/use-media-device";
 import { useJoinRoom } from "@/queries/room";
@@ -19,10 +21,11 @@ interface RoomCardListTypes {
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	handleNewPageUpload: () => void;
+	handleOpenCreateRoomModal: () => void;
 	ownIds?: string[];
 }
 
-const RoomCardList = ({ isPending, ROOMS_LIMIT, rooms, hasNextPage, isFetchingNextPage, handleNewPageUpload, ownIds }: RoomCardListTypes) => {
+const RoomCardList = ({ isPending, ROOMS_LIMIT, rooms, hasNextPage, isFetchingNextPage, handleNewPageUpload, handleOpenCreateRoomModal, ownIds }: RoomCardListTypes) => {
 	const formId = useId();
 	const navigate = useNavigate();
 	const [selectedRoom, setSelectedRoom] = useState<null | RoomType>(null);
@@ -51,6 +54,10 @@ const RoomCardList = ({ isPending, ROOMS_LIMIT, rooms, hasNextPage, isFetchingNe
 			joinRoom({ roomId: id });
 		}
 		setJoinRoomModalOpen(false);
+	};
+
+	const onHandleEmptyBlockClick = () => {
+		handleOpenCreateRoomModal();
 	};
 
 	const onHandleFormChange = async (data: JoinRoomSchemaType) => {
@@ -88,9 +95,8 @@ const RoomCardList = ({ isPending, ROOMS_LIMIT, rooms, hasNextPage, isFetchingNe
 						<>
 							{!rooms || rooms.length === 0
 								? (
-										<div className="text-center py-12">
-											<h3 className="text-2xl font-black text-black mb-2">NO ROOMS FOUND</h3>
-											<p className="text-gray-700 text-lg">Try adjusting your filters or create a new room!</p>
+										<div className="flex items-center justify-center h-full">
+											<EmptyBlock title="NO AVAILABLE ROOMS" description="Create a room and be the first one!" buttonTitle="Create room" buttonHandleClick={onHandleEmptyBlockClick} />
 										</div>
 									)
 								: (
@@ -123,7 +129,9 @@ const RoomCardList = ({ isPending, ROOMS_LIMIT, rooms, hasNextPage, isFetchingNe
 					)}
 
 			<DialogModal isOpen={isJoinRoomModalOpen} setOpen={setJoinRoomModalOpen} title="Join Room" description="Select your camera and microphone to join the room." submitTitle="Submit" cancelTitle="Cancel" isCancelVisible formId={formId}>
-				<JoinRoomForm formId={formId} onHandleFormChange={onHandleFormChange} onHandleSubmit={onHandleSubmit} isCameraAvailable={selectedRoom?.isCameraRequired || false} isMicAvailable={selectedRoom?.isMicRequired || false} audioDevices={audioDevices} videoDevices={videoDevices} videoStream={videoStream} audioStream={audioStream} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} />
+				<ScrollArea className="h-full">
+					<JoinRoomForm formId={formId} onHandleFormChange={onHandleFormChange} onHandleSubmit={onHandleSubmit} isCameraAvailable={selectedRoom?.isCameraRequired || false} isMicAvailable={selectedRoom?.isMicRequired || false} audioDevices={audioDevices} videoDevices={videoDevices} videoStream={videoStream} audioStream={audioStream} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} />
+				</ScrollArea>
 			</DialogModal>
 		</>
 	);

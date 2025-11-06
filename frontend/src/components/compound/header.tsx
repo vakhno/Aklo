@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { MessageCircleWarning, Moon, Sun } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils/cn";
 import useThemeStore from "@/store/theme-store";
 
@@ -20,17 +19,13 @@ const Header = ({ className = DEFAULT_CLASSNAME }: HeaderProps) => {
 	};
 
 	return (
-		<header className={cn("px-4 mx-auto container sticky top-0 z-40 h-20", className)}>
-			<Card variant="ghost">
-				<CardContent className="w-full h-full flex justify-between items-center">
-					<Link
-						to="/"
-					>
-						<MessageCircleWarning height={36} width={36} />
-					</Link>
-					<Button onClick={handleToggleTheme}>{theme === "dark" ? <Moon /> : <Sun />}</Button>
-				</CardContent>
-			</Card>
+		<header className={cn("container mx-auto bg-card sticky top-0 z-40 h-[var(--header-height)] mb-[var(--header-margin-bottom)] rounded-bl-xl rounded-br-xl px-10 flex items-center justify-between", className)}>
+			<Link
+				to="/"
+			>
+				<MessageCircleWarning height={36} width={36} />
+			</Link>
+			<Button onClick={handleToggleTheme}>{theme === "dark" ? <Moon /> : <Sun />}</Button>
 		</header>
 	);
 };

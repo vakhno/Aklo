@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 
 import type { RouletteType } from "@/lib/types/roulette";
 
+import EmptyBlock from "@/components/compound/empty-block";
 import RouletteCard from "@/components/compound/roulette-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,9 +40,8 @@ const RouletteCardList = ({ isPending, ROULETTE_LIMIT, roulettes, hasNextPage, i
 						<>
 							{!roulettes || roulettes.length === 0
 								? (
-										<div className="text-center py-12">
-											<h3 className="text-2xl font-black text-black mb-2">NO ROULETTES FOUND</h3>
-											<p className="text-gray-700 text-lg">Try to visit!</p>
+										<div className="flex items-center justify-center h-full">
+											<EmptyBlock title="NO AVAILABLE ROULETTES" description="Something went wrong! Try to visit page later!" />
 										</div>
 									)
 								: (

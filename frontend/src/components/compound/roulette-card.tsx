@@ -1,9 +1,14 @@
-import { Mic, Users, Video } from "lucide-react";
+import { ArrowRight, Mic, Users, Video } from "lucide-react";
 
 import type { RouletteType } from "@/lib/types/roulette";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+	Item,
+	ItemActions,
+	ItemContent,
+	ItemTitle
+} from "@/components/ui/item";
 import { LANGUAGE_LIST } from "@/lib/constants/language-list";
 import { cn } from "@/lib/utils/cn";
 
@@ -23,33 +28,32 @@ const RouletteCard = ({ roulette, handleSelectRoulette }: RouletteCardTypes) => 
 	};
 
 	return (
-		<>
-			<Card>
-				<CardContent className="px-4">
-					<div className="flex justify-between items-start mb-3">
-						<h3 className="text-xl font-black text-black mb-3 line-clamp-2 truncate">
-							{languageLabel}
-						</h3>
-
-						<span className="flex items-center">
-							<Users className="mr-1 h-4 w-4" />
-							{currentUserCount}
-						</span>
-					</div>
-
-					<div className="flex items-center justify-between">
-						<div className="flex items-center space-x-4">
-							<div className="flex space-x-1">
-								<Video className={cn("h-4 w-4", { "text-green-600": isCameraRequired, "text-red-600": !isCameraRequired })} />
-								<Mic className={cn("h-4 w-4", { "text-green-600": isMicRequired, "text-red-600": !isMicRequired })} />
-							</div>
+		<Item variant="outline">
+			<ItemContent className="space-y-3">
+				<div className="space-y-2">
+					<ItemTitle className="line-clamp-2 wrap-anywhere">
+						{languageLabel}
+					</ItemTitle>
+				</div>
+				<div className="flex items-center justify-between pt-2">
+					<div className="flex items-center gap-4">
+						<Video className={cn("h-4 w-4", { "text-green-600": isCameraRequired, "text-red-600": !isCameraRequired })} />
+						<Mic className={cn("h-4 w-4", { "text-green-600": isMicRequired, "text-red-600": !isMicRequired })} />
+						<div className="flex items-center gap-1.5">
+							<Users className="h-4 w-4 text-primary" />
+							<span className="text-sm font-medium text-foreground">
+								{currentUserCount}
+							</span>
 						</div>
-
-						<Button onClick={handleOpenJoinRoomModal}>SELECT</Button>
 					</div>
-				</CardContent>
-			</Card>
-		</>
+				</div>
+			</ItemContent>
+			<ItemActions>
+				<Button size="icon" onClick={handleOpenJoinRoomModal}>
+					<ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+				</Button>
+			</ItemActions>
+		</Item>
 	);
 };
 

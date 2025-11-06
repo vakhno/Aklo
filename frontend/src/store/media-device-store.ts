@@ -1,14 +1,19 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface MediaDeviceState {
+interface MediaDeviceStoreStateProps {
 	audio: string | null;
 	video: string | null;
 }
 
+interface MediaDeviceStoreAddDeviceProps {
+	type: "video" | "audio";
+	value: string | null;
+}
+
 interface MediaDeviceStore {
-	state: MediaDeviceState;
-	addDevice: ({ type, value }: { type: "video" | "audio"; value: string | null }) => void;
+	state: MediaDeviceStoreStateProps;
+	addDevice: ({ type, value }: MediaDeviceStoreAddDeviceProps) => void;
 }
 
 const useMediaDeviceStore = create<MediaDeviceStore>()(

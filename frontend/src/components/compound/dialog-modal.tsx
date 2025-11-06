@@ -47,7 +47,7 @@ function DialogModal({
 						? <DialogDescription>{description}</DialogDescription>
 						: null}
 				</DialogHeader>
-				<div className="p-2 w-full h-full overflow-auto">
+				<div className="overflow-hidden">
 					{children}
 				</div>
 				<DialogFooter>

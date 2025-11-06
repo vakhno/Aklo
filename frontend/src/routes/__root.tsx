@@ -17,8 +17,8 @@ function RootComponent() {
 
 	return (
 		<>
-			<Header className="mb-4" />
-			<main className="container w-full px-4 mx-auto h-auto">
+			<Header />
+			<main className="container mx-auto">
 				<Outlet />
 			</main>
 			<Toaster />

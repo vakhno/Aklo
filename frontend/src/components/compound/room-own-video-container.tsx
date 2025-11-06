@@ -8,6 +8,7 @@ import DialogModal from "@/components/compound/dialog-modal";
 import SettingsForm from "@/components/compound/settings-form";
 import Audio from "@/components/ui/audio-visualizer";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import Video from "@/components/ui/video";
 import { useMediaDevice } from "@/hooks/use-media-device";
 import { cn } from "@/lib/utils/cn";
@@ -79,15 +80,15 @@ const OwnerVideoContainer = ({ room, className, stream, isCreator, handleDelete,
 		<>
 			<div
 				className={cn(
-					"w-full h-full max-w-max max-h-max relative top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] aspect-square",
+					"w-full h-full relative",
 					className
 				)}
 				onMouseEnter={() => setIsHovered(true)}
 				onMouseLeave={() => setIsHovered(false)}
 			>
 				{ isCameraRequired
-					? <Video stream={stream} className="aspect-square" />
-					: <Audio stream={stream} className="aspect-square" />}
+					? <Video stream={stream} className="aspect-auto w-full h-full" />
+					: <Audio stream={stream} className="aspect-auto w-full h-full" />}
 				{isHovered && (
 					<div className="absolute bottom-4 right-4 flex items-center gap-2">
 						{ isCreator
@@ -115,7 +116,9 @@ const OwnerVideoContainer = ({ room, className, stream, isCreator, handleDelete,
 			</div>
 
 			<DialogModal isOpen={isSettingsModalOpen} setOpen={setSettingsModalOpen} title="Settings" description="Change your settings." submitTitle="Submit" cancelTitle="Cancel" isCancelVisible formId={formId}>
-				<SettingsForm formId={formId} onHandleFormChange={onHandleFormChange} onHandleSubmit={onHandleSubmit} isCameraAvailable={isCameraRequired} isMicAvailable={isMicRequired} audioDevices={audioDevices} videoDevices={videoDevices} videoStream={videoStream} audioStream={audioStream} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} />
+				<ScrollArea className="h-full">
+					<SettingsForm formId={formId} onHandleFormChange={onHandleFormChange} onHandleSubmit={onHandleSubmit} isCameraAvailable={isCameraRequired} isMicAvailable={isMicRequired} audioDevices={audioDevices} videoDevices={videoDevices} videoStream={videoStream} audioStream={audioStream} selectedVideoDevice={selectedVideoDevice} selectedAudioDevice={selectedAudioDevice} />
+				</ScrollArea>
 			</DialogModal>
 
 			<AlertDialogModal
