@@ -3,13 +3,11 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 
-import { connectRedis } from "./configs/redis.config.js";
-import { initSocketIo } from "./configs/socket.config.js";
-import { registerRoomSocketEvents } from "./events/room.event.js";
-import { registerRouletteSocketEvents } from "./events/roulette.event.js";
-import listRoutes from "./routes/list.routes";
-import roomRoutes from "./routes/room.routes";
-import rouletteRoutes from "./routes/roulette.routes.js";
+import { initCache } from "./cache/index.js";
+import { initDb } from "./db/index.js";
+import { initRoutes } from "./routes";
+import { initSocketEvents } from "./sockets/index.js";
+import { initSocketServer } from "./sockets/server.js";
 
 const corsOptions = {
 	origin: process.env.CORS_ORIGIN,
@@ -22,17 +20,14 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json());
 
-app.use("/api/room", roomRoutes);
-app.use("/api/roulette", rouletteRoutes);
-app.use("/api/list", listRoutes);
-
-const { io, server } = initSocketIo(app);
+const { io, server } = initSocketServer(app);
 
 app.set("io", io);
 
-registerRoomSocketEvents(io);
-registerRouletteSocketEvents(io);
+initSocketEvents(io);
+initRoutes(app);
 
 server.listen(process.env.PORT, async () => {
-	await connectRedis(io);
+	await initDb();
+	await initCache(io);
 });

@@ -12,7 +12,8 @@ export default defineConfig({
 		watch: {
 			usePolling: true,
 			interval: 100
-		}
+		},
+		allowedHosts: ["requiring-meanwhile-dana-say.trycloudflare.com"]
 	},
 	plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), react(), tailwindcss(), tsconfigPaths()]
 });

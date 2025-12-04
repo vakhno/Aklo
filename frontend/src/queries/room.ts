@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useMutation, type UseMutationOptions, useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
+import type { LanguageType } from "@/lib/types/language";
 import type { NewRoomSchemaType, RoomType } from "@/lib/types/room";
 
 type getRoomProps = {
@@ -43,7 +44,8 @@ type createRoomProps = {
 };
 
 const createRoom = async ({ newRoomData }: createRoomProps): Promise<RoomType> => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room`, {
+	const url = `${import.meta.env.VITE_SOCKET_URL}/api/room`;
+	const response = await fetch(url, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json"
@@ -104,8 +106,8 @@ export const useDeleteRoom = ({ options }: useDeleteRoomProps) => {
 	});
 };
 
-const getAllRooms = async ({ limit, page, language, category }: { limit: number; page: number; language?: string; category?: string }) => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room?page=${page}&limit=${limit}${language ? `&language=${language}` : ""}${category ? `&category=${category}` : ""}`, {
+const getAllRooms = async ({ limit, page, language }: { limit: number; page: number; language?: string }) => {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room?page=${page}&limit=${limit}${language ? `&language=${language}` : ""}`, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
@@ -125,36 +127,29 @@ const getAllRooms = async ({ limit, page, language, category }: { limit: number;
 
 type UseGetRoomsProps = {
 	language?: string;
-	category?: string;
 	limit: number;
 };
 
-export const useGetRooms = ({ language, category, limit }: UseGetRoomsProps) => {
+export const useGetRooms = ({ language, limit }: UseGetRoomsProps) => {
 	return useInfiniteQuery({
-		queryKey: ["rooms", language, category, limit],
-		queryFn: ({ pageParam }) => getAllRooms({ page: pageParam, limit, language, category }),
+		queryKey: ["rooms", language, limit],
+		queryFn: ({ pageParam }) => getAllRooms({ page: pageParam, limit, language }),
 		getNextPageParam: (lastPage, _, lastPageParam, __) => (lastPage ? (lastPage.isHasMore ? lastPageParam + 1 : undefined) : undefined),
 		initialPageParam: 1
 	});
 };
 
-const joinRoom = async ({ roomId }: { roomId: string }): Promise<RoomType> => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/${roomId}/join`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		}
-	});
+const joinRoom = async ({ roomId }: { roomId: string }): Promise<void> => {
+	const url = `${import.meta.env.VITE_SOCKET_URL}/api/room/${roomId}/join`;
+	const response = await fetch(url, {
+		method: "POST"
 
+	});
 	const { ok } = response;
 
 	if (!ok) {
 		throw new Error("Failed to join room!");
 	}
-
-	const result = await response.json();
-
-	return result;
 };
 
 type useJoinRoomProps = {
@@ -232,6 +227,37 @@ export const useGetIdListOfOwnRooms = ({ options }: useGetIdListOfOwnRoomsProps)
 	return useQuery({
 		queryKey: ["list-of-own-rooms"],
 		queryFn: () => getIdListOfOwnRooms(),
+		...options
+	});
+};
+
+const getRoomsLanguages = async (): Promise<LanguageType[]> => {
+	const url = `${import.meta.env.VITE_SOCKET_URL}/api/room/language`;
+	const response = await fetch(url, {
+		method: "GET",
+		headers: {
+			"Content-Type": "application/json"
+		}
+	});
+	const { ok } = response;
+
+	if (!ok) {
+		throw new Error("Failed to load list of used room languages!");
+	}
+
+	const roomLanguageList = await response.json() as LanguageType[];
+
+	return roomLanguageList;
+};
+
+type useGetRoomsLanguagesProps = {
+	options?: UseQueryOptions<LanguageType[], Error>;
+};
+
+export const useGetRoomsLanguages = ({ options }: useGetRoomsLanguagesProps = {}) => {
+	return useQuery({
+		queryKey: ["room-languages"],
+		queryFn: getRoomsLanguages,
 		...options
 	});
 };

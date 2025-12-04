@@ -17,6 +17,7 @@ interface UseRoomConnectionReturn {
 	socketRef: React.RefObject<Socket | null>;
 	handleKickAll: () => void;
 	disconnectPeer: () => void;
+	initSocket: () => void;
 }
 
 export const useWebRTC = ({
@@ -102,75 +103,93 @@ export const useWebRTC = ({
 		}
 	};
 
-	useEffect(() => {
+	const initSocket = () => {
 		if (!localStream) {
 			return;
 		}
 
-		const socket = io(import.meta.env.VITE_SOCKET_URL, {
+		const socket = io(`${import.meta.env.VITE_SOCKET_URL}/room`, {
 			transports: ["websocket"]
 		});
-		socketRef.current = socket;
 
-		socket.emit("self-room-join", roomId);
+		socket.on("connect", () => {
+			socketRef.current = socket;
 
-		socket.on("room-expired", () => {
-			setExpired(true);
+			socket.emit("self-room-join", roomId);
 
-			disconnectPeer();
+			socket.on("room-expired", () => {
+				setExpired(true);
+
+				disconnectPeer();
+			});
+
+			socket.on("self-room-join-failed", () => {
+
+			});
+
+			socket.on("self-room-join-success", () => {
+				createPeer(localStream, true);
+			});
+
+			socket.on("opponents-room-new-join", () => {
+			});
+
+			socket.on("opponents-room-receive-offer", async ({ offer }: { offer: RTCSessionDescription }) => {
+				const peer = createPeer(localStream, false);
+				if (offer) {
+					await peer.setRemoteDescription(new RTCSessionDescription(offer));
+					const answer = await peer.createAnswer();
+					await peer.setLocalDescription(answer);
+					socket.emit("opponents-room-send-answer", { answer });
+				}
+			});
+
+			socket.on("opponents-room-receive-answer", async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
+				if (peerRef.current && peerRef.current.signalingState !== "stable") {
+					await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+				}
+			});
+
+			socket.on("opponents-room-receive-ice-candidate", async ({ candidate }) => {
+				if (peerRef.current) {
+					await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+
+					setHasGuest(true);
+				}
+			});
+
+			socket.on("opponents-room-user-kick", () => {
+				setKicked(true);
+				disconnectPeer();
+
+				socket.emit("opponent-kick");
+			});
+
+			socket.on("opponents-room-user-disconnect", () => {
+				disconnectPeer();
+			});
 		});
+	};
 
-		socket.on("self-room-join-failed", () => {
+	const closePeer = () => {
+		if (peerRef.current) {
+			peerRef.current.close();
+			peerRef.current = null;
+		}
+	};
 
-		});
+	const disconnectSocket = () => {
+		if (socketRef.current) {
+			socketRef.current?.disconnect();
+		}
+	};
 
-		socket.on("self-room-join-success", () => {
-			createPeer(localStream, true);
-		});
-
-		socket.on("opponents-room-new-join", () => {
-		});
-
-		socket.on("opponents-room-receive-offer", async ({ offer }: { offer: RTCSessionDescription }) => {
-			const peer = createPeer(localStream, false);
-			if (offer) {
-				await peer.setRemoteDescription(new RTCSessionDescription(offer));
-				const answer = await peer.createAnswer();
-				await peer.setLocalDescription(answer);
-				socket.emit("opponents-room-send-answer", { answer });
-			}
-		});
-
-		socket.on("opponents-room-receive-answer", async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
-			if (peerRef.current && peerRef.current.signalingState !== "stable") {
-				await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
-			}
-		});
-
-		socket.on("opponents-room-receive-ice-candidate", async ({ candidate }) => {
-			if (peerRef.current) {
-				await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
-
-				setHasGuest(true);
-			}
-		});
-
-		socket.on("opponents-room-user-kick", () => {
-			setKicked(true);
-			disconnectPeer();
-		});
-
-		socket.on("opponents-room-user-disconnect", () => {
-			disconnectPeer();
-		});
-
+	useEffect(() => {
 		return () => {
-			if (peerRef.current) {
-				peerRef.current.close();
-			}
-			socket.disconnect();
+			disconnectSocket();
+			closePeer();
 		};
-	}, [roomId, localStream]);
+	}, []);
 
 	return {
 		remoteStream,
@@ -180,6 +199,7 @@ export const useWebRTC = ({
 		isKicked,
 		socketRef,
 		handleKickAll,
-		disconnectPeer
+		disconnectPeer,
+		initSocket
 	};
 };

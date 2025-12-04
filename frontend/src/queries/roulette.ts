@@ -1,15 +1,16 @@
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
+import type { LanguageType } from "@/lib/types/language";
 import type { RouletteType } from "@/lib/types/roulette";
 
-const getRoulette = async ({ rouletteId }: { rouletteId: string }): Promise<RouletteType> => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/roulette/${rouletteId}`, {
+const getRoulette = async ({ id }: { id: string }): Promise<RouletteType> => {
+	const url = `${import.meta.env.VITE_SOCKET_URL}/api/roulette/${id}`;
+	const response = await fetch(url, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
 		}
 	});
-
 	const { ok } = response;
 
 	if (!ok) {
@@ -22,26 +23,26 @@ const getRoulette = async ({ rouletteId }: { rouletteId: string }): Promise<Roul
 };
 
 type useGetRouletteProps = {
-	onSuccess?: (roulette: RouletteType) => void;
-	onError?: () => void;
+	options?: UseQueryOptions<RouletteType, Error>;
+	id: string;
 };
 
-export const useGetRoulette = ({ onSuccess, onError }: useGetRouletteProps) => {
-	return useMutation({
-		mutationFn: getRoulette,
-		onSuccess,
-		onError
+export const useGetRoulette = ({ id, options }: useGetRouletteProps) => {
+	return useQuery({
+		queryKey: ["roulette"],
+		queryFn: () => getRoulette({ id }),
+		...options
 	});
 };
 
 const getAllRoulettes = async ({ limit, page, language }: { limit: number; page: number; language?: string }) => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/roulette?page=${page}&limit=${limit}${language ? `&language=${language}` : ""}`, {
+	const url = `${import.meta.env.VITE_SOCKET_URL}/api/roulette?page=${page}&limit=${limit}${language ? `&language=${language}` : ""}`;
+	const response = await fetch(url, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
 		}
 	});
-
 	const { ok } = response;
 
 	if (!ok) {
@@ -64,5 +65,36 @@ export const useGetRoulettes = ({ language, limit }: UseGetRoulettesProps) => {
 		queryFn: ({ pageParam }) => getAllRoulettes({ page: pageParam, limit, language }),
 		getNextPageParam: (lastPage, _, lastPageParam, __) => (lastPage ? (lastPage.isHasMore ? lastPageParam + 1 : undefined) : undefined),
 		initialPageParam: 1
+	});
+};
+
+const getRoulettesLanguages = async (): Promise<LanguageType[]> => {
+	const url = `${import.meta.env.VITE_SOCKET_URL}/api/roulette/language`;
+	const response = await fetch(url, {
+		method: "GET",
+		headers: {
+			"Content-Type": "application/json"
+		}
+	});
+	const { ok } = response;
+
+	if (!ok) {
+		throw new Error("Failed to load list of used roulette languages!");
+	}
+
+	const rouletteLanguageList = await response.json() as LanguageType[];
+
+	return rouletteLanguageList;
+};
+
+type useGetRoulettesLanguagesProps = {
+	options?: UseQueryOptions<LanguageType[], Error>;
+};
+
+export const useGetRoulettesLanguages = ({ options }: useGetRoulettesLanguagesProps = {}) => {
+	return useQuery({
+		queryKey: ["roulette-languages"],
+		queryFn: getRoulettesLanguages,
+		...options
 	});
 };

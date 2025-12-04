@@ -5,9 +5,10 @@ import { cn } from "@/lib/utils/cn";
 interface VideoProps {
 	className?: string;
 	stream: MediaStream | null;
+	isMuted?: boolean;
 }
 
-const Video = ({ className, stream }: VideoProps) => {
+const Video = ({ className, stream, isMuted = false }: VideoProps) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
 
 	useEffect(() => {
@@ -20,7 +21,7 @@ const Video = ({ className, stream }: VideoProps) => {
 		<div className={cn(className)}>
 			<video
 				ref={videoRef}
-				muted
+				muted={isMuted}
 				autoPlay
 				disablePictureInPicture={true}
 				controls={false}

@@ -1,164 +1,202 @@
+import { Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
-import type { CreatedRoomType, NewRoomType } from "../libs/types/room.type";
+import type { LanguageDocLeanType } from "../libs/types/language.type";
+import type { RoomDocLeanType, RoomDocType, RoomInputSchemaType, RoomReadySchemaType, RoomSchemaType } from "../libs/types/room.type";
 
-import redisClient from "../configs/redis.config";
-import { ROOM_PREFIX, ROOMS_KEY } from "../libs/constants/redis";
-import { convertObjToRedisHset } from "../utils/convert-obj-to-redis-hset";
-import { convertRedisHsetToCreatedRoom } from "../utils/convert-redis-hset-to-created-room";
+import { RoomReadySchema } from "../libs/zod-schemas/room.schema";
+import { LanguageModel } from "../routes/language/language.model";
+import { RoomModel } from "../routes/room/room.model";
+import { formatError } from "../utils/format-error";
+import { createRoomCache } from "./room-cache.service";
 
-export async function createRoom(roomData: NewRoomType): Promise<CreatedRoomType> {
+export async function createRoom(roomInput: RoomInputSchemaType): Promise<RoomDocType> {
 	try {
-		const room: CreatedRoomType = {
-			id: uuidv4(),
+		if (!roomInput) {
+			throw new Error("No room provided");
+		}
+
+		const roomReadyData: Partial<RoomReadySchemaType> = {
+			activeUsersCount: 0,
 			creatorId: uuidv4(),
-			...roomData,
-			isAvailable: true,
-			isCreatorActive: true,
-			currentGuestCount: 0,
-			maxGuestCount: 1,
-			createdAt: new Date().getTime(),
 		};
+		const validatedData = await RoomReadySchema.parseAsync({
+			...roomInput,
+			...roomReadyData,
+		});
+		const roomDoc = new RoomModel(validatedData);
+		const { _id } = roomDoc;
+		const roomDocSaved = await roomDoc.save();
 
-		const convertedRoom = convertObjToRedisHset(room);
+		await createRoomCache(String(_id));
 
-		await redisClient.hSet(`${ROOM_PREFIX}${convertedRoom.id}`, convertedRoom);
-
-		await redisClient.expire(`${ROOM_PREFIX}${convertedRoom.id}`, 7200);
-
-		return room;
+		return roomDocSaved;
 	}
 	catch (error) {
-		// eslint-disable-next-line no-console
-		console.log(error);
-
-		throw new Error("Create room service error!");
+		throw new Error(formatError(error));
 	}
 }
 
-export async function getAllRooms({ category, language, limit, page }: { category?: string; language?: string; limit: number; page: number }): Promise<{ rooms: CreatedRoomType[]; isHasMore: boolean }> {
+export async function getRoom(roomId: string): Promise<RoomDocLeanType> {
 	try {
-		let query = "*";
-		const offset = (page - 1) * limit;
-		const filters = [];
-
-		if (category) {
-			filters.push(`@category:{${category}}`);
+		if (!Types.ObjectId.isValid(roomId)) {
+			throw new Error("No room id");
 		}
+
+		const roomLeanModel = await RoomModel.findById(roomId).lean();
+
+		if (!roomLeanModel) {
+			throw new Error("Room not found");
+		}
+
+		return roomLeanModel;
+	}
+	catch (error) {
+		throw new Error(formatError(error));
+	}
+}
+
+export async function getAllRooms({ language, limit, page }: { language?: string; limit: number; page: number }): Promise<{ rooms: RoomDocLeanType[]; isHasMore: boolean }> {
+	try {
+		// await deleteAllRooms();
+		// await deleteAllRoomsCache();
+
+		const offset = (page - 1) * limit;
+		const roomFilters: Partial<RoomSchemaType> = {};
 
 		if (language) {
-			filters.push(`@language:{${language}}`);
+			roomFilters.language = new Types.ObjectId(language);
 		}
 
-		if (filters.length) {
-			query = filters.join(" ");
-		}
-
-		const result = await redisClient.sendCommand([
-			"FT.SEARCH",
-			"rooms_idx",
-			query,
-			"SORTBY",
-			"createdAt",
-			"DESC",
-			"LIMIT",
-			String(offset),
-			String(limit),
-		]);
-
-		if (!Array.isArray(result)) {
-			throw new TypeError("Unexpected FT.SEARCH response");
-		}
-
-		const total = result[0];
+		const roomPopulatedLeanModel = await RoomModel.find(roomFilters)
+			.skip(offset)
+			.limit(limit)
+			.sort({ activeUsersCount: -1, priority: 1 })
+			.lean();
+		const total = await RoomModel.countDocuments(roomFilters);
 		const isHasMore = Number(page) * limit < total;
-		const rooms: CreatedRoomType[] = [];
 
-		if (total > 0) {
-			result.forEach((item) => {
-				if (Array.isArray(item)) {
-					const room = {} as Record<keyof CreatedRoomType, string>;
-
-					for (let i = 0; i < item.length; i += 2) {
-						room[item[i] as keyof CreatedRoomType] = item[i + 1];
-					}
-
-					rooms.push(convertRedisHsetToCreatedRoom(room));
-				}
-			});
-		}
-
-		return { rooms, isHasMore };
+		return { rooms: roomPopulatedLeanModel, isHasMore };
 	}
 	catch (error) {
-		// eslint-disable-next-line no-console
-		console.log(error);
-
-		throw new Error("Get all rooms error");
+		throw new Error(formatError(error));
 	}
 }
 
-export async function getRoom(roomId: string): Promise<CreatedRoomType> {
+export async function resetAllRooms(): Promise<void> {
 	try {
-		const room = await redisClient.hGetAll(`${ROOM_PREFIX}${roomId}`) as Record<keyof CreatedRoomType, string>;
-		if (!room || Object.keys(room).length === 0) {
-			throw new Error("No room found");
-		}
-
-		const parsedRoom = convertRedisHsetToCreatedRoom(room);
-
-		return parsedRoom;
+		await RoomModel.updateMany({}, { $set: { activeUsersCount: 0 } });
 	}
 	catch (error) {
-		// eslint-disable-next-line no-console
-		console.log(error);
+		throw new Error(formatError(error));
+	}
+}
 
-		throw new Error("Get room error!");
+export async function resetRoom(roomId: string): Promise<void> {
+	try {
+		if (!Types.ObjectId.isValid(roomId)) {
+			throw new Error("No room id");
+		}
+
+		const resetRoom = await RoomModel.findByIdAndUpdate(roomId, { $set: { activeUsersCount: 0 } }, { new: true });
+
+		if (!resetRoom) {
+			throw new Error("No room update");
+		}
+	}
+	catch (error) {
+		throw new Error(formatError(error));
+	}
+}
+
+export async function deleteAllRooms(): Promise<void> {
+	try {
+		await RoomModel.deleteMany();
+	}
+	catch (error) {
+		throw new Error(formatError(error));
 	}
 }
 
 export async function deleteRoom(roomId: string): Promise<void> {
 	try {
-		const room = await redisClient.exists(`${ROOM_PREFIX}${roomId}`);
-
-		if (!room) {
-			throw new Error("Room is not exist!");
+		if (!Types.ObjectId.isValid(roomId)) {
+			throw new Error("No room id");
 		}
 
-		const multi = redisClient.multi();
+		const deletedRoom = await RoomModel.findByIdAndDelete(roomId);
 
-		multi.hDel(ROOMS_KEY, roomId);
-		multi.del(`${ROOM_PREFIX}${roomId}`);
-
-		await multi.exec();
+		if (!deletedRoom) {
+			throw new Error("No room deleted");
+		}
 	}
 	catch (error) {
-		// eslint-disable-next-line no-console
-		console.log(error);
-
-		throw new Error("Delete room error!");
+		throw new Error(formatError(error));
 	}
 }
 
-export async function updateRoom(roomId: string, updates: Partial<CreatedRoomType>): Promise<CreatedRoomType> {
+export async function joinRoom(roomId: string, creator: string | undefined): Promise<void> {
 	try {
-		const room = await getRoom(roomId);
+		if (!Types.ObjectId.isValid(roomId)) {
+			throw new Error("No room id");
+		}
 
-		if (!room) {
+		const roomLeanModel = await RoomModel.findById(roomId).lean();
+
+		if (!roomLeanModel) {
 			throw new Error("Room not found");
 		}
 
-		const updatedRoom = { ...room, ...updates };
-		const convertedRoom = convertObjToRedisHset(updatedRoom);
+		const { creatorId } = roomLeanModel;
 
-		await redisClient.hSet(`${ROOM_PREFIX}${roomId}`, convertedRoom);
+		if (creator !== creatorId) {
+			const updatedRoom = await RoomModel.findByIdAndUpdate(roomId, { $inc: { activeUsersCount: 1 } }, { new: true });
 
-		return updatedRoom;
+			if (!updatedRoom) {
+				throw new Error("Room not found");
+			}
+		}
 	}
 	catch (error) {
-		// eslint-disable-next-line no-console
-		console.log(error);
+		throw new Error(formatError(error));
+	}
+}
 
-		throw new Error("Update room error");
+export async function leftRoom(roomId: string, creator: string | undefined): Promise<void> {
+	try {
+		if (!Types.ObjectId.isValid(roomId)) {
+			throw new Error("No room id");
+		}
+
+		const roomLeanModel = await RoomModel.findById(roomId).lean();
+
+		if (!roomLeanModel) {
+			throw new Error("Room not found");
+		}
+
+		const { creatorId } = roomLeanModel;
+
+		if (creator !== creatorId) {
+			const updateRoom = await RoomModel.findByIdAndUpdate(roomId, { $inc: { activeUsersCount: -1 } }, { new: true });
+
+			if (!updateRoom) {
+				throw new Error("Room not found");
+			}
+		}
+	}
+	catch (error) {
+		throw new Error(formatError(error));
+	}
+}
+
+export async function getRoomsLanguages(): Promise<LanguageDocLeanType[]> {
+	try {
+		const languageIdList = await RoomModel.distinct("language");
+		const roomLanguageList = await LanguageModel.find({ _id: { $in: languageIdList } }).lean();
+
+		return roomLanguageList;
+	}
+	catch (error) {
+		throw new Error(formatError(error));
 	}
 }
