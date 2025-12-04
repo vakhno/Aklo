@@ -1,29 +1,34 @@
-import type { z } from "zod";
+import type { FlattenMaps, HydratedDocument, InferSchemaType, Model } from "mongoose";
+import type * as z from "zod";
 
-import type { NewRoomSchema } from "../zod-schemas/new-room.schema";
+import type { RoomSchema } from "../../routes/room/room.model";
+import type { LanguageDocLeanType } from "../types/language.type";
+import type { RoomInputSchema, RoomReadySchema } from "../zod-schemas/room.schema";
 
-export interface CreatedRoomType {
-	id: string;
-	creatorId: string;
-	title: string;
-	category: string;
-	language: string;
-	isCameraRequired: boolean;
-	isMicRequired: boolean;
-	isAvailable: boolean;
-	isCreatorActive: boolean;
-	currentGuestCount: number;
-	maxGuestCount: number;
-	createdAt: number;
-}
+// RoomInputSchemaType - type of data that was send directly from front to back for room creation
+export type RoomInputSchemaType = z.infer<typeof RoomInputSchema>;
+// RoomReadySchemaType - RoomInputSchemaType data that was modified (new fields was added) for saving to the DB
+export type RoomReadySchemaType = z.infer<typeof RoomReadySchema>;
+// RoomSchemaType - type of mongo Schema
+export type RoomSchemaType = InferSchemaType<typeof RoomSchema>;
+// RoomModelType - type of data that receiving from mongo
+export type RoomModelType = Model<RoomSchemaType>;
+// RoomModelType - type of data that receiving from mongo and was lean()
+export type RoomDocType = HydratedDocument<RoomSchemaType>;
+// RoomModelType - type of data that receiving from mongo with populated refs
+export type RoomDocLeanType = FlattenMaps<RoomSchemaType> & ReturnType<RoomDocType["toObject"]>;
+// RoomModelType - type of data that receiving from mongo with populated refs and was lean()
+export type RoomDocLeanPopulatedType = Omit<RoomDocLeanType, "language"> & { language: LanguageDocLeanType };
+
+// RoomCacheType - type of data that storing in redis
+export type RoomCacheType = {
+	availableUsers: string[];
+} & Pick<RoomReadySchemaType, "maxUsersCount" | "creatorId" | "activeUsersCount">;
 
 export interface GetAllRoomsPropsType {
-	category: string;
 	language: string;
 	limit: number;
 	page: number;
 }
 
-export type NewRoomType = z.infer<typeof NewRoomSchema>;
-
-export type HsetCreatedRoomType = Record<keyof CreatedRoomType, string>;
+export type HsetCreatedRoomType = Record<keyof RoomCacheType, string>;

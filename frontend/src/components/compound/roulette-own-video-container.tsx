@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { JoinRoomSchemaType } from "@/lib/types/room";
 
 import DialogModal from "@/components/compound/dialog-modal";
-import SettingsForm from "@/components/compound/settings-form";
+import SettingsForm from "@/components/forms/settings-form";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Video from "@/components/ui/video";
@@ -84,6 +84,7 @@ const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudi
 				<Video
 					className="aspect-auto w-full h-full"
 					stream={stream}
+					isMuted
 				/>
 				<div className="p-4 w-full h-full absolute top-0 left-0 flex flex-col items-center gap-2">
 					<div className="h-full w-full grid grid-rows-[1fr_1fr_1fr]">

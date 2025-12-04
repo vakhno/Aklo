@@ -5,7 +5,7 @@ import type { JoinRoomSchemaType, RoomType } from "@/lib/types/room";
 
 import AlertDialogModal from "@/components/compound/alert-dialog-modal";
 import DialogModal from "@/components/compound/dialog-modal";
-import SettingsForm from "@/components/compound/settings-form";
+import SettingsForm from "@/components/forms/settings-form";
 import Audio from "@/components/ui/audio-visualizer";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -87,7 +87,7 @@ const OwnerVideoContainer = ({ room, className, stream, isCreator, handleDelete,
 				onMouseLeave={() => setIsHovered(false)}
 			>
 				{ isCameraRequired
-					? <Video stream={stream} className="aspect-auto w-full h-full" />
+					? <Video stream={stream} className="aspect-auto w-full h-full" isMuted />
 					: <Audio stream={stream} className="aspect-auto w-full h-full" />}
 				{isHovered && (
 					<div className="absolute bottom-4 right-4 flex items-center gap-2">

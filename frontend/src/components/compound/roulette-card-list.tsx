@@ -3,62 +3,48 @@ import { useNavigate } from "@tanstack/react-router";
 import type { RouletteType } from "@/lib/types/roulette";
 
 import EmptyBlock from "@/components/compound/empty-block";
-import RouletteCard from "@/components/compound/roulette-card";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+
+import RouletteCardGroup from "../groups/roulette-card-group";
+import RouletteCardGroupSkeleton from "../skeletons/roulette-card-group-skeleton";
 
 interface RouletteCardListTypes {
 	isPending: boolean;
 	ROULETTE_LIMIT: number;
-	roulettes?: RouletteType[];
-	hasNextPage: boolean;
+	rouletteList?: RouletteType[];
+
+	isHasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	handleNewPageUpload: () => void;
 }
 
-const RouletteCardList = ({ isPending, ROULETTE_LIMIT, roulettes, hasNextPage, isFetchingNextPage, handleNewPageUpload }: RouletteCardListTypes) => {
+const RouletteCardList = ({ isPending, ROULETTE_LIMIT, rouletteList, isHasNextPage, isFetchingNextPage, handleNewPageUpload }: RouletteCardListTypes) => {
 	const navigate = useNavigate();
 
 	const handleSelectRoulette = (roulette: RouletteType) => {
-		const { id } = roulette;
+		const { _id } = roulette;
 
-		navigate({ to: "/roulette/$id", params: { id } });
+		navigate({ to: "/roulette/$id", params: { id: _id } });
 	};
 
 	return (
 		<>
 			{isPending
 				? (
-						<div className="flex flex-col gap-6">
-							{Array.from({ length: ROULETTE_LIMIT }, (_, index) => (
-								<Skeleton className="h-[162px] rounded-xl" key={index} />
-							))}
-						</div>
-
+						<RouletteCardGroupSkeleton limit={ROULETTE_LIMIT} />
 					)
 				: (
 						<>
-							{!roulettes || roulettes.length === 0
+							{rouletteList && rouletteList.length !== 0
 								? (
-										<div className="flex items-center justify-center h-full">
-											<EmptyBlock title="NO AVAILABLE ROULETTES" description="Something went wrong! Try to visit page later!" />
-										</div>
-									)
-								: (
 										<div className="flex flex-col gap-6">
-											{roulettes.map(roulette => (
-												<RouletteCard roulette={roulette} key={roulette.id} handleSelectRoulette={handleSelectRoulette} />
-											))}
-											{hasNextPage
+											<RouletteCardGroup rouletteList={rouletteList} handleSelectRoulette={handleSelectRoulette} />
+											{isHasNextPage
 												? (
 														<>
 															{isFetchingNextPage
 																? (
-																		<div className="flex flex-col gap-6">
-																			{Array.from({ length: ROULETTE_LIMIT }, (_, index) => (
-																				<Skeleton className="h-[162px] rounded-xl" key={`next-${index}`} />
-																			))}
-																		</div>
+																		<RouletteCardGroupSkeleton limit={ROULETTE_LIMIT} />
 																	)
 																: (
 																		<Button className="m-auto" onClick={handleNewPageUpload}>
@@ -68,6 +54,12 @@ const RouletteCardList = ({ isPending, ROULETTE_LIMIT, roulettes, hasNextPage, i
 														</>
 													)
 												: null}
+										</div>
+
+									)
+								: (
+										<div className="flex items-center justify-center h-full">
+											<EmptyBlock title="NO AVAILABLE ROULETTES" description="Something went wrong! Try to visit page later!" />
 										</div>
 									)}
 						</>

@@ -13,17 +13,17 @@ interface RoulettesCardContentProps {
 }
 
 const RoulettesCardContent = ({ className, rouletteFilters }: RoulettesCardContentProps) => {
-	const { isPending: isPendingRoulettes, fetchNextPage: fetchNextRoulettesPage, data: fetchedRoulettes, hasNextPage: hasNextRoulettesPage, isFetchingNextPage: isFetchingNextRoulettesPage } = useGetRoulettes({ limit: ROOMS_LIMIT, language: rouletteFilters.language });
-	const roulettes = fetchedRoulettes?.pages.flatMap(page => page?.roulettes || []) || [];
+	const { isPending, fetchNextPage, data, hasNextPage, isFetchingNextPage } = useGetRoulettes({ limit: ROOMS_LIMIT, language: rouletteFilters.language });
+	const rouletteList = data?.pages.flatMap(page => page?.roulettes || []) || [];
 
 	const handleNewRoulettesPageUpload = () => {
-		fetchNextRoulettesPage();
+		fetchNextPage();
 	};
 
 	return (
 		<CardContent className={cn(className)}>
 			<ScrollArea className="overflow-auto h-full">
-				<RouletteCardList isFetchingNextPage={isFetchingNextRoulettesPage} hasNextPage={hasNextRoulettesPage} handleNewPageUpload={handleNewRoulettesPageUpload} isPending={isPendingRoulettes} roulettes={roulettes} ROULETTE_LIMIT={ROOMS_LIMIT} />
+				<RouletteCardList isFetchingNextPage={isFetchingNextPage} isHasNextPage={hasNextPage} handleNewPageUpload={handleNewRoulettesPageUpload} isPending={isPending} rouletteList={rouletteList} ROULETTE_LIMIT={ROOMS_LIMIT} />
 			</ScrollArea>
 		</CardContent>
 	);
