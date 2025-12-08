@@ -3,20 +3,29 @@ import type { Socket } from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
+import { applyPeerRemoteAnswer } from "@/lib/peer/apply-peer-remote-answer";
+import { applyPeerRemoteCandidate } from "@/lib/peer/apply-peer-remote-candidate";
+import { createPeer } from "@/lib/peer/create-peer";
+import { createPeerAnswer } from "@/lib/peer/create-peer-answer";
+import { createPeerOffer } from "@/lib/peer/create-peer-offer";
+
+interface RemotePeer {
+	socketId: string;
+	stream: MediaStream;
+	connection: RTCPeerConnection;
+}
+
 interface UseRoomConnectionProps {
 	roomId: string;
 	localStream: MediaStream | null;
 }
 
 interface UseRoomConnectionReturn {
-	remoteStream: MediaStream | null;
-	remoteAudioRef: React.RefObject<HTMLAudioElement | null>;
+	remotePeers: Record<string, RemotePeer>;
 	isExpired: boolean;
 	isKicked: boolean;
-	isHasGuest: boolean;
 	socketRef: React.RefObject<Socket | null>;
-	handleKickAll: () => void;
-	disconnectPeer: () => void;
+	handleKick: (socketId: string) => void;
 	initSocket: () => void;
 }
 
@@ -24,82 +33,87 @@ export const useWebRTC = ({
 	roomId,
 	localStream
 }: UseRoomConnectionProps): UseRoomConnectionReturn => {
-	const [isHasGuest, setHasGuest] = useState(false);
 	const [isExpired, setExpired] = useState(false);
 	const [isKicked, setKicked] = useState(false);
-	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+	const [remotePeers, setRemotePeers] = useState<Record<string, RemotePeer>>({});
 
 	const socketRef = useRef<Socket | null>(null);
-	const peerRef = useRef<RTCPeerConnection | null>(null);
-	const remoteStreamRef = useRef<MediaStream | null>(null);
-	const remoteAudioRef = useRef<HTMLAudioElement>(null);
+	const peersRef = useRef<Record<string, RTCPeerConnection>>({});
 
-	const createPeer = (stream: MediaStream, initiator: boolean): RTCPeerConnection => {
-		const peer = new RTCPeerConnection({
-			iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-		});
+	const handleOnTrack = (targetSocketId: string) => {
+		return (event: RTCTrackEvent, peer: RTCPeerConnection) => {
+			setRemotePeers((prev) => {
+				const updatePrev = { ...prev };
+				const remoteStream = updatePrev[targetSocketId]?.stream || new MediaStream();
 
-		stream.getTracks().forEach(track => peer.addTrack(track, stream));
-
-		if (!remoteStreamRef.current) {
-			remoteStreamRef.current = new MediaStream();
-		}
-
-		peer.ontrack = (event) => {
-			if (!remoteStreamRef.current!.getTracks().find(t => t.id === event.track.id)) {
-				remoteStreamRef.current!.addTrack(event.track);
-
-				if (remoteAudioRef.current) {
-					remoteAudioRef.current.srcObject = remoteStreamRef.current;
-					remoteAudioRef.current.play().catch(e => console.error("Audio play error:", e));
+				if (!remoteStream.getTracks().find(track => track.id === event.track.id)) {
+					remoteStream.addTrack(event.track);
 				}
 
-				setRemoteStream(remoteStreamRef.current);
-			}
-		};
+				updatePrev[targetSocketId] = {
+					socketId: targetSocketId,
+					stream: remoteStream,
+					connection: peer
+				};
 
-		peer.onicecandidate = (event) => {
+				return updatePrev;
+			});
+		};
+	};
+
+	const handleOnIceCandidate = (targetSocketId: string) => {
+		return (event: RTCPeerConnectionIceEvent) => {
 			if (event.candidate && socketRef.current) {
-				socketRef.current.emit("opponents-room-send-ice-candidate", {
-					candidate: event.candidate
+				socketRef.current.emit("room-send-ice-candidate", {
+					candidate: event.candidate,
+					targetSocketId
 				});
 			}
 		};
-
-		peerRef.current = peer;
-
-		if (initiator) {
-			peer.createOffer()
-				.then(offer => peer.setLocalDescription(offer))
-				.then(() => {
-					if (peer.localDescription && socketRef.current) {
-						socketRef.current.emit("opponents-room-send-offer", {
-							offer: peer.localDescription
-						});
-					}
-				});
-		}
-
-		return peer;
 	};
 
-	const disconnectPeer = () => {
-		if (peerRef.current) {
-			peerRef.current.close();
-			peerRef.current = null;
-		}
-		remoteStreamRef.current = null;
-		setRemoteStream(null);
-		setHasGuest(false);
-	};
-
-	const handleKickAll = () => {
-		if (socketRef.current) {
+	const handleKick = (socketId: string) => {
+		if (socketRef.current && socketId) {
 			const socket = socketRef.current;
 
-			socket.emit("self-kick-all");
+			socket.emit("room-kick", { targetSocketId: socketId });
+		}
+	};
 
-			disconnectPeer();
+	const disconnectPeer = (socketId: string) => {
+		const peer = peersRef.current[socketId];
+
+		if (peer) {
+			peer.close();
+
+			delete peersRef.current[socketId];
+		}
+
+		setRemotePeers((prev) => {
+			const updatePrev = { ...prev };
+
+			delete updatePrev[socketId];
+
+			return updatePrev;
+		});
+	};
+
+	const disconnectAllPeers = () => {
+		const peers = peersRef.current;
+
+		Object.values(peers).forEach(peer => peer.close());
+		peersRef.current = {};
+
+		setRemotePeers(() => {
+			const updatePrev = {};
+
+			return updatePrev;
+		});
+	};
+
+	const disconnectSocket = () => {
+		if (socketRef.current) {
+			socketRef.current?.disconnect();
 		}
 	};
 
@@ -115,91 +129,98 @@ export const useWebRTC = ({
 		socket.on("connect", () => {
 			socketRef.current = socket;
 
-			socket.emit("self-room-join", roomId);
+			socket.emit("room-join", roomId);
+
+			socket.on("room-join-success", async ({ socketIdList }: { socketIdList: string[] }) => {
+				await Promise.all(
+					socketIdList.map(async (socketId) => {
+						const peer = createPeer({ stream: localStream, handleOnTrack: handleOnTrack(socketId), handleOnIceCandidate: handleOnIceCandidate(socketId) });
+
+						peersRef.current[socketId] = peer;
+
+						await createPeerOffer({ peer });
+
+						if (socketRef.current) {
+							socketRef.current.emit("room-send-offer", {
+								offer: peer.localDescription,
+								targetSocketId: socketId
+							});
+						}
+					})
+				);
+			});
+
+			socket.on("room-join-failed", () => {});
+
+			socket.on("room-new-join", () => {});
+
+			socket.on("room-receive-offer", async ({ offer, fromSocketId }: { offer: RTCSessionDescription; fromSocketId: string }) => {
+				const peer = createPeer({ stream: localStream, handleOnTrack: handleOnTrack(fromSocketId), handleOnIceCandidate: handleOnIceCandidate(fromSocketId) });
+
+				peersRef.current[fromSocketId] = peer;
+
+				const answer = await createPeerAnswer({ peer, offer });
+
+				socket.emit("room-send-answer", {
+					answer,
+					targetSocketId: fromSocketId
+				});
+			});
+
+			socket.on("room-receive-answer", async ({ answer, fromSocketId }: { answer: RTCSessionDescriptionInit; fromSocketId: string }) => {
+				const peer = peersRef.current[fromSocketId];
+
+				await applyPeerRemoteAnswer({ peer, answer });
+			});
+
+			socket.on("room-receive-ice-candidate", async ({ candidate, fromSocketId }: { candidate: RTCIceCandidate; fromSocketId: string }) => {
+				const peer = peersRef.current[fromSocketId];
+
+				await applyPeerRemoteCandidate({ peer, candidate });
+			});
 
 			socket.on("room-expired", () => {
 				setExpired(true);
 
-				disconnectPeer();
+				disconnectAllPeers();
+				disconnectSocket();
+
+				socket.emit("room-disconnect");
 			});
 
-			socket.on("self-room-join-failed", () => {
-
-			});
-
-			socket.on("self-room-join-success", () => {
-				createPeer(localStream, true);
-			});
-
-			socket.on("opponents-room-new-join", () => {
-			});
-
-			socket.on("opponents-room-receive-offer", async ({ offer }: { offer: RTCSessionDescription }) => {
-				const peer = createPeer(localStream, false);
-				if (offer) {
-					await peer.setRemoteDescription(new RTCSessionDescription(offer));
-					const answer = await peer.createAnswer();
-					await peer.setLocalDescription(answer);
-					socket.emit("opponents-room-send-answer", { answer });
-				}
-			});
-
-			socket.on("opponents-room-receive-answer", async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
-				if (peerRef.current && peerRef.current.signalingState !== "stable") {
-					await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
-				}
-			});
-
-			socket.on("opponents-room-receive-ice-candidate", async ({ candidate }) => {
-				if (peerRef.current) {
-					await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
-
-					setHasGuest(true);
-				}
-			});
-
-			socket.on("opponents-room-user-kick", () => {
+			socket.on("room-kick-success", () => {
 				setKicked(true);
-				disconnectPeer();
 
-				socket.emit("opponent-kick");
+				disconnectAllPeers();
+				disconnectSocket();
+
+				socket.emit("room-disconnect");
 			});
 
-			socket.on("opponents-room-user-disconnect", () => {
-				disconnectPeer();
+			socket.on("room-disconnect-success", () => {
+				disconnectAllPeers();
+				disconnectSocket();
+			});
+
+			socket.on("room-leave", (fromSocketId) => {
+				disconnectPeer(fromSocketId);
 			});
 		});
 	};
 
-	const closePeer = () => {
-		if (peerRef.current) {
-			peerRef.current.close();
-			peerRef.current = null;
-		}
-	};
-
-	const disconnectSocket = () => {
-		if (socketRef.current) {
-			socketRef.current?.disconnect();
-		}
-	};
-
 	useEffect(() => {
 		return () => {
+			disconnectAllPeers();
 			disconnectSocket();
-			closePeer();
 		};
 	}, []);
 
 	return {
-		remoteStream,
-		remoteAudioRef,
-		isHasGuest,
+		remotePeers,
 		isExpired,
 		isKicked,
 		socketRef,
-		handleKickAll,
-		disconnectPeer,
+		handleKick,
 		initSocket
 	};
 };

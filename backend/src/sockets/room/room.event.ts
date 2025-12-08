@@ -10,7 +10,7 @@ export function registerRoomSocketEvents(io: Server) {
 	namespace.on("connection", (socket) => {
 		const socketId = socket.id;
 
-		socket.on("self-room-join", async (roomId) => {
+		socket.on("room-join", async (roomId) => {
 			try {
 				socket.data.roomId = roomId;
 
@@ -20,44 +20,47 @@ export function registerRoomSocketEvents(io: Server) {
 				await joinRoomCache(roomId, socketId, creatorId);
 
 				socket.join(roomId);
-				socket.to(roomId).emit("opponents-room-new-join");
-				socket.emit("self-room-join-success");
+
+				socket.to(roomId).emit("room-new-join");
 
 				await joinRoom(roomId, creatorId);
+
+				const socketList = await namespace.in(roomId).fetchSockets();
+				const socketIdList = socketList.map(socket => socket.id).filter(id => id !== socketId);
+
+				socket.emit("room-join-success", { socketIdList });
 			}
 			catch (error) {
 				// eslint-disable-next-line no-console
 				console.log(error);
 
-				socket.emit("self-room-join-failed");
+				socket.emit("room-join-failed");
 			}
 		});
 
-		socket.on("opponents-room-send-offer", ({ offer }: { offer: RTCSessionDescription }) => {
-			const { roomId } = socket.data;
-
-			socket.to(roomId).emit("opponents-room-receive-offer", { offer });
+		socket.on("room-send-offer", ({ offer, targetSocketId }: { offer: RTCSessionDescription; targetSocketId: string }) => {
+			socket.to(targetSocketId).emit("room-receive-offer", { offer, fromSocketId: socketId });
 		});
 
-		socket.on("opponents-room-send-answer", ({ answer }: { answer: RTCSessionDescriptionInit }) => {
-			const { roomId } = socket.data;
-
-			socket.to(roomId).emit("opponents-room-receive-answer", { answer });
+		socket.on("room-send-answer", ({ answer, targetSocketId }: { answer: RTCSessionDescriptionInit; targetSocketId: string }) => {
+			socket.to(targetSocketId).emit("room-receive-answer", { answer, fromSocketId: socketId });
 		});
 
-		socket.on("opponents-room-send-ice-candidate", ({ candidate }: { candidate: RTCIceCandidate }) => {
-			const { roomId } = socket.data;
-
-			socket.to(roomId).emit("opponents-room-receive-ice-candidate", { candidate });
+		socket.on("room-send-ice-candidate", ({ candidate, targetSocketId }: { candidate: RTCIceCandidate; targetSocketId: string }) => {
+			socket.to(targetSocketId).emit("room-receive-ice-candidate", { candidate, fromSocketId: socketId });
 		});
 
-		socket.on("self-kick-all", () => {
+		socket.on("room-kick", async ({ targetSocketId }) => {
 			const { roomId } = socket.data;
+			const cookies = getCookies({ socket });
+			const creatorId = cookies?.[roomId];
 
-			socket.to(roomId).emit("opponents-room-user-kick");
+			if (creatorId) {
+				socket.to(targetSocketId).emit("room-kick-success");
+			}
 		});
 
-		socket.on("opponent-kick", () => {
+		socket.on("room-disconnect", () => {
 			socket.disconnect(true);
 		});
 
@@ -66,10 +69,10 @@ export function registerRoomSocketEvents(io: Server) {
 			const cookies = getCookies({ socket });
 			const creator = cookies?.[roomId];
 
+			socket.to(roomId).emit("room-leave", socketId);
+
 			await leftRoomCache(roomId, socketId, creator);
 			await leftRoom(roomId, creator);
-
-			socket.to(roomId).emit("opponents-room-user-disconnect");
 		});
 	});
 }

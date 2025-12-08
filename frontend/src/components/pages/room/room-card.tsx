@@ -14,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMediaDevice } from "@/hooks/use-media-device";
 import { useWebRTC } from "@/hooks/use-webrtc";
+import { cn } from "@/lib/utils/cn";
 import { useCheckIsCreator, useDeleteRoom, useGetRoom } from "@/queries/room";
 import useMediaDeviceStore from "@/store/media-device-store";
 
@@ -38,7 +39,7 @@ function RoomCard() {
 
 	const { combinedStream, videoDevices, audioDevices, videoStream, audioStream, selectedVideoDevice, selectedAudioDevice, setupCombinedDevice, setupVideoDevice, setupAudioDevice } = useMediaDevice({ isAudioAvailable: room?.isMicRequired, isVideoAvailable: room?.isCameraRequired, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
 
-	const { remoteStream, isExpired, isKicked, isHasGuest, handleKickAll, initSocket } = useWebRTC({ roomId: id, localStream: combinedStream });
+	const { remotePeers, isExpired, isKicked, handleKick, initSocket } = useWebRTC({ roomId: id, localStream: combinedStream });
 	const [isExpiredModalOpened, setExpiredModalOpened] = useState(false);
 	const [isKickedModalOpened, setKickedModalOpened] = useState(false);
 	const [isAvailable, setAvailable] = useState(false);
@@ -61,8 +62,8 @@ function RoomCard() {
 		navigate({ to: "/" });
 	};
 
-	const handleKickClick = () => {
-		handleKickAll();
+	const handleKickClick = (socketId: string) => {
+		handleKick(socketId);
 	};
 
 	const handleDelete = async (room: RoomType) => {
@@ -126,17 +127,14 @@ function RoomCard() {
 							<Card className="h-[calc(100vh-var(--header-height)-var(--header-margin-bottom))]">
 								<CardContent className="w-full h-full">
 									<div className="w-full h-full flex flex-col gap-2">
-										<div className="overflow-hidden flex-1 w-full h-full">
-											<div className="flex max-sm:flex-col gap-2 w-full h-full justify-center">
+										<div className={`flex-1 min-h-0 flex items-center justify-center overflow-hidden p-2 `}>
+											<div className={cn("grid gap-2 md:gap-3 w-full h-full", Object.keys(remotePeers).length === 0 && "grid-cols-1", Object.keys(remotePeers).length === 1 && "grid-cols-1 sm:grid-cols-2", Object.keys(remotePeers).length === 2 && "grid-cols-1 sm:grid-cols-3", Object.keys(remotePeers).length >= 3 && "grid-cols-2")}>
 												{room && (
 													<>
-														{isCreator
-															? <OwnerVideoContainer room={room} stream={combinedStream} isCreator handleSettingsSubmit={handleSettingsSubmit} handleDelete={handleDelete} className="flex-1 w-full h-full overflow-hidden" />
-															: <GuestVideoContainer room={room} stream={combinedStream} className="flex-1 w-full h-full overflow-hidden" />}
-
-														{isHasGuest
-															? <GuestVideoContainer room={room} stream={remoteStream} isKickUserAvailable={isCreator} isVolumeSliderAvailable handleKickClick={handleKickClick} className="flex-1 w-full h-full overflow-hidden" />
-															: null	}
+														<OwnerVideoContainer room={room} stream={combinedStream} isCreator handleSettingsSubmit={handleSettingsSubmit} handleDelete={handleDelete} className="flex-1 w-full h-full overflow-hidden" />
+														{
+															Object.entries(remotePeers).map(([socketId, peer]) => <GuestVideoContainer room={room} stream={peer.stream} isKickUserAvailable={isCreator} isVolumeSliderAvailable handleKickClick={() => handleKickClick(socketId)} className="flex-1 w-full h-full overflow-hidden" key={socketId} />)
+														}
 													</>
 												)}
 											</div>
