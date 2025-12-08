@@ -1,11 +1,22 @@
 import type { RedisClientType } from "redis";
 
-import { createClient } from "redis";
+import { client } from "./client";
 
-export const subscriber = createClient({
-	url: process.env.REDIS_URL,
-	socket: {},
-}) as RedisClientType;
+export const subscriber = client.duplicate() as RedisClientType;
 
-subscriber.on("error", err => console.error("Redis subscriber error!", err));
-subscriber.on("connect", () => console.warn("Redis subscriber successful connection!"));
+subscriber.on("connect", () => {
+	// eslint-disable-next-line no-console
+	console.log("Redis subscribe client connected!");
+});
+subscriber.on("error", (error) => {
+	// eslint-disable-next-line no-console
+	console.log("Redis subscribe client error!", error);
+});
+subscriber.on("reconnecting", () => {
+	// eslint-disable-next-line no-console
+	console.log("Redis subscribe client reconnecting!");
+});
+subscriber.on("end", () => {
+	// eslint-disable-next-line no-console
+	console.log("Redis subscribe client closed!");
+});
