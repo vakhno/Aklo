@@ -10,7 +10,6 @@ import {
 	ItemContent,
 	ItemTitle
 } from "@/components/ui/item";
-import { LANGUAGE_LIST } from "@/lib/constants/language-list";
 import { cn } from "@/lib/utils/cn";
 
 interface RoomCardTypes {
@@ -21,7 +20,7 @@ interface RoomCardTypes {
 
 const RoomCard = ({ room, isOwn, handleSelectRoom }: RoomCardTypes) => {
 	const { title, language, isCameraRequired, isMicRequired, activeUsersCount, maxUsersCount } = room;
-	const languageLabel = LANGUAGE_LIST[language]?.label;
+	const { name } = language;
 	const isAvailable = isOwn || activeUsersCount < maxUsersCount;
 
 	const handleOpenClick = () => {
@@ -35,7 +34,7 @@ const RoomCard = ({ room, isOwn, handleSelectRoom }: RoomCardTypes) => {
 					<div className="flex flex-wrap items-center gap-2">
 						<Badge variant="secondary" className="flex gap-1">
 							<Globe className="mr-1 h-3 w-3" />
-							{languageLabel}
+							{name}
 						</Badge>
 					</div>
 					<ItemTitle className="line-clamp-2 wrap-anywhere">

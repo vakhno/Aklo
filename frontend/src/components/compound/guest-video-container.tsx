@@ -1,17 +1,16 @@
 import { Loader, RefreshCw, UserMinus, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import type { RoomType } from "@/lib/types/room";
-
-import Audio from "@/components/ui/audio-visualizer";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import Video from "@/components/ui/video";
 import { cn } from "@/lib/utils/cn";
 
+import { LiveWaveform } from "../ui/live-waveform";
+
 interface VideoContainerProps {
-	room: RoomType;
 	className?: string;
+	isCameraRequired: boolean;
 	isLoading?: boolean;
 	isRecovering?: boolean;
 	stream: MediaStream | null;
@@ -20,8 +19,7 @@ interface VideoContainerProps {
 	handleKickClick?: () => void;
 }
 
-const GuestVideoContainer = ({ room, className, isLoading, isRecovering, stream, isKickUserAvailable, isVolumeSliderAvailable, handleKickClick }: VideoContainerProps) => {
-	const { isCameraRequired } = room;
+const GuestVideoContainer = ({ className, isCameraRequired, isLoading, isRecovering, stream, isKickUserAvailable, isVolumeSliderAvailable, handleKickClick }: VideoContainerProps) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const [isMuted, setIsMuted] = useState(false);
 	const [volume, setVolume] = useState(0.5);
@@ -69,8 +67,8 @@ const GuestVideoContainer = ({ room, className, isLoading, isRecovering, stream,
 			onMouseLeave={() => setIsHovered(false)}
 		>
 			{ isCameraRequired
-				? <Video stream={stream} className="aspect-auto w-full h-full" />
-				: <Audio stream={stream} className="aspect-auto w-full h-full" />}
+				? <Video ref={videoRef} className="aspect-auto w-full h-full" />
+				: <LiveWaveform stream={stream} active={true} processing={true} barWidth={3} barGap={2} mode="static" height="100%" fadeEdges={true} barColor="gray" historySize={120} />}
 			{isLoading && (
 				<div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] z-10 bg-black/50 rounded-full p-2">
 					<Loader className="w-6 h-6 text-white animate-spin" />

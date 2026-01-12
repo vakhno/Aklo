@@ -3,10 +3,13 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 
-import Header from "@/components/compound/header";
 import useThemeStore from "@/store/theme-store";
 
-function RootComponent() {
+export const Route = createRootRoute({
+	component: () => RootLayout()
+});
+
+function RootLayout() {
 	const { state: { theme } } = useThemeStore();
 
 	useEffect(() => {
@@ -17,16 +20,9 @@ function RootComponent() {
 
 	return (
 		<>
-			<Header />
-			<main className="container mx-auto">
-				<Outlet />
-			</main>
+			<Outlet />
 			<Toaster />
 			<TanStackRouterDevtools />
 		</>
 	);
 }
-
-export const Route = createRootRoute({
-	component: () => RootComponent()
-});

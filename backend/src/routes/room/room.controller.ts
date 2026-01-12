@@ -153,12 +153,6 @@ export async function deleteRoom(req: Request, res: Response) {
 		await roomService.deleteRoom(id);
 		await roomCacheService.deleteRoomCache(id);
 
-		const sockets = await req.app.get("io").in(id).fetchSockets();
-
-		for (const socket of sockets) {
-			socket.data.roomDeleted = true;
-		}
-
 		req.app.get("io").to(id).emit("room-deleted", { roomId: id });
 
 		res.clearCookie(id, {
@@ -294,6 +288,53 @@ export async function checkIsCreator(req: Request, res: Response) {
 		res.status(200).json({
 			isCreator,
 		});
+	}
+	catch (error) {
+		// eslint-disable-next-line no-console
+		console.log(error);
+
+		res.status(500).json({ error });
+	}
+}
+
+export async function isAvailableToVisit(req: Request, res: Response) {
+	try {
+		const { id } = req.params;
+
+		if (!id) {
+			// eslint-disable-next-line no-console
+			console.log({ error: "Id is required" });
+
+			res.status(400).json({ error: "Id is required" });
+
+			return;
+		}
+
+		const room = await roomService.getRoom(id);
+
+		if (!room) {
+			// eslint-disable-next-line no-console
+			console.log({ error: "Room not found" });
+
+			res.status(404).json({ error: "Room not found" });
+
+			return;
+		}
+
+		const { creatorId, activeUsersCount, maxUsersCount } = room;
+		const cookies = getCookies({ req });
+		const isCreator = !!cookies[id] && cookies[id] === creatorId;
+
+		if (isCreator || activeUsersCount < maxUsersCount) {
+			res.status(200).json();
+
+			return;
+		}
+
+		// eslint-disable-next-line no-console
+		console.log({ error: "Room is unavailable to join" });
+
+		res.status(409).json({ error: "Room is unavailable to join" });
 	}
 	catch (error) {
 		// eslint-disable-next-line no-console

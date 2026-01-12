@@ -34,7 +34,7 @@ export function registerRoomSocketEvents(io: Server) {
 				// eslint-disable-next-line no-console
 				console.log(error);
 
-				socket.emit("room-join-failed");
+				socket.emit("room-failed");
 			}
 		});
 
@@ -60,19 +60,27 @@ export function registerRoomSocketEvents(io: Server) {
 			}
 		});
 
+		socket.on("room-deleted", () => {
+			socket.data.isRoomDeleted = true;
+
+			socket.disconnect(true);
+		});
+
 		socket.on("room-disconnect", () => {
 			socket.disconnect(true);
 		});
 
 		socket.on("disconnect", async () => {
-			const { roomId } = socket.data;
+			const { roomId, isRoomDeleted } = socket.data;
 			const cookies = getCookies({ socket });
 			const creator = cookies?.[roomId];
 
 			socket.to(roomId).emit("room-leave", socketId);
 
-			await leftRoomCache(roomId, socketId, creator);
-			await leftRoom(roomId, creator);
+			if (!isRoomDeleted) {
+				await leftRoomCache(roomId, socketId, creator);
+				await leftRoom(roomId, creator);
+			}
 		});
 	});
 }

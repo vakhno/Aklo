@@ -13,7 +13,7 @@ export default defineConfig({
 			usePolling: true,
 			interval: 100
 		},
-		allowedHosts: ["requiring-meanwhile-dana-say.trycloudflare.com"]
+		allowedHosts: [""]
 	},
 	plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), react(), tailwindcss(), tsconfigPaths()]
 });

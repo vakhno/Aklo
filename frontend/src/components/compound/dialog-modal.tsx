@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
@@ -52,14 +51,22 @@ function DialogModal({
 				<DialogFooter>
 					{isCancelVisible
 						? (
-								<DialogClose onClick={onCancel}>
+								<Button variant="outline" onClick={onCancel}>
 									{cancelTitle}
-								</DialogClose>
+								</Button>
 							)
 						: null}
-					<Button type="submit" form={formId} onClick={onSubmit}>
-						{submitTitle}
-					</Button>
+					{formId
+						? (
+								<Button type="submit" form={formId}>
+									{submitTitle}
+								</Button>
+							)
+						: (
+								<Button onClick={onSubmit}>
+									{submitTitle}
+								</Button>
+							)}
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

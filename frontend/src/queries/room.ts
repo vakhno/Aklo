@@ -23,18 +23,52 @@ const getRoom = async ({ id }: getRoomProps): Promise<RoomType> => {
 
 	const room = await response.json();
 
+	await new Promise(resolve => setTimeout(resolve, 2000));
+
 	return room;
 };
 
 type useGetRoomProps = {
 	id: string;
-	options?: UseQueryOptions<RoomType, Error>;
+	options?: Partial<UseQueryOptions<RoomType, Error>>;
 };
 
 export const useGetRoom = ({ id, options }: useGetRoomProps) => {
 	return useQuery({
 		queryKey: ["room", id],
 		queryFn: () => getRoom({ id }),
+		...options
+	});
+};
+
+type getUseIsAvailableToVisitProps = {
+	id: string;
+};
+
+const getIsAvailableToVisit = async ({ id }: getUseIsAvailableToVisitProps): Promise<boolean> => {
+	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/${id}/is-available-to-visit`, {
+		method: "GET",
+		credentials: "include"
+	});
+
+	const { ok } = response;
+
+	if (!ok) {
+		throw new Error("Room is unavailable to visit!");
+	}
+
+	return true;
+};
+
+type useIsAvailableToVisitProps = {
+	id: string;
+	options?: Partial<UseQueryOptions<boolean, Error>>;
+};
+
+export const useIsAvailableToVisit = ({ id, options }: useIsAvailableToVisitProps) => {
+	return useQuery({
+		queryKey: ["is-available-to-visit", id],
+		queryFn: () => getIsAvailableToVisit({ id }),
 		...options
 	});
 };
@@ -188,7 +222,7 @@ const checkIsCreator = async ({ id }: checkIsCreatorProps): Promise<boolean> => 
 
 type useCheckIsCreatorProps = {
 	id: string;
-	options?: UseQueryOptions<boolean, Error>;
+	options?: Partial<UseQueryOptions<boolean, Error>>;
 };
 
 export const useCheckIsCreator = ({ id, options }: useCheckIsCreatorProps) => {

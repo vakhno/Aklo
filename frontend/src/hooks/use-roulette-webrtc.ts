@@ -3,78 +3,80 @@ import type { Socket } from "socket.io-client";
 import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
-export function useRouletteWebRTC(localStream: MediaStream | null, rouletteId: string) {
-	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-	const socketRef = useRef<Socket | null>(null);
-	const peerRef = useRef<RTCPeerConnection | null>(null);
-	const [guestSocket, setGuestSocket] = useState<string | null>(null);
+import { applyPeerRemoteAnswer } from "@/lib/peer/apply-peer-remote-answer";
+import { applyPeerRemoteCandidate } from "@/lib/peer/apply-peer-remote-candidate";
+import { createPeer } from "@/lib/peer/create-peer";
+import { createPeerAnswer } from "@/lib/peer/create-peer-answer";
+import { createPeerOffer } from "@/lib/peer/create-peer-offer";
+
+export interface RemotePeer {
+	socketId: string;
+	stream: MediaStream;
+	connection: RTCPeerConnection;
+}
+
+interface useRouletteWebRTCProps {
+	rouletteId: string;
+	localStream: MediaStream | null;
+}
+
+export function useRouletteWebRTC({ localStream, rouletteId }: useRouletteWebRTCProps) {
 	const [isSearching, setSearching] = useState(false);
 	const [isFound, setFound] = useState(false);
+	const [remotePeer, setRemotePeer] = useState<RemotePeer | null>(null);
 
-	const remoteStreamRef = useRef<MediaStream | null>(null);
-	const remoteAudioRef = useRef<HTMLAudioElement>(null);
+	const socketRef = useRef<Socket | null>(null);
+	const peerRef = useRef<RTCPeerConnection | null>(null);
 
-	const createPeer = (stream: MediaStream, partnerSocketId: string, initiator: boolean): RTCPeerConnection => {
-		const peer = new RTCPeerConnection({
-			iceServers: [
-				{ urls: "stun:stun1.l.google.com:19302" },
-				{ urls: "stun:stun2.l.google.com:19302" }
-			]
-		});
+	const handleOnTrack = (targetSocketId: string) => {
+		return (event: RTCTrackEvent, peer: RTCPeerConnection) => {
+			setRemotePeer((prev) => {
+				const remoteStream = prev?.stream || new MediaStream();
 
-		stream.getTracks().forEach(track => peer.addTrack(track, stream));
-
-		remoteStreamRef.current = new MediaStream();
-
-		peer.ontrack = (event) => {
-			if (!remoteStreamRef.current!.getTracks().find(t => t.id === event.track.id)) {
-				remoteStreamRef.current!.addTrack(event.track);
-
-				if (remoteAudioRef.current) {
-					remoteAudioRef.current.srcObject = remoteStreamRef.current;
-					remoteAudioRef.current.play().catch(e => console.error("Audio play error:", e));
+				if (!remoteStream.getTracks().find(track => track.id === event.track.id)) {
+					remoteStream.addTrack(event.track);
 				}
 
-				setRemoteStream(remoteStreamRef.current);
-			}
+				return {
+					socketId: targetSocketId,
+					stream: remoteStream,
+					connection: peer
+				};
+			});
 		};
-
-		peer.onicecandidate = (event) => {
-			if (event.candidate && socketRef.current) {
-				socketRef.current.emit("opponents-roulette-send-ice-candidate", {
-					partnerSocketId,
-					candidate: event.candidate
-				});
-			}
-		};
-
-		if (initiator) {
-			peer.createOffer()
-				.then(offer => peer.setLocalDescription(offer))
-				.then(() => {
-					if (peer.localDescription && socketRef.current) {
-						socketRef.current.emit("opponents-roulette-send-offer", {
-							partnerSocketId,
-							offer: peer.localDescription
-						});
-					}
-				});
-		}
-
-		return peer;
 	};
 
-	function startSearch() {
+	const handleOnIceCandidate = (partnerSocketId: string) => {
+		return (event: RTCPeerConnectionIceEvent) => {
+			if (event.candidate && socketRef.current) {
+				socketRef.current.emit("roulette-send-ice-candidate", {
+					candidate: event.candidate,
+					partnerSocketId
+				});
+			}
+		};
+	};
+
+	function closePeer() {
+		if (peerRef.current) {
+			peerRef.current.close();
+			peerRef.current = null;
+		}
+
+		setRemotePeer(null);
+	}
+
+	function handleStartSearch() {
 		if (socketRef.current && localStream) {
 			const socket = socketRef.current;
 
 			setSearching(true);
 
-			socket.emit("self-roulette-start-search");
+			socket.emit("roulette-start-search");
 		}
 	}
 
-	function pauseSearch() {
+	function handlePauseSearch() {
 		setSearching(false);
 
 		if (socketRef.current) {
@@ -82,41 +84,28 @@ export function useRouletteWebRTC(localStream: MediaStream | null, rouletteId: s
 		}
 	}
 
-	function stopSearch() {
-		setRemoteStream(null);
+	function handleStopSearch() {
 		setFound(false);
-		setGuestSocket(null);
-
-		remoteStreamRef.current = null;
 
 		closePeer();
 
-		if (socketRef.current) {
-			socketRef.current.emit("roulette-stop");
+		const socket = socketRef.current;
+
+		if (socket) {
+			socket.emit("roulette-stop");
 		}
 	}
 
-	function skipOpponent() {
-		setRemoteStream(null);
+	function handleSkipOpponent() {
 		setFound(false);
-		setGuestSocket(null);
 		setSearching(true);
 
 		closePeer();
 
-		remoteStreamRef.current = null;
+		const socket = socketRef.current;
 
-		if (socketRef.current) {
-			const socket = socketRef.current;
-
+		if (socket) {
 			socket.emit("roulette-skip");
-		}
-	}
-
-	function closePeer() {
-		if (peerRef.current) {
-			peerRef.current.close();
-			peerRef.current = null;
 		}
 	}
 
@@ -138,66 +127,72 @@ export function useRouletteWebRTC(localStream: MediaStream | null, rouletteId: s
 		socket.on("connect", () => {
 			socketRef.current = socket;
 
-			socket.emit("self-roulette-join", { rouletteId });
+			socket.emit("roulette-join", { rouletteId });
 
 			socket.on("roulette-left", () => {
 				setSearching(true);
-				setRemoteStream(null);
 				setFound(false);
-				setGuestSocket(null);
-
-				remoteStreamRef.current = null;
 
 				closePeer();
 
-				socket.emit("self-roulette-start-search-after-opponent-skip");
+				socket.emit("roulette-start-search-after-opponent-skip");
 			});
 
 			socket.on("roulette-detect", async ({ partnerSocketId, isInitiator }) => {
-				remoteStreamRef.current = null;
-				setRemoteStream(null);
+				const peer = createPeer({ stream: localStream, handleOnTrack: handleOnTrack(partnerSocketId), handleOnIceCandidate: handleOnIceCandidate(partnerSocketId) });
+
+				peerRef.current = peer;
+
+				if (isInitiator) {
+					await createPeerOffer({ peer });
+
+					if (socketRef.current) {
+						socketRef.current.emit("roulette-send-offer", {
+							offer: peer.localDescription,
+							partnerSocketId
+						});
+					}
+				}
 
 				setSearching(false);
 				setFound(true);
-				setGuestSocket(partnerSocketId);
-
-				peerRef.current = createPeer(localStream, partnerSocketId, isInitiator);
 			});
 
-			socket.on("opponents-roulette-skip", async () => {
+			socket.on("roulette-skipped-by-partner", async () => {
 				setSearching(true);
-				setRemoteStream(null);
 				setFound(false);
-				setGuestSocket(null);
-
-				remoteStreamRef.current = null;
 
 				closePeer();
 
-				socket.emit("self-roulette-skip-search");
+				socket.emit("roulette-skipped");
 			});
 
-			socket.on("opponents-roulette-receive-offer", async ({ partnerSocketId, offer }: { partnerSocketId: string; offer: RTCSessionDescription }) => {
-				if (offer && peerRef.current) {
-					await peerRef.current.setRemoteDescription(new RTCSessionDescription(offer));
+			socket.on("roulette-receive-offer", async ({ partnerSocketId, offer }: { partnerSocketId: string; offer: RTCSessionDescription }) => {
+				const peer = createPeer({ stream: localStream, handleOnTrack: handleOnTrack(partnerSocketId), handleOnIceCandidate: handleOnIceCandidate(partnerSocketId) });
 
-					const answer = await peerRef.current.createAnswer();
+				peerRef.current = peer;
 
-					await peerRef.current.setLocalDescription(answer);
+				const answer = await createPeerAnswer({ peer, offer });
 
-					socket.emit("opponents-roulette-send-answer", { partnerSocketId, answer });
+				socket.emit("roulette-send-answer", {
+					answer,
+					partnerSocketId
+				});
+			});
+
+			socket.on("roulette-receive-answer", async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
+				const peer = peerRef.current;
+
+				if (peer) {
+					await applyPeerRemoteAnswer({ peer, answer });
 				}
 			});
 
-			socket.on("opponents-roulette-receive-answer", async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
-				if (peerRef.current && peerRef.current.signalingState !== "stable") {
-					await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
-				}
-			});
+			socket.on("roulette-receive-ice-candidate", async ({ candidate }) => {
+				const peer = peerRef.current;
 
-			socket.on("opponents-roulette-receive-ice-candidate", async ({ candidate }) => {
-				if (peerRef.current) {
-					await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+				if (peer) {
+					await applyPeerRemoteCandidate({ peer, candidate });
 				}
 			});
 		});
@@ -210,220 +205,5 @@ export function useRouletteWebRTC(localStream: MediaStream | null, rouletteId: s
 		};
 	}, []);
 
-	return { myStream: localStream, remoteStream, remoteAudioRef, guestSocket, isSearching, isFound, startSearch, pauseSearch, stopSearch, skipOpponent, initSocket };
+	return { remotePeer, isSearching, isFound, handleStartSearch, handlePauseSearch, handleStopSearch, handleSkipOpponent, initSocket };
 }
-
-// import type { Socket } from "socket.io-client";
-
-// import { useEffect, useRef, useState } from "react";
-// import { io } from "socket.io-client";
-
-// export function useRouletteWebRTC(localStream: MediaStream | null, languageId: string) {
-// 	const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-// 	const socketRef = useRef<Socket | null>(null);
-// 	const peerRef = useRef<RTCPeerConnection | null>(null);
-// 	const [guestSocket, setGuestSocket] = useState<string | null>(null);
-// 	const [isSearching, setSearching] = useState(false);
-// 	const [isFound, setFound] = useState(false);
-
-// 	const remoteStreamRef = useRef<MediaStream | null>(null);
-// 	const remoteAudioRef = useRef<HTMLAudioElement>(null);
-
-// 	useEffect(() => {
-// 		return () => {
-// 			disconnectSocket();
-// 			closePeer();
-// 		};
-// 	}, []);
-
-// 	const createPeer = (stream: MediaStream, partnerSocketId: string, initiator: boolean): RTCPeerConnection => {
-// 		const peer = new RTCPeerConnection({
-// 			iceServers: [
-// 				{ urls: "stun:stun1.l.google.com:19302" },
-// 				{ urls: "stun:stun2.l.google.com:19302" }
-// 			]
-// 		});
-
-// 		stream.getTracks().forEach(track => peer.addTrack(track, stream));
-
-// 		remoteStreamRef.current = new MediaStream();
-
-// 		peer.ontrack = (event) => {
-// 			if (!remoteStreamRef.current!.getTracks().find(t => t.id === event.track.id)) {
-// 				remoteStreamRef.current!.addTrack(event.track);
-
-// 				if (remoteAudioRef.current) {
-// 					remoteAudioRef.current.srcObject = remoteStreamRef.current;
-// 					remoteAudioRef.current.play().catch(e => console.error("Audio play error:", e));
-// 				}
-
-// 				setRemoteStream(remoteStreamRef.current);
-// 			}
-// 		};
-
-// 		peer.onicecandidate = (event) => {
-// 			if (event.candidate && socketRef.current) {
-// 				socketRef.current.emit("opponents-roulette-send-ice-candidate", {
-// 					partnerSocketId,
-// 					candidate: event.candidate
-// 				});
-// 			}
-// 		};
-
-// 		if (initiator) {
-// 			peer.createOffer()
-// 				.then(offer => peer.setLocalDescription(offer))
-// 				.then(() => {
-// 					if (peer.localDescription && socketRef.current) {
-// 						socketRef.current.emit("opponents-roulette-send-offer", {
-// 							partnerSocketId,
-// 							offer: peer.localDescription
-// 						});
-// 					}
-// 				});
-// 		}
-
-// 		return peer;
-// 	};
-
-// 	function initSocket() {
-// 		if (!localStream) {
-// 			return;
-// 		}
-
-// 		const socket = io(import.meta.env.VITE_SOCKET_URL, {
-// 			transports: ["websocket"]
-// 		});
-
-// 		socket.on("connect", () => {
-// 			socketRef.current = socket;
-
-// 			socket.emit("self-roulette-join", { languageId });
-
-// 			socket.on("roulette-left", () => {
-// 				setSearching(true);
-// 				setRemoteStream(null);
-// 				setFound(false);
-// 				setGuestSocket(null);
-
-// 				remoteStreamRef.current = null;
-
-// 				closePeer();
-
-// 				socket.emit("self-roulette-start-search-after-opponent-skip");
-// 			});
-
-// 			socket.on("roulette-detect", async ({ partnerSocketId, isInitiator }) => {
-// 				remoteStreamRef.current = null;
-// 				setRemoteStream(null);
-
-// 				setSearching(false);
-// 				setFound(true);
-// 				setGuestSocket(partnerSocketId);
-
-// 				peerRef.current = createPeer(localStream, partnerSocketId, isInitiator);
-// 			});
-
-// 			socket.on("opponents-roulette-skip", async () => {
-// 				setSearching(true);
-// 				setRemoteStream(null);
-// 				setFound(false);
-// 				setGuestSocket(null);
-
-// 				remoteStreamRef.current = null;
-
-// 				closePeer();
-
-// 				socket.emit("self-roulette-skip-search");
-// 			});
-
-// 			socket.on("opponents-roulette-receive-offer", async ({ partnerSocketId, offer }: { partnerSocketId: string; offer: RTCSessionDescription }) => {
-// 				if (offer && peerRef.current) {
-// 					await peerRef.current.setRemoteDescription(new RTCSessionDescription(offer));
-
-// 					const answer = await peerRef.current.createAnswer();
-
-// 					await peerRef.current.setLocalDescription(answer);
-
-// 					socket.emit("opponents-roulette-send-answer", { partnerSocketId, answer });
-// 				}
-// 			});
-
-// 			socket.on("opponents-roulette-receive-answer", async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
-// 				if (peerRef.current && peerRef.current.signalingState !== "stable") {
-// 					await peerRef.current.setRemoteDescription(new RTCSessionDescription(answer));
-// 				}
-// 			});
-
-// 			socket.on("opponents-roulette-receive-ice-candidate", async ({ candidate }) => {
-// 				if (peerRef.current) {
-// 					await peerRef.current.addIceCandidate(new RTCIceCandidate(candidate));
-// 				}
-// 			});
-// 		});
-// 	}
-
-// 	function startSearch() {
-// 		if (socketRef.current && localStream) {
-// 			const socket = socketRef.current;
-
-// 			setSearching(true);
-
-// 			socket.emit("self-roulette-start-search");
-// 		}
-// 	}
-
-// 	function pauseSearch() {
-// 		setSearching(false);
-
-// 		if (socketRef.current) {
-// 			socketRef.current.emit("roulette-pause");
-// 		}
-// 	}
-
-// 	function stopSearch() {
-// 		setRemoteStream(null);
-// 		setFound(false);
-// 		setGuestSocket(null);
-
-// 		remoteStreamRef.current = null;
-
-// 		closePeer();
-
-// 		if (socketRef.current) {
-// 			socketRef.current.emit("roulette-stop");
-// 		}
-// 	}
-
-// 	function skipOpponent() {
-// 		setRemoteStream(null);
-// 		setFound(false);
-// 		setGuestSocket(null);
-// 		setSearching(true);
-
-// 		closePeer();
-
-// 		remoteStreamRef.current = null;
-
-// 		if (socketRef.current) {
-// 			const socket = socketRef.current;
-
-// 			socket.emit("roulette-skip");
-// 		}
-// 	}
-
-// 	function closePeer() {
-// 		if (peerRef.current) {
-// 			peerRef.current.close();
-// 			peerRef.current = null;
-// 		}
-// 	}
-
-// 	function disconnectSocket() {
-// 		if (socketRef.current) {
-// 			socketRef.current?.disconnect();
-// 		}
-// 	}
-
-// 	return { myStream: localStream, remoteStream, remoteAudioRef, guestSocket, isSearching, isFound, initSocket, startSearch, pauseSearch, stopSearch, skipOpponent };
-// }

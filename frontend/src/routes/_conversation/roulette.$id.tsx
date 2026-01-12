@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import RouletteCard from "@/components/pages/roulette/roulette-card";
+import RoulettePage from "@/components/pages/roulette";
 
-export const Route = createFileRoute("/roulette/$id")({
+export const Route = createFileRoute("/_conversation/roulette/$id")({
 	component: Roulette
 });
 
 function Roulette() {
 	return (
-		<RouletteCard />
+		<RoulettePage />
 	);
 }
 

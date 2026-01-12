@@ -3,7 +3,11 @@ import { useInfiniteQuery, useQuery, type UseQueryOptions } from "@tanstack/reac
 import type { LanguageType } from "@/lib/types/language";
 import type { RouletteType } from "@/lib/types/roulette";
 
-const getRoulette = async ({ id }: { id: string }): Promise<RouletteType> => {
+type getRouletteProps = {
+	id: string;
+};
+
+const getRoulette = async ({ id }: getRouletteProps): Promise<RouletteType> => {
 	const url = `${import.meta.env.VITE_SOCKET_URL}/api/roulette/${id}`;
 	const response = await fetch(url, {
 		method: "GET",
@@ -17,14 +21,14 @@ const getRoulette = async ({ id }: { id: string }): Promise<RouletteType> => {
 		throw new Error("Failed to load roulette!");
 	}
 
-	const { roulette } = await response.json();
+	const roulette = await response.json();
 
 	return roulette;
 };
 
 type useGetRouletteProps = {
-	options?: UseQueryOptions<RouletteType, Error>;
 	id: string;
+	options?: Partial<UseQueryOptions<RouletteType, Error>>;
 };
 
 export const useGetRoulette = ({ id, options }: useGetRouletteProps) => {

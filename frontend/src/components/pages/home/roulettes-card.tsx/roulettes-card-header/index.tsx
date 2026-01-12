@@ -1,7 +1,8 @@
 import type { FilterRouletteSchemaType } from "@/lib/types/roulette";
 
-import RoulettesCardHeaderFilters from "@/components/pages/home/roulettes-card-header-filters";
-import { CardHeader, CardTitle } from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+import RoulettesCardHeaderFilters from "./roulettes-card-header-filters";
 
 interface RoulettesCardHeaderProps {
 	onHandleFilterChange: (data: FilterRouletteSchemaType) => void;
@@ -10,7 +11,8 @@ interface RoulettesCardHeaderProps {
 const RoulettesCardHeader = ({ onHandleFilterChange }: RoulettesCardHeaderProps) => {
 	return (
 		<CardHeader className="flex flex-col">
-			<CardTitle>CHAT ROULETTES</CardTitle>
+			<CardTitle>Language roulettes</CardTitle>
+			<CardDescription>Get matched instantly with language partners around the world</CardDescription>
 			<RoulettesCardHeaderFilters className="w-full" onHandleChange={onHandleFilterChange} />
 		</CardHeader>
 	);
