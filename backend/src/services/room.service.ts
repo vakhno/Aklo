@@ -2,7 +2,7 @@ import { Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
 
 import type { LanguageDocLeanType } from "../libs/types/language.type";
-import type { RoomDocLeanType, RoomDocType, RoomInputSchemaType, RoomReadySchemaType, RoomSchemaType } from "../libs/types/room.type";
+import type { RoomDocLeanPopulatedType, RoomDocLeanType, RoomDocType, RoomInputSchemaType, RoomReadySchemaType, RoomSchemaType } from "../libs/types/room.type";
 
 import { RoomReadySchema } from "../libs/zod-schemas/room.schema";
 import { LanguageModel } from "../routes/language/language.model";
@@ -37,7 +37,7 @@ export async function createRoom(roomInput: RoomInputSchemaType): Promise<RoomDo
 	}
 }
 
-export async function getRoom(roomId: string): Promise<RoomDocLeanType> {
+export async function getRoom(roomId: string): Promise<RoomDocLeanType | null> {
 	try {
 		if (!Types.ObjectId.isValid(roomId)) {
 			throw new Error("No room id");
@@ -46,7 +46,7 @@ export async function getRoom(roomId: string): Promise<RoomDocLeanType> {
 		const roomLeanModel = await RoomModel.findById(roomId).lean();
 
 		if (!roomLeanModel) {
-			throw new Error("Room not found");
+			return null;
 		}
 
 		return roomLeanModel;
@@ -56,11 +56,8 @@ export async function getRoom(roomId: string): Promise<RoomDocLeanType> {
 	}
 }
 
-export async function getAllRooms({ language, limit, page }: { language?: string; limit: number; page: number }): Promise<{ rooms: RoomDocLeanType[]; isHasMore: boolean }> {
+export async function getAllRooms({ language, limit, page }: { language?: string; limit: number; page: number }): Promise<{ rooms: RoomDocLeanPopulatedType[]; isHasMore: boolean }> {
 	try {
-		// await deleteAllRooms();
-		// await deleteAllRoomsCache();
-
 		const offset = (page - 1) * limit;
 		const roomFilters: Partial<RoomSchemaType> = {};
 
@@ -72,7 +69,8 @@ export async function getAllRooms({ language, limit, page }: { language?: string
 			.skip(offset)
 			.limit(limit)
 			.sort({ activeUsersCount: -1, priority: 1 })
-			.lean();
+			.lean()
+			.populate("language") as unknown as RoomDocLeanPopulatedType[];
 		const total = await RoomModel.countDocuments(roomFilters);
 		const isHasMore = Number(page) * limit < total;
 

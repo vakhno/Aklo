@@ -1,14 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import RoomCard from "@/components/pages/room/room-card";
+import RoomPage from "@/components/pages/room";
 
-export const Route = createFileRoute("/room/$id")({
+export const Route = createFileRoute("/_conversation/room/$id")({
 	component: Room
 });
 
 function Room() {
 	return (
-		<RoomCard />
+		<RoomPage />
 	);
 }
+
 export default Room;

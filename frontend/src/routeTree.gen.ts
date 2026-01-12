@@ -9,86 +9,160 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as RouletteIdRouteImport } from './routes/roulette.$id'
-import { Route as RoomIdRouteImport } from './routes/room.$id'
+import { Route as PublicRouteImport } from './routes/_public'
+import { Route as ConversationRouteImport } from './routes/_conversation'
+import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicRulesRouteImport } from './routes/_public/rules'
+import { Route as ConversationRouletteIdRouteImport } from './routes/_conversation/roulette.$id'
+import { Route as ConversationRoomIdRouteImport } from './routes/_conversation/room.$id'
 
-const IndexRoute = IndexRouteImport.update({
+const PublicRoute = PublicRouteImport.update({
+  id: '/_public',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConversationRoute = ConversationRouteImport.update({
+  id: '/_conversation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRoute,
 } as any)
-const RouletteIdRoute = RouletteIdRouteImport.update({
+const PublicRulesRoute = PublicRulesRouteImport.update({
+  id: '/rules',
+  path: '/rules',
+  getParentRoute: () => PublicRoute,
+} as any)
+const ConversationRouletteIdRoute = ConversationRouletteIdRouteImport.update({
   id: '/roulette/$id',
   path: '/roulette/$id',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ConversationRoute,
 } as any)
-const RoomIdRoute = RoomIdRouteImport.update({
+const ConversationRoomIdRoute = ConversationRoomIdRouteImport.update({
   id: '/room/$id',
   path: '/room/$id',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ConversationRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/room/$id': typeof RoomIdRoute
-  '/roulette/$id': typeof RouletteIdRoute
+  '/rules': typeof PublicRulesRoute
+  '/': typeof PublicIndexRoute
+  '/room/$id': typeof ConversationRoomIdRoute
+  '/roulette/$id': typeof ConversationRouletteIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/room/$id': typeof RoomIdRoute
-  '/roulette/$id': typeof RouletteIdRoute
+  '/rules': typeof PublicRulesRoute
+  '/': typeof PublicIndexRoute
+  '/room/$id': typeof ConversationRoomIdRoute
+  '/roulette/$id': typeof ConversationRouletteIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/room/$id': typeof RoomIdRoute
-  '/roulette/$id': typeof RouletteIdRoute
+  '/_conversation': typeof ConversationRouteWithChildren
+  '/_public': typeof PublicRouteWithChildren
+  '/_public/rules': typeof PublicRulesRoute
+  '/_public/': typeof PublicIndexRoute
+  '/_conversation/room/$id': typeof ConversationRoomIdRoute
+  '/_conversation/roulette/$id': typeof ConversationRouletteIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/room/$id' | '/roulette/$id'
+  fullPaths: '/rules' | '/' | '/room/$id' | '/roulette/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/room/$id' | '/roulette/$id'
-  id: '__root__' | '/' | '/room/$id' | '/roulette/$id'
+  to: '/rules' | '/' | '/room/$id' | '/roulette/$id'
+  id:
+    | '__root__'
+    | '/_conversation'
+    | '/_public'
+    | '/_public/rules'
+    | '/_public/'
+    | '/_conversation/room/$id'
+    | '/_conversation/roulette/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  RoomIdRoute: typeof RoomIdRoute
-  RouletteIdRoute: typeof RouletteIdRoute
+  ConversationRoute: typeof ConversationRouteWithChildren
+  PublicRoute: typeof PublicRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PublicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_conversation': {
+      id: '/_conversation'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof ConversationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public/': {
+      id: '/_public/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof PublicIndexRouteImport
+      parentRoute: typeof PublicRoute
     }
-    '/roulette/$id': {
-      id: '/roulette/$id'
+    '/_public/rules': {
+      id: '/_public/rules'
+      path: '/rules'
+      fullPath: '/rules'
+      preLoaderRoute: typeof PublicRulesRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_conversation/roulette/$id': {
+      id: '/_conversation/roulette/$id'
       path: '/roulette/$id'
       fullPath: '/roulette/$id'
-      preLoaderRoute: typeof RouletteIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ConversationRouletteIdRouteImport
+      parentRoute: typeof ConversationRoute
     }
-    '/room/$id': {
-      id: '/room/$id'
+    '/_conversation/room/$id': {
+      id: '/_conversation/room/$id'
       path: '/room/$id'
       fullPath: '/room/$id'
-      preLoaderRoute: typeof RoomIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ConversationRoomIdRouteImport
+      parentRoute: typeof ConversationRoute
     }
   }
 }
 
+interface ConversationRouteChildren {
+  ConversationRoomIdRoute: typeof ConversationRoomIdRoute
+  ConversationRouletteIdRoute: typeof ConversationRouletteIdRoute
+}
+
+const ConversationRouteChildren: ConversationRouteChildren = {
+  ConversationRoomIdRoute: ConversationRoomIdRoute,
+  ConversationRouletteIdRoute: ConversationRouletteIdRoute,
+}
+
+const ConversationRouteWithChildren = ConversationRoute._addFileChildren(
+  ConversationRouteChildren,
+)
+
+interface PublicRouteChildren {
+  PublicRulesRoute: typeof PublicRulesRoute
+  PublicIndexRoute: typeof PublicIndexRoute
+}
+
+const PublicRouteChildren: PublicRouteChildren = {
+  PublicRulesRoute: PublicRulesRoute,
+  PublicIndexRoute: PublicIndexRoute,
+}
+
+const PublicRouteWithChildren =
+  PublicRoute._addFileChildren(PublicRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  RoomIdRoute: RoomIdRoute,
-  RouletteIdRoute: RouletteIdRoute,
+  ConversationRoute: ConversationRouteWithChildren,
+  PublicRoute: PublicRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

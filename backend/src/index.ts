@@ -5,6 +5,7 @@ import helmet from "helmet";
 
 import { initCache } from "./cache/index.js";
 import { initDb } from "./db/index.js";
+import { setupRoomListener } from "./listeners/room.listener";
 import { initRoutes } from "./routes";
 import { initSocketEvents } from "./sockets/index.js";
 import { initSocketServer } from "./sockets/server.js";
@@ -24,10 +25,11 @@ const { io, server } = initSocketServer(app);
 
 app.set("io", io);
 
+setupRoomListener(io);
 initSocketEvents(io);
 initRoutes(app);
 
 server.listen(process.env.PORT, async () => {
 	await initDb();
-	await initCache(io);
+	await initCache();
 });

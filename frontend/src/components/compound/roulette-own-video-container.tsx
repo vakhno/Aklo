@@ -1,7 +1,7 @@
 import { Settings } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
-import type { JoinRoomSchemaType } from "@/lib/types/room";
+import type { SettingsRoomSchemaType } from "@/lib/types/room";
 
 import DialogModal from "@/components/compound/dialog-modal";
 import SettingsForm from "@/components/forms/settings-form";
@@ -25,7 +25,7 @@ interface VideoContainerProps {
 	setupVideoDevice?: (value?: string) => Promise<void>;
 	setupAudioDevice?: (value?: string) => Promise<void>;
 	onHandleStopClick: () => void;
-	handleSettingsSubmit?: (value: JoinRoomSchemaType) => void;
+	handleSettingsSubmit?: (value: SettingsRoomSchemaType) => void;
 }
 
 const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudioAvailable = false, isStreamValid, stream, handleSettingsSubmit }: VideoContainerProps) => {
@@ -40,6 +40,7 @@ const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudi
 	useEffect(() => {
 		if (videoRef.current) {
 			videoRef.current.srcObject = stream;
+			videoRef.current.muted = true;
 		}
 	}, [stream]);
 
@@ -47,11 +48,11 @@ const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudi
 		setSettingsModalOpen(true);
 	};
 
-	const onHandleSubmit = (data: JoinRoomSchemaType) => {
+	const onHandleSubmit = (data: SettingsRoomSchemaType) => {
 		handleSettingsSubmit && handleSettingsSubmit(data);
 	};
 
-	const onHandleFormChange = async (data: JoinRoomSchemaType) => {
+	const onHandleFormChange = async (data: SettingsRoomSchemaType) => {
 		const { videoDeviceId, audioDeviceId } = data;
 
 		if (videoDeviceId !== selectedVideoDevice?.deviceId) {
@@ -83,8 +84,7 @@ const RouletteOwnVideoContainer = ({ className, isVideoAvailable = false, isAudi
 			>
 				<Video
 					className="aspect-auto w-full h-full"
-					stream={stream}
-					isMuted
+					ref={videoRef}
 				/>
 				<div className="p-4 w-full h-full absolute top-0 left-0 flex flex-col items-center gap-2">
 					<div className="h-full w-full grid grid-rows-[1fr_1fr_1fr]">

@@ -31,8 +31,15 @@ export const RoomSchema = new Schema(
 			type: Number,
 			default: 1,
 		},
+		expiresAt: {
+			type: Date,
+			required: true,
+			default: () => new Date(Date.now() + 3600000),
+		},
 	},
 	{ timestamps: true },
 );
+
+RoomSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const RoomModel = mongoose.model("Room", RoomSchema);

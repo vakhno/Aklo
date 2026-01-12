@@ -9,7 +9,7 @@ import { createPeer } from "@/lib/peer/create-peer";
 import { createPeerAnswer } from "@/lib/peer/create-peer-answer";
 import { createPeerOffer } from "@/lib/peer/create-peer-offer";
 
-interface RemotePeer {
+export interface RemotePeer {
 	socketId: string;
 	stream: MediaStream;
 	connection: RTCPeerConnection;
@@ -22,8 +22,9 @@ interface UseRoomConnectionProps {
 
 interface UseRoomConnectionReturn {
 	remotePeers: Record<string, RemotePeer>;
-	isExpired: boolean;
+	isFailed: boolean;
 	isKicked: boolean;
+	isDeleted: boolean;
 	socketRef: React.RefObject<Socket | null>;
 	handleKick: (socketId: string) => void;
 	initSocket: () => void;
@@ -33,7 +34,8 @@ export const useWebRTC = ({
 	roomId,
 	localStream
 }: UseRoomConnectionProps): UseRoomConnectionReturn => {
-	const [isExpired, setExpired] = useState(false);
+	const [isFailed, setFailed] = useState(false);
+	const [isDeleted, setDeleted] = useState(false);
 	const [isKicked, setKicked] = useState(false);
 	const [remotePeers, setRemotePeers] = useState<Record<string, RemotePeer>>({});
 
@@ -118,7 +120,7 @@ export const useWebRTC = ({
 	};
 
 	const initSocket = () => {
-		if (!localStream) {
+		if (!localStream || socketRef.current) {
 			return;
 		}
 
@@ -150,7 +152,14 @@ export const useWebRTC = ({
 				);
 			});
 
-			socket.on("room-join-failed", () => {});
+			socket.on("room-failed", () => {
+				setFailed(true);
+
+				disconnectAllPeers();
+				disconnectSocket();
+
+				socket.emit("room-disconnect");
+			});
 
 			socket.on("room-new-join", () => {});
 
@@ -179,13 +188,13 @@ export const useWebRTC = ({
 				await applyPeerRemoteCandidate({ peer, candidate });
 			});
 
-			socket.on("room-expired", () => {
-				setExpired(true);
+			socket.on("room-deleted", () => {
+				setDeleted(true);
 
 				disconnectAllPeers();
-				disconnectSocket();
+				// disconnectSocket();
 
-				socket.emit("room-disconnect");
+				socket.emit("room-deleted");
 			});
 
 			socket.on("room-kick-success", () => {
@@ -208,6 +217,32 @@ export const useWebRTC = ({
 		});
 	};
 
+	// Add this useEffect to handle localStream changes
+	useEffect(() => {
+		if (!localStream)
+			return;
+
+		// Update tracks for all existing peer connections
+		Object.values(peersRef.current).forEach((peer) => {
+			const senders = peer.getSenders();
+
+			localStream.getTracks().forEach((track) => {
+				const sender = senders.find(s => s.track?.kind === track.kind);
+
+				if (sender) {
+				// Replace the existing track with the new one
+					sender.replaceTrack(track).catch((err) => {
+						console.error("Error replacing track:", err);
+					});
+				}
+				else {
+				// If no sender exists for this track type, add it
+					peer.addTrack(track, localStream);
+				}
+			});
+		});
+	}, [localStream]);
+
 	useEffect(() => {
 		return () => {
 			disconnectAllPeers();
@@ -217,8 +252,9 @@ export const useWebRTC = ({
 
 	return {
 		remotePeers,
-		isExpired,
+		isFailed,
 		isKicked,
+		isDeleted,
 		socketRef,
 		handleKick,
 		initSocket

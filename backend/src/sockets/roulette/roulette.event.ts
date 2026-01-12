@@ -9,13 +9,13 @@ export function registerRouletteSocketEvents(io: Server) {
 	namespace.on("connection", (socket) => {
 		const socketId = socket.id;
 
-		socket.on("self-roulette-join", async ({ rouletteId }) => {
+		socket.on("roulette-join", async ({ rouletteId }) => {
 			socket.data.rouletteId = rouletteId;
 
 			await joinRoulette(rouletteId);
 		});
 
-		socket.on("self-roulette-start-search", async () => {
+		socket.on("roulette-start-search", async () => {
 			const { rouletteId } = socket.data;
 
 			socket.data.isActive = true;
@@ -28,18 +28,7 @@ export function registerRouletteSocketEvents(io: Server) {
 			}
 		});
 
-		socket.on("self-roulette-start-search-after-opponent-skip", async () => {
-			const { rouletteId } = socket.data;
-
-			const newPartnerSocketId = await joinRouletteCache(rouletteId, socketId);
-
-			if (newPartnerSocketId) {
-				namespace.to(socketId).emit("roulette-detect", { partnerSocketId: newPartnerSocketId, isInitiator: true });
-				namespace.to(newPartnerSocketId).emit("roulette-detect", { partnerSocketId: socketId, isInitiator: false });
-			}
-		});
-
-		socket.on("self-roulette-skip-search", async () => {
+		socket.on("roulette-skipped", async () => {
 			const { rouletteId } = socket.data;
 
 			const newPartnerSocketId = await joinRouletteCache(rouletteId, socketId);
@@ -61,7 +50,7 @@ export function registerRouletteSocketEvents(io: Server) {
 			}
 
 			if (partnerSocketId) {
-				namespace.to(partnerSocketId).emit("opponents-roulette-skip");
+				namespace.to(partnerSocketId).emit("roulette-skipped-by-partner");
 			}
 
 			delete socket.data.partnerSocketId;
@@ -88,20 +77,31 @@ export function registerRouletteSocketEvents(io: Server) {
 			await leftRouletteCache(rouletteId, socketId);
 		});
 
-		socket.on("opponents-roulette-send-offer", ({ partnerSocketId, offer }: { partnerSocketId: string; offer: RTCSessionDescription }) => {
-			socket.data.partnerSocketId = partnerSocketId;
+		socket.on("roulette-start-search-after-opponent-skip", async () => {
+			const { rouletteId } = socket.data;
 
-			socket.to(partnerSocketId).emit("opponents-roulette-receive-offer", { partnerSocketId: socketId, offer });
+			const newPartnerSocketId = await joinRouletteCache(rouletteId, socketId);
+
+			if (newPartnerSocketId) {
+				namespace.to(socketId).emit("roulette-detect", { partnerSocketId: newPartnerSocketId, isInitiator: true });
+				namespace.to(newPartnerSocketId).emit("roulette-detect", { partnerSocketId: socketId, isInitiator: false });
+			}
 		});
 
-		socket.on("opponents-roulette-send-answer", ({ partnerSocketId, answer }: { partnerSocketId: string; answer: RTCSessionDescriptionInit }) => {
+		socket.on("roulette-send-offer", ({ partnerSocketId, offer }: { partnerSocketId: string; offer: RTCSessionDescription }) => {
 			socket.data.partnerSocketId = partnerSocketId;
 
-			socket.to(partnerSocketId).emit("opponents-roulette-receive-answer", { answer });
+			socket.to(partnerSocketId).emit("roulette-receive-offer", { partnerSocketId: socketId, offer });
 		});
 
-		socket.on("opponents-roulette-send-ice-candidate", ({ partnerSocketId, candidate }: { partnerSocketId: string; candidate: RTCIceCandidate }) => {
-			socket.to(partnerSocketId).emit("opponents-roulette-receive-ice-candidate", { candidate });
+		socket.on("roulette-send-answer", ({ partnerSocketId, answer }: { partnerSocketId: string; answer: RTCSessionDescriptionInit }) => {
+			socket.data.partnerSocketId = partnerSocketId;
+
+			socket.to(partnerSocketId).emit("roulette-receive-answer", { answer });
+		});
+
+		socket.on("roulette-send-ice-candidate", ({ partnerSocketId, candidate }: { partnerSocketId: string; candidate: RTCIceCandidate }) => {
+			socket.to(partnerSocketId).emit("roulette-receive-ice-candidate", { candidate });
 		});
 
 		socket.on("disconnect", async () => {

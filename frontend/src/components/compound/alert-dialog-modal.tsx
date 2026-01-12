@@ -2,8 +2,6 @@ import type { ReactNode } from "react";
 
 import {
 	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
 	AlertDialogContent,
 	AlertDialogDescription,
 	AlertDialogFooter,
@@ -11,10 +9,13 @@ import {
 	AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 
+import { Button } from "../ui/button";
+
 interface AlertDialogModalProps {
 	children?: ReactNode;
 	isOpen: boolean;
-	setOpen: (open: boolean) => void;
+	setOpen?: (open: boolean) => void;
+	formId?: string;
 	title: string;
 	description?: string;
 	isCancelVisible?: boolean;
@@ -28,6 +29,7 @@ function AlertDialogModal({
 	children,
 	isOpen,
 	setOpen,
+	formId,
 	title,
 	description,
 	cancelTitle,
@@ -36,14 +38,6 @@ function AlertDialogModal({
 	onSubmit,
 	onCancel
 }: AlertDialogModalProps) {
-	const onHandleSubmit = () => {
-		onSubmit &&	onSubmit();
-	};
-
-	const onHandleCancel = () => {
-		onCancel && onCancel();
-	};
-
 	return (
 		<AlertDialog open={isOpen} onOpenChange={setOpen}>
 			<AlertDialogContent>
@@ -53,21 +47,28 @@ function AlertDialogModal({
 						? <AlertDialogDescription>{description}</AlertDialogDescription>
 						: null}
 				</AlertDialogHeader>
-				{children}
+				<div className="overflow-hidden">
+					{children}
+				</div>
 				<AlertDialogFooter>
 					{isCancelVisible
 						? (
-								<AlertDialogCancel onClick={onHandleCancel}>
+								<Button variant="outline" onClick={onCancel}>
 									{cancelTitle}
-								</AlertDialogCancel>
+								</Button>
 							)
-
 						: null}
-					<AlertDialogAction
-						onClick={onHandleSubmit}
-					>
-						{submitTitle}
-					</AlertDialogAction>
+					{formId
+						? (
+								<Button type="submit" form={formId}>
+									{submitTitle}
+								</Button>
+							)
+						: (
+								<Button onClick={onSubmit}>
+									{submitTitle}
+								</Button>
+							)}
 				</AlertDialogFooter>
 			</AlertDialogContent>
 		</AlertDialog>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { catchError } from "@/lib/utils/catch-error";
@@ -11,6 +11,9 @@ interface useMediaDeviceProps {
 }
 
 export const useMediaDevice = ({ isVideoAvailable = false, isAudioAvailable = false, videoDeviceId = null, audioDeviceId = null }: useMediaDeviceProps) => {
+	const isAudioMutedRef = useRef<boolean | null>(null);
+	const isVideoMutedRef = useRef<boolean | null>(null);
+
 	const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
 	const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
 	const [combinedStream, setCombinedStream] = useState<MediaStream | null>(null);
@@ -49,7 +52,7 @@ export const useMediaDevice = ({ isVideoAvailable = false, isAudioAvailable = fa
 	};
 
 	const setupVideoDevice = async (deviceId?: string) => {
-		if (isVideoAvailable) {
+		if (isVideoAvailable && !isAudioMutedRef.current) {
 			cleanVideoStream();
 
 			const constraints = {
@@ -103,7 +106,7 @@ export const useMediaDevice = ({ isVideoAvailable = false, isAudioAvailable = fa
 	};
 
 	const setupAudioDevice = async (deviceId?: string) => {
-		if (isAudioAvailable) {
+		if (isAudioAvailable && !isVideoMutedRef.current) {
 			cleanAudioStream();
 
 			const constraints = {
@@ -158,7 +161,6 @@ export const useMediaDevice = ({ isVideoAvailable = false, isAudioAvailable = fa
 
 	const setupCombinedDevice = async () => {
 		cleanCombinedStream();
-
 		const constraints = {
 			video: isVideoAvailable ? isMobileDevice ? { facingMode: "user" } : videoDeviceId && videoDeviceId.length ? { deviceId: { exact: videoDeviceId } } : true : false,
 			audio: isAudioAvailable ? isMobileDevice ? true : audioDeviceId && audioDeviceId.length ? { deviceId: { exact: audioDeviceId } } : true : false
@@ -171,6 +173,19 @@ export const useMediaDevice = ({ isVideoAvailable = false, isAudioAvailable = fa
 			throw userMediaError;
 		}
 		else {
+			// Apply mute state to tracks
+			if (isVideoMutedRef.current) {
+				stream.getVideoTracks().forEach((track) => {
+					track.enabled = false;
+				});
+			}
+
+			if (isAudioMutedRef.current) {
+				stream.getAudioTracks().forEach((track) => {
+					track.enabled = false;
+				});
+			}
+
 			setIsPermissionDenied(false);
 
 			const videoTracks = stream.getVideoTracks();
@@ -245,6 +260,36 @@ export const useMediaDevice = ({ isVideoAvailable = false, isAudioAvailable = fa
 		}
 	};
 
+	const toggleCameraMute = () => {
+		isVideoMutedRef.current = !isVideoMutedRef.current;
+
+		if (combinedStream) {
+			combinedStream.getVideoTracks().forEach((track) => {
+				track.enabled = !isVideoMutedRef.current;
+			});
+		}
+		if (videoStream) {
+			videoStream.getVideoTracks().forEach((track) => {
+				track.enabled = !isVideoMutedRef.current;
+			});
+		}
+	};
+
+	const toggleMicMute = () => {
+		isAudioMutedRef.current = !isAudioMutedRef.current;
+
+		if (combinedStream) {
+			combinedStream.getAudioTracks().forEach((track) => {
+				track.enabled = !isAudioMutedRef.current;
+			});
+		}
+		if (audioStream) {
+			audioStream.getAudioTracks().forEach((track) => {
+				track.enabled = !isAudioMutedRef.current;
+			});
+		}
+	};
+
 	useEffect(() => {
 		return () => {
 			if (videoStream) {
@@ -273,8 +318,11 @@ export const useMediaDevice = ({ isVideoAvailable = false, isAudioAvailable = fa
 		isPermissionDenied,
 		cleanVideoStream,
 		cleanAudioStream,
+		cleanCombinedStream,
 		setupVideoDevice,
 		setupAudioDevice,
-		setupCombinedDevice
+		setupCombinedDevice,
+		toggleCameraMute,
+		toggleMicMute
 	};
 };

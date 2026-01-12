@@ -2,9 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
-import type { SettingsSchemaType } from "@/lib/types/settings";
+import type { SettingsRoomSchemaType } from "@/lib/types/room";
 
-import AudioVisualizer from "@/components/ui/audio-visualizer";
 import {
 	Form,
 	FormField,
@@ -21,6 +20,8 @@ import {
 import Video from "@/components/ui/video";
 import SettingsSchema from "@/lib/zod-schemas/settings.schema";
 
+import { LiveWaveform } from "../ui/live-waveform";
+
 interface SettingsFormProps {
 	formId: string;
 	videoStream: MediaStream | null;
@@ -29,14 +30,14 @@ interface SettingsFormProps {
 	selectedAudioDevice: MediaDeviceInfo | null;
 	audioDevices: MediaDeviceInfo[];
 	videoDevices: MediaDeviceInfo[];
-	isCameraAvailable: boolean;
-	isMicAvailable: boolean;
-	onHandleFormChange: (data: SettingsSchemaType) => void;
-	onHandleSubmit: (data: SettingsSchemaType) => void;
+	isCameraAvailable?: boolean;
+	isMicAvailable?: boolean;
+	onHandleFormChange: (data: SettingsRoomSchemaType) => void;
+	onHandleSubmit: (data: SettingsRoomSchemaType) => void;
 }
 
 const SettingsForm = ({ formId, videoStream, audioStream, selectedVideoDevice, selectedAudioDevice, audioDevices, videoDevices, isCameraAvailable, isMicAvailable, onHandleFormChange, onHandleSubmit }: SettingsFormProps) => {
-	const form = useForm<SettingsSchemaType>({
+	const form = useForm<SettingsRoomSchemaType>({
 		resolver: zodResolver(SettingsSchema),
 		defaultValues: {
 			videoDeviceId: selectedVideoDevice?.deviceId || "",
@@ -48,7 +49,7 @@ const SettingsForm = ({ formId, videoStream, audioStream, selectedVideoDevice, s
 
 	const { handleSubmit, getValues, setValue } = form;
 
-	const watch = useWatch({ control: form.control }) as SettingsSchemaType;
+	const watch = useWatch({ control: form.control }) as SettingsRoomSchemaType;
 
 	useEffect(() => {
 		if (getValues("videoDeviceId") !== watch.videoDeviceId) {
@@ -102,7 +103,9 @@ const SettingsForm = ({ formId, videoStream, audioStream, selectedVideoDevice, s
 						/>
 					)}
 				{ isMicAvailable
-					&& <AudioVisualizer className="aspect-[12/4]" stream={audioStream} />}
+					&& (
+						<LiveWaveform stream={audioStream} active={true} processing={true} height={80} barWidth={3} barGap={2} mode="static" fadeEdges={true} barColor="gray" historySize={120} />
+					)}
 				{isCameraAvailable
 					&& (
 						<FormField
