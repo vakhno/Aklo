@@ -9,49 +9,57 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PublicRouteImport } from './routes/_public'
-import { Route as ConversationRouteImport } from './routes/_conversation'
+import { Route as PublicRouteRouteImport } from './routes/_public/route'
+import { Route as ConversationRouteRouteImport } from './routes/_conversation/route'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicRulesRouteImport } from './routes/_public/rules'
+import { Route as PublicRoomsRouteImport } from './routes/_public/rooms'
 import { Route as ConversationRouletteIdRouteImport } from './routes/_conversation/roulette.$id'
 import { Route as ConversationRoomIdRouteImport } from './routes/_conversation/room.$id'
 
-const PublicRoute = PublicRouteImport.update({
+const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConversationRoute = ConversationRouteImport.update({
+const ConversationRouteRoute = ConversationRouteRouteImport.update({
   id: '/_conversation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PublicRoute,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicRulesRoute = PublicRulesRouteImport.update({
   id: '/rules',
   path: '/rules',
-  getParentRoute: () => PublicRoute,
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicRoomsRoute = PublicRoomsRouteImport.update({
+  id: '/rooms',
+  path: '/rooms',
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const ConversationRouletteIdRoute = ConversationRouletteIdRouteImport.update({
   id: '/roulette/$id',
   path: '/roulette/$id',
-  getParentRoute: () => ConversationRoute,
+  getParentRoute: () => ConversationRouteRoute,
 } as any)
 const ConversationRoomIdRoute = ConversationRoomIdRouteImport.update({
   id: '/room/$id',
   path: '/room/$id',
-  getParentRoute: () => ConversationRoute,
+  getParentRoute: () => ConversationRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/rooms': typeof PublicRoomsRoute
   '/rules': typeof PublicRulesRoute
   '/': typeof PublicIndexRoute
   '/room/$id': typeof ConversationRoomIdRoute
   '/roulette/$id': typeof ConversationRouletteIdRoute
 }
 export interface FileRoutesByTo {
+  '/rooms': typeof PublicRoomsRoute
   '/rules': typeof PublicRulesRoute
   '/': typeof PublicIndexRoute
   '/room/$id': typeof ConversationRoomIdRoute
@@ -59,8 +67,9 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_conversation': typeof ConversationRouteWithChildren
-  '/_public': typeof PublicRouteWithChildren
+  '/_conversation': typeof ConversationRouteRouteWithChildren
+  '/_public': typeof PublicRouteRouteWithChildren
+  '/_public/rooms': typeof PublicRoomsRoute
   '/_public/rules': typeof PublicRulesRoute
   '/_public/': typeof PublicIndexRoute
   '/_conversation/room/$id': typeof ConversationRoomIdRoute
@@ -68,13 +77,14 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/rules' | '/' | '/room/$id' | '/roulette/$id'
+  fullPaths: '/rooms' | '/rules' | '/' | '/room/$id' | '/roulette/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/rules' | '/' | '/room/$id' | '/roulette/$id'
+  to: '/rooms' | '/rules' | '/' | '/room/$id' | '/roulette/$id'
   id:
     | '__root__'
     | '/_conversation'
     | '/_public'
+    | '/_public/rooms'
     | '/_public/rules'
     | '/_public/'
     | '/_conversation/room/$id'
@@ -82,8 +92,8 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  ConversationRoute: typeof ConversationRouteWithChildren
-  PublicRoute: typeof PublicRouteWithChildren
+  ConversationRouteRoute: typeof ConversationRouteRouteWithChildren
+  PublicRouteRoute: typeof PublicRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -92,14 +102,14 @@ declare module '@tanstack/react-router' {
       id: '/_public'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof PublicRouteImport
+      preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_conversation': {
       id: '/_conversation'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof ConversationRouteImport
+      preLoaderRoute: typeof ConversationRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public/': {
@@ -107,62 +117,71 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/rules': {
       id: '/_public/rules'
       path: '/rules'
       fullPath: '/rules'
       preLoaderRoute: typeof PublicRulesRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/rooms': {
+      id: '/_public/rooms'
+      path: '/rooms'
+      fullPath: '/rooms'
+      preLoaderRoute: typeof PublicRoomsRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/_conversation/roulette/$id': {
       id: '/_conversation/roulette/$id'
       path: '/roulette/$id'
       fullPath: '/roulette/$id'
       preLoaderRoute: typeof ConversationRouletteIdRouteImport
-      parentRoute: typeof ConversationRoute
+      parentRoute: typeof ConversationRouteRoute
     }
     '/_conversation/room/$id': {
       id: '/_conversation/room/$id'
       path: '/room/$id'
       fullPath: '/room/$id'
       preLoaderRoute: typeof ConversationRoomIdRouteImport
-      parentRoute: typeof ConversationRoute
+      parentRoute: typeof ConversationRouteRoute
     }
   }
 }
 
-interface ConversationRouteChildren {
+interface ConversationRouteRouteChildren {
   ConversationRoomIdRoute: typeof ConversationRoomIdRoute
   ConversationRouletteIdRoute: typeof ConversationRouletteIdRoute
 }
 
-const ConversationRouteChildren: ConversationRouteChildren = {
+const ConversationRouteRouteChildren: ConversationRouteRouteChildren = {
   ConversationRoomIdRoute: ConversationRoomIdRoute,
   ConversationRouletteIdRoute: ConversationRouletteIdRoute,
 }
 
-const ConversationRouteWithChildren = ConversationRoute._addFileChildren(
-  ConversationRouteChildren,
-)
+const ConversationRouteRouteWithChildren =
+  ConversationRouteRoute._addFileChildren(ConversationRouteRouteChildren)
 
-interface PublicRouteChildren {
+interface PublicRouteRouteChildren {
+  PublicRoomsRoute: typeof PublicRoomsRoute
   PublicRulesRoute: typeof PublicRulesRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
-const PublicRouteChildren: PublicRouteChildren = {
+const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicRoomsRoute: PublicRoomsRoute,
   PublicRulesRoute: PublicRulesRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 
-const PublicRouteWithChildren =
-  PublicRoute._addFileChildren(PublicRouteChildren)
+const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
+  PublicRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
-  ConversationRoute: ConversationRouteWithChildren,
-  PublicRoute: PublicRouteWithChildren,
+  ConversationRouteRoute: ConversationRouteRouteWithChildren,
+  PublicRouteRoute: PublicRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
