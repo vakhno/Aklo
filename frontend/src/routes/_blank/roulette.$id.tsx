@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import RoulettePage from "@/components/pages/roulette";
 
-export const Route = createFileRoute("/_conversation/roulette/$id")({
+export const Route = createFileRoute("/_blank/roulette/$id")({
 	component: Roulette
 });
 

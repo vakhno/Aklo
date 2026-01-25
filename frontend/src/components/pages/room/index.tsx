@@ -4,7 +4,7 @@ import Information from "@/components/pages/room/information";
 import Participants from "@/components/pages/room/participants";
 
 function RoomPage() {
-	const { id } = useParams({ from: "/_conversation/room/$id" });
+	const { id } = useParams({ from: "/_blank/room/$id" });
 
 	return (
 		<div className="flex flex-col">

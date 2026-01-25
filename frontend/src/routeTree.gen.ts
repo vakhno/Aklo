@@ -10,19 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
-import { Route as ConversationRouteRouteImport } from './routes/_conversation/route'
+import { Route as BlankRouteRouteImport } from './routes/_blank/route'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicRulesRouteImport } from './routes/_public/rules'
 import { Route as PublicRoomsRouteImport } from './routes/_public/rooms'
-import { Route as ConversationRouletteIdRouteImport } from './routes/_conversation/roulette.$id'
-import { Route as ConversationRoomIdRouteImport } from './routes/_conversation/room.$id'
+import { Route as BlankRouletteIdRouteImport } from './routes/_blank/roulette.$id'
+import { Route as BlankRoomIdRouteImport } from './routes/_blank/room.$id'
+import { Route as BlankAuthGoogleCallbackRouteImport } from './routes/_blank/auth/google/callback'
 
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConversationRouteRoute = ConversationRouteRouteImport.update({
-  id: '/_conversation',
+const BlankRouteRoute = BlankRouteRouteImport.update({
+  id: '/_blank',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
@@ -40,59 +41,80 @@ const PublicRoomsRoute = PublicRoomsRouteImport.update({
   path: '/rooms',
   getParentRoute: () => PublicRouteRoute,
 } as any)
-const ConversationRouletteIdRoute = ConversationRouletteIdRouteImport.update({
+const BlankRouletteIdRoute = BlankRouletteIdRouteImport.update({
   id: '/roulette/$id',
   path: '/roulette/$id',
-  getParentRoute: () => ConversationRouteRoute,
+  getParentRoute: () => BlankRouteRoute,
 } as any)
-const ConversationRoomIdRoute = ConversationRoomIdRouteImport.update({
+const BlankRoomIdRoute = BlankRoomIdRouteImport.update({
   id: '/room/$id',
   path: '/room/$id',
-  getParentRoute: () => ConversationRouteRoute,
+  getParentRoute: () => BlankRouteRoute,
+} as any)
+const BlankAuthGoogleCallbackRoute = BlankAuthGoogleCallbackRouteImport.update({
+  id: '/auth/google/callback',
+  path: '/auth/google/callback',
+  getParentRoute: () => BlankRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/rooms': typeof PublicRoomsRoute
   '/rules': typeof PublicRulesRoute
   '/': typeof PublicIndexRoute
-  '/room/$id': typeof ConversationRoomIdRoute
-  '/roulette/$id': typeof ConversationRouletteIdRoute
+  '/room/$id': typeof BlankRoomIdRoute
+  '/roulette/$id': typeof BlankRouletteIdRoute
+  '/auth/google/callback': typeof BlankAuthGoogleCallbackRoute
 }
 export interface FileRoutesByTo {
   '/rooms': typeof PublicRoomsRoute
   '/rules': typeof PublicRulesRoute
   '/': typeof PublicIndexRoute
-  '/room/$id': typeof ConversationRoomIdRoute
-  '/roulette/$id': typeof ConversationRouletteIdRoute
+  '/room/$id': typeof BlankRoomIdRoute
+  '/roulette/$id': typeof BlankRouletteIdRoute
+  '/auth/google/callback': typeof BlankAuthGoogleCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_conversation': typeof ConversationRouteRouteWithChildren
+  '/_blank': typeof BlankRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
   '/_public/rooms': typeof PublicRoomsRoute
   '/_public/rules': typeof PublicRulesRoute
   '/_public/': typeof PublicIndexRoute
-  '/_conversation/room/$id': typeof ConversationRoomIdRoute
-  '/_conversation/roulette/$id': typeof ConversationRouletteIdRoute
+  '/_blank/room/$id': typeof BlankRoomIdRoute
+  '/_blank/roulette/$id': typeof BlankRouletteIdRoute
+  '/_blank/auth/google/callback': typeof BlankAuthGoogleCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/rooms' | '/rules' | '/' | '/room/$id' | '/roulette/$id'
+  fullPaths:
+    | '/rooms'
+    | '/rules'
+    | '/'
+    | '/room/$id'
+    | '/roulette/$id'
+    | '/auth/google/callback'
   fileRoutesByTo: FileRoutesByTo
-  to: '/rooms' | '/rules' | '/' | '/room/$id' | '/roulette/$id'
+  to:
+    | '/rooms'
+    | '/rules'
+    | '/'
+    | '/room/$id'
+    | '/roulette/$id'
+    | '/auth/google/callback'
   id:
     | '__root__'
-    | '/_conversation'
+    | '/_blank'
     | '/_public'
     | '/_public/rooms'
     | '/_public/rules'
     | '/_public/'
-    | '/_conversation/room/$id'
-    | '/_conversation/roulette/$id'
+    | '/_blank/room/$id'
+    | '/_blank/roulette/$id'
+    | '/_blank/auth/google/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  ConversationRouteRoute: typeof ConversationRouteRouteWithChildren
+  BlankRouteRoute: typeof BlankRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
 }
 
@@ -105,11 +127,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_conversation': {
-      id: '/_conversation'
+    '/_blank': {
+      id: '/_blank'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof ConversationRouteRouteImport
+      preLoaderRoute: typeof BlankRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public/': {
@@ -133,35 +155,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRoomsRouteImport
       parentRoute: typeof PublicRouteRoute
     }
-    '/_conversation/roulette/$id': {
-      id: '/_conversation/roulette/$id'
+    '/_blank/roulette/$id': {
+      id: '/_blank/roulette/$id'
       path: '/roulette/$id'
       fullPath: '/roulette/$id'
-      preLoaderRoute: typeof ConversationRouletteIdRouteImport
-      parentRoute: typeof ConversationRouteRoute
+      preLoaderRoute: typeof BlankRouletteIdRouteImport
+      parentRoute: typeof BlankRouteRoute
     }
-    '/_conversation/room/$id': {
-      id: '/_conversation/room/$id'
+    '/_blank/room/$id': {
+      id: '/_blank/room/$id'
       path: '/room/$id'
       fullPath: '/room/$id'
-      preLoaderRoute: typeof ConversationRoomIdRouteImport
-      parentRoute: typeof ConversationRouteRoute
+      preLoaderRoute: typeof BlankRoomIdRouteImport
+      parentRoute: typeof BlankRouteRoute
+    }
+    '/_blank/auth/google/callback': {
+      id: '/_blank/auth/google/callback'
+      path: '/auth/google/callback'
+      fullPath: '/auth/google/callback'
+      preLoaderRoute: typeof BlankAuthGoogleCallbackRouteImport
+      parentRoute: typeof BlankRouteRoute
     }
   }
 }
 
-interface ConversationRouteRouteChildren {
-  ConversationRoomIdRoute: typeof ConversationRoomIdRoute
-  ConversationRouletteIdRoute: typeof ConversationRouletteIdRoute
+interface BlankRouteRouteChildren {
+  BlankRoomIdRoute: typeof BlankRoomIdRoute
+  BlankRouletteIdRoute: typeof BlankRouletteIdRoute
+  BlankAuthGoogleCallbackRoute: typeof BlankAuthGoogleCallbackRoute
 }
 
-const ConversationRouteRouteChildren: ConversationRouteRouteChildren = {
-  ConversationRoomIdRoute: ConversationRoomIdRoute,
-  ConversationRouletteIdRoute: ConversationRouletteIdRoute,
+const BlankRouteRouteChildren: BlankRouteRouteChildren = {
+  BlankRoomIdRoute: BlankRoomIdRoute,
+  BlankRouletteIdRoute: BlankRouletteIdRoute,
+  BlankAuthGoogleCallbackRoute: BlankAuthGoogleCallbackRoute,
 }
 
-const ConversationRouteRouteWithChildren =
-  ConversationRouteRoute._addFileChildren(ConversationRouteRouteChildren)
+const BlankRouteRouteWithChildren = BlankRouteRoute._addFileChildren(
+  BlankRouteRouteChildren,
+)
 
 interface PublicRouteRouteChildren {
   PublicRoomsRoute: typeof PublicRoomsRoute
@@ -180,7 +212,7 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  ConversationRouteRoute: ConversationRouteRouteWithChildren,
+  BlankRouteRoute: BlankRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
