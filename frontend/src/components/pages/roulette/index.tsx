@@ -4,7 +4,7 @@ import Information from "@/components/pages/roulette/information";
 import Participants from "@/components/pages/roulette/participants";
 
 function RoulettePage() {
-	const { id } = useParams({ from: "/_conversation/roulette/$id" });
+	const { id } = useParams({ from: "/_blank/roulette/$id" });
 
 	return (
 		<div className="flex flex-col">

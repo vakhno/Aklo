@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import RoomPage from "@/components/pages/room";
 
-export const Route = createFileRoute("/_conversation/room/$id")({
+export const Route = createFileRoute("/_blank/room/$id")({
 	component: Room
 });
 
