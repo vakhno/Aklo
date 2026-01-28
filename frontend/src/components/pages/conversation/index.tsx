@@ -3,10 +3,10 @@ import RoulettesCard from "./roulettes-card.tsx";
 
 const ConversationPage = () => {
 	return (
-		<div className="flex flex-col gap-4">
+		<main className="flex flex-col gap-4">
 			<RoulettesCard />
 			<RoomsCard />
-		</div>
+		</main>
 	);
 };
 

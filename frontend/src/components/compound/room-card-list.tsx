@@ -64,7 +64,7 @@ const RoomCardList = ({ isPending, ROOMS_LIMIT, roomList, isHasNextPage, isFetch
 
 									)
 								: (
-										<div className="flex flex-col gap-6">
+										<div className="flex items-center justify-center h-full">
 											<EmptyBlock title="NO AVAILABLE ROOMS" description="Create a room and be the first one!" buttonTitle="Create room" buttonHandleClick={onHandleEmptyBlockClick} />
 										</div>
 									)}
