@@ -27,13 +27,21 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 				</DialogHeader>
 				<LoginForm />
 				<p className="text-xs text-center text-muted-foreground pt-4 pb-2">
-					By signing in, you agree to our
+					By signing in, you agree with
+					{" "}
 					<Link to="/rules" className="underline hover:text-foreground transition-colors">
 						Rules
 					</Link>
-					and
+					,
+					{" "}
 					<Link to="/rules" className="underline hover:text-foreground transition-colors">
-						Privacy Policy
+						Privacy
+					</Link>
+					{" "}
+					and
+					{" "}
+					<Link to="/rules" className="underline hover:text-foreground transition-colors">
+						Terms
 					</Link>
 					.
 				</p>

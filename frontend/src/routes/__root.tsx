@@ -1,6 +1,6 @@
 import type { SearchSchemaInput } from "@tanstack/react-router";
 
-import { createRootRoute, Outlet, useNavigate, useRouterState, useSearch } from "@tanstack/react-router";
+import { createRootRoute, Outlet, useNavigate, useSearch } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
 import { toast, Toaster } from "sonner";
@@ -20,7 +20,6 @@ export const Route = createRootRoute({
 function RootLayout() {
 	const { state: { theme } } = useThemeStore();
 	const navigate = useNavigate();
-	const routerState = useRouterState();
 	const search = useSearch({ from: "__root__" }) as { error?: string };
 
 	useEffect(() => {
@@ -33,7 +32,7 @@ function RootLayout() {
 		}
 	}, [search?.error, navigate]);
 
-	const { data: session } = useGetSession({
+	useGetSession({
 		options: {
 			refetchIntervalInBackground: true,
 			refetchOnWindowFocus: true,
@@ -47,18 +46,6 @@ function RootLayout() {
 		html.classList.remove("light", "dark");
 		html.classList.add(theme);
 	}, [theme]);
-
-	useEffect(() => {
-		if (!routerState.location)
-			return;
-
-		const currentPath = routerState.location.pathname;
-		const isProtectedRoute = currentPath.startsWith("/room/") || currentPath.startsWith("/roulette/");
-
-		if (session === null && isProtectedRoute) {
-			navigate({ to: "/", search: { error: undefined } });
-		}
-	}, [session, routerState.location, navigate]);
 
 	return (
 		<>

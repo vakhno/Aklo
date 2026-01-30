@@ -1,20 +1,18 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import Footer from "@/components/compound/footer";
 import Header from "@/components/compound/header";
 
-export const Route = createFileRoute("/_public")({
-	component: () => PublicLayout()
+export const Route = createFileRoute("/_home")({
+	component: () => HomeLayout()
 });
 
-function PublicLayout() {
+function HomeLayout() {
 	return (
 		<>
 			<Header />
 			<main className="container mx-auto">
 				<Outlet />
 			</main>
-			<Footer />
 		</>
 	);
 }

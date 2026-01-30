@@ -10,8 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
+import { Route as HomeRouteRouteImport } from './routes/_home/route'
 import { Route as BlankRouteRouteImport } from './routes/_blank/route'
-import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as HomeIndexRouteImport } from './routes/_home/index'
 import { Route as PublicRulesRouteImport } from './routes/_public/rules'
 import { Route as PublicRoomsRouteImport } from './routes/_public/rooms'
 import { Route as BlankRouletteIdRouteImport } from './routes/_blank/roulette.$id'
@@ -22,14 +23,18 @@ const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HomeRouteRoute = HomeRouteRouteImport.update({
+  id: '/_home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlankRouteRoute = BlankRouteRouteImport.update({
   id: '/_blank',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PublicIndexRoute = PublicIndexRouteImport.update({
+const HomeIndexRoute = HomeIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PublicRouteRoute,
+  getParentRoute: () => HomeRouteRoute,
 } as any)
 const PublicRulesRoute = PublicRulesRouteImport.update({
   id: '/rules',
@@ -60,7 +65,7 @@ const BlankAuthGoogleCallbackRoute = BlankAuthGoogleCallbackRouteImport.update({
 export interface FileRoutesByFullPath {
   '/rooms': typeof PublicRoomsRoute
   '/rules': typeof PublicRulesRoute
-  '/': typeof PublicIndexRoute
+  '/': typeof HomeIndexRoute
   '/room/$id': typeof BlankRoomIdRoute
   '/roulette/$id': typeof BlankRouletteIdRoute
   '/auth/google/callback': typeof BlankAuthGoogleCallbackRoute
@@ -68,7 +73,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/rooms': typeof PublicRoomsRoute
   '/rules': typeof PublicRulesRoute
-  '/': typeof PublicIndexRoute
+  '/': typeof HomeIndexRoute
   '/room/$id': typeof BlankRoomIdRoute
   '/roulette/$id': typeof BlankRouletteIdRoute
   '/auth/google/callback': typeof BlankAuthGoogleCallbackRoute
@@ -76,10 +81,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_blank': typeof BlankRouteRouteWithChildren
+  '/_home': typeof HomeRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
   '/_public/rooms': typeof PublicRoomsRoute
   '/_public/rules': typeof PublicRulesRoute
-  '/_public/': typeof PublicIndexRoute
+  '/_home/': typeof HomeIndexRoute
   '/_blank/room/$id': typeof BlankRoomIdRoute
   '/_blank/roulette/$id': typeof BlankRouletteIdRoute
   '/_blank/auth/google/callback': typeof BlankAuthGoogleCallbackRoute
@@ -104,10 +110,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_blank'
+    | '/_home'
     | '/_public'
     | '/_public/rooms'
     | '/_public/rules'
-    | '/_public/'
+    | '/_home/'
     | '/_blank/room/$id'
     | '/_blank/roulette/$id'
     | '/_blank/auth/google/callback'
@@ -115,6 +122,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   BlankRouteRoute: typeof BlankRouteRouteWithChildren
+  HomeRouteRoute: typeof HomeRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
 }
 
@@ -127,6 +135,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_home': {
+      id: '/_home'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof HomeRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_blank': {
       id: '/_blank'
       path: ''
@@ -134,12 +149,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlankRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_public/': {
-      id: '/_public/'
+    '/_home/': {
+      id: '/_home/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof PublicIndexRouteImport
-      parentRoute: typeof PublicRouteRoute
+      preLoaderRoute: typeof HomeIndexRouteImport
+      parentRoute: typeof HomeRouteRoute
     }
     '/_public/rules': {
       id: '/_public/rules'
@@ -195,16 +210,26 @@ const BlankRouteRouteWithChildren = BlankRouteRoute._addFileChildren(
   BlankRouteRouteChildren,
 )
 
+interface HomeRouteRouteChildren {
+  HomeIndexRoute: typeof HomeIndexRoute
+}
+
+const HomeRouteRouteChildren: HomeRouteRouteChildren = {
+  HomeIndexRoute: HomeIndexRoute,
+}
+
+const HomeRouteRouteWithChildren = HomeRouteRoute._addFileChildren(
+  HomeRouteRouteChildren,
+)
+
 interface PublicRouteRouteChildren {
   PublicRoomsRoute: typeof PublicRoomsRoute
   PublicRulesRoute: typeof PublicRulesRoute
-  PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicRoomsRoute: PublicRoomsRoute,
   PublicRulesRoute: PublicRulesRoute,
-  PublicIndexRoute: PublicIndexRoute,
 }
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
@@ -213,6 +238,7 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   BlankRouteRoute: BlankRouteRouteWithChildren,
+  HomeRouteRoute: HomeRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
