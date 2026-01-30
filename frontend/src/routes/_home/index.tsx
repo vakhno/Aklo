@@ -2,21 +2,21 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import HomePage from "@/components/pages/home";
 
-export const Route = createFileRoute("/_public/")({
+export const Route = createFileRoute("/_home/")({
 	component: Home,
 	head: () => ({
 		meta: [
-			{ title: "Aklo — Practice Your Foreign Language with Fellow Learners" },
+			{ title: "Aklo - Practice Your Foreign Language with Fellow Learners" },
 			{ name: "description", content: "Overcome speaking fear by practicing your foreign language with fellow learners. Join video chat roulettes or themed conversation rooms. 50+ languages, stress-free practice." },
 			{ name: "keywords", content: "language practice, language learning, video chat, language exchange, speak foreign languages, conversation practice, language roulette, practice with learners, overcome speaking anxiety" },
 			{ name: "robots", content: "index, follow" },
 			{ name: "author", content: "Aklo" },
 			{ property: "og:type", content: "website" },
-			{ property: "og:title", content: "Aklo — Practice Your Foreign Language with Fellow Learners" },
+			{ property: "og:title", content: "Aklo - Practice Your Foreign Language with Fellow Learners" },
 			{ property: "og:description", content: "Overcome speaking fear by practicing with fellow learners. Video chat roulettes & themed conversation rooms. 50+ languages." },
 			{ property: "og:site_name", content: "Aklo" },
 			{ name: "twitter:card", content: "summary_large_image" },
-			{ name: "twitter:title", content: "Aklo — Practice Your Foreign Language with Fellow Learners" },
+			{ name: "twitter:title", content: "Aklo - Practice Your Foreign Language with Fellow Learners" },
 			{ name: "twitter:description", content: "Overcome speaking fear by practicing with fellow learners. Video chat roulettes & themed rooms." }
 		],
 		links: [
