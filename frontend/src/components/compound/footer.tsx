@@ -15,7 +15,7 @@ const Footer = ({ className = "" }: FooterProps) => {
 	return (
 		<footer
 			className={cn(
-				"border border-b-0 container mx-auto bg-card mt-[var(--header-margin-bottom)] rounded-tl-xl rounded-tr-xl px-10 py-8",
+				"border border-b-0 container mx-auto bg-card mt-[var(--header-margin-bottom)] rounded-tl-xl rounded-tr-xl p-6",
 				className
 			)}
 		>
@@ -24,7 +24,10 @@ const Footer = ({ className = "" }: FooterProps) => {
 					<div className="flex flex-col gap-3 max-w-xs max-md:items-center">
 						<Link to="/" className="flex items-center gap-2">
 							<Triangle width={28} height={28} stroke="#fddb00" fill="#ffdd00" aria-hidden="true" />
-							<span className="font-semibold text-lg">Aklo</span>
+							<span className="font-semibold text-lg">
+								Aklo
+								<sup>α</sup>
+							</span>
 						</Link>
 						<p className="text-sm text-muted-foreground leading-relaxed max-md:text-center">
 							Practice your foreign language with fellow learners through video chat roulettes and topic rooms.
@@ -63,14 +66,14 @@ const Footer = ({ className = "" }: FooterProps) => {
 							</li>
 							<li>
 								<Button variant="link" asChild className="h-auto p-0 text-muted-foreground hover:text-foreground">
-									<Link to="/rules">
-										Privacy
+									<Link to="/policy">
+										Policy
 									</Link>
 								</Button>
 							</li>
 							<li>
 								<Button variant="link" asChild className="h-auto p-0 text-muted-foreground hover:text-foreground">
-									<Link to="/rules">
+									<Link to="/terms">
 										Terms
 									</Link>
 								</Button>
@@ -78,12 +81,12 @@ const Footer = ({ className = "" }: FooterProps) => {
 						</ul>
 					</nav>
 					<Button
-						variant="outline"
+						// variant="outline"
 						size="icon"
 						asChild
 					>
 						<a
-							href="https://github.com"
+							href="https://github.com/vakhno"
 							target="_blank"
 							rel="noopener noreferrer"
 							aria-label="GitHub"
@@ -94,7 +97,7 @@ const Footer = ({ className = "" }: FooterProps) => {
 				</div>
 				<Separator />
 				<div className="flex justify-center">
-					<p>
+					<p className="text-sm">
 						©
 						{" "}
 						{CURRENT_YEAR}

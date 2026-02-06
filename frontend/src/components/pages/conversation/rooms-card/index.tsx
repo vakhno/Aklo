@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useId, useMemo, useState } from "react";
+import { useId, useState } from "react";
 
 import type { FilterRoomSchemaType, NewRoomSchemaType } from "@/lib/types/room";
 
@@ -37,14 +37,8 @@ const RoomsCard = () => {
 
 	const { data } = useGetRooms({ limit: ROOMS_LIMIT, language: roomFilters.language });
 
-	const rooms = useMemo(() => {
-		return data?.pages.flatMap(page => page?.rooms || []) ?? [];
-	}, [data]);
-
+	const rooms = data?.pages.flatMap(page => page?.rooms || []) ?? [];
 	const totalRooms = rooms.length;
-	const totalActiveUsers = useMemo(() => {
-		return rooms.reduce((sum, r) => sum + (r.activeUsersCount || 0), 0);
-	}, [rooms]);
 
 	const onHandleFilterChange = (data: FilterRoomSchemaType) => {
 		setRoomFilters(data);
@@ -59,15 +53,14 @@ const RoomsCard = () => {
 	};
 
 	return (
-		<section id="topics">
-			<Card className="h-[80vh]">
+		<section id="topics" className="scroll-mt-[calc(var(--header-height)+var(--header-margin-bottom))]">
+			<Card>
 				<RoomsCardHeader
 					onHandleFilterChange={onHandleFilterChange}
 					handleOpenCreateRoomModal={handleOpenCreateRoomModal}
 					totalRooms={totalRooms}
-					totalActiveUsers={totalActiveUsers}
 				/>
-				<RoomsCardContent className="h-full" roomFilters={roomFilters} handleOpenCreateRoomModal={handleOpenCreateRoomModal} />
+				<RoomsCardContent className="h-[50vh]" roomFilters={roomFilters} handleOpenCreateRoomModal={handleOpenCreateRoomModal} />
 			</Card>
 			<DialogModal isOpen={isCreateRoomModalOpen} setOpen={setCreateRoomModalOpen} title="Create New Room" description="Fill out the form to create your new conversation room." submitTitle="Submit" cancelTitle="Cancel" isCancelVisible formId={createRoomFormId}>
 				<ScrollArea className="h-full">

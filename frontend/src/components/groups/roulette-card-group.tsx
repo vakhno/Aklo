@@ -10,7 +10,7 @@ interface RouletteCardGroupProps {
 
 const RouletteCardGroup = ({ rouletteList, handleSelectRoulette }: RouletteCardGroupProps) => {
 	return (
-		<ItemGroup className="flex flex-col gap-6">
+		<ItemGroup className="grid grid-cols-2 max-sm:grid-cols-1 gap-6">
 			{rouletteList.map(roulette => (
 				<RouletteCard roulette={roulette} key={roulette._id} handleSelectRoulette={handleSelectRoulette} />
 			))}

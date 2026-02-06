@@ -5,13 +5,13 @@ import type { JoinRoomSchemaType, RoomType, SettingsRoomSchemaType } from "@/lib
 import JoinRoomForm from "@/components/forms/join-room-form";
 import {
 	AlertDialog,
-	AlertDialogAction,
 	AlertDialogContent,
 	AlertDialogDescription,
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMediaDevice } from "@/hooks/use-media-device";
 import useMediaDeviceStore from "@/store/media-device-store";
@@ -62,7 +62,7 @@ const JoinAlertDialog = ({ isOpen, setIsOpen, room, onHandleSubmitClick }: JoinD
 					</ScrollArea>
 				</div>
 				<AlertDialogFooter>
-					<AlertDialogAction form={joinFormId} type="submit">Join</AlertDialogAction>
+					<Button form={joinFormId} type="submit">Join</Button>
 				</AlertDialogFooter>
 			</AlertDialogContent>
 		</AlertDialog>

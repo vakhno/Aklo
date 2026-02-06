@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import type { SettingsRoomSchemaType } from "@/lib/types/room";
@@ -16,6 +17,7 @@ interface StreamsProps {
 	roulette: RouletteType;
 }
 const Streams = ({ roulette }: StreamsProps) => {
+	const navigate = useNavigate();
 	const { state: mediaDeviceStoreState } = useMediaDeviceStore();
 	const { setupCombinedDevice, combinedStream, selectedVideoDevice, selectedAudioDevice } = useMediaDevice({ isAudioAvailable: true, isVideoAvailable: true, videoDeviceId: mediaDeviceStoreState.video, audioDeviceId: mediaDeviceStoreState.audio });
 	const { remotePeer, isSearching, isFound, handleStartSearch, handlePauseSearch, handleStopSearch, handleSkipOpponent, initSocket } = useRouletteWebRTC({ localStream: combinedStream, rouletteId: roulette._id });
@@ -44,6 +46,10 @@ const Streams = ({ roulette }: StreamsProps) => {
 		handleStopSearch();
 	};
 
+	const onHandleLeaveSubmitClick = async () => {
+		navigate({ to: "/rooms" });
+	};
+
 	const handleSettingsSubmit = async (data: SettingsRoomSchemaType) => {
 		const { audioDeviceId, videoDeviceId } = data;
 
@@ -62,7 +68,7 @@ const Streams = ({ roulette }: StreamsProps) => {
 							<RemoteStream className="flex-1 w-full h-full overflow-hidden" stream={remotePeer?.stream || null} isLoading={isSearching} isFound={isFound} />
 						</div>
 					</div>
-					<Tools isCameraRequired={roulette?.isCameraRequired} isMicRequired={roulette?.isMicRequired} isLoading={isSearching} isFound={isFound} onHandleSettingsSubmitClick={handleSettingsSubmit} handlePauseClick={handlePauseClick} handleStartClick={handleStartClick} handleStopClick={handleStopClick} onHandleSkipClick={handleSkipClick} selectedAudioDeviceId={selectedAudioDevice?.deviceId} selectedVideoDeviceId={selectedVideoDevice?.deviceId} />
+					<Tools isCameraRequired={roulette?.isCameraRequired} isMicRequired={roulette?.isMicRequired} isLoading={isSearching} isFound={isFound} onHandleSettingsSubmitClick={handleSettingsSubmit} handlePauseClick={handlePauseClick} handleStartClick={handleStartClick} handleStopClick={handleStopClick} onHandleSkipClick={handleSkipClick} onHandleLeaveSubmitClick={onHandleLeaveSubmitClick} selectedAudioDeviceId={selectedAudioDevice?.deviceId} selectedVideoDeviceId={selectedVideoDevice?.deviceId} />
 				</div>
 			</CardContent>
 		</Card>

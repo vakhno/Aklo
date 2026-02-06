@@ -50,3 +50,14 @@ export async function getLanguages(req: Request, res: Response) {
 		res.status(500).json({ error });
 	}
 }
+
+export async function deleteAllLanguages(req: Request, res: Response) {
+	try {
+		await languageService.deleteAllLanguages();
+
+		res.status(200);
+	}
+	catch (error) {
+		res.status(500).json({ error });
+	}
+}

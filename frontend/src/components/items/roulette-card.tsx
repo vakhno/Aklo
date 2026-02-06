@@ -1,4 +1,4 @@
-import { ArrowRight, Mic, Users, Video } from "lucide-react";
+import { ArrowUpRight, Mic, Users, Video } from "lucide-react";
 
 import type { RouletteType } from "@/lib/types/roulette";
 
@@ -18,7 +18,7 @@ interface RouletteCardTypes {
 
 const RouletteCard = ({ roulette, handleSelectRoulette }: RouletteCardTypes) => {
 	const { language, activeUsersCount, isCameraRequired, isMicRequired } = roulette;
-	const { name } = language;
+	const { name, nativeName } = language;
 
 	const handleOpenJoinRoomModal = () => {
 		if (handleSelectRoulette) {
@@ -27,11 +27,16 @@ const RouletteCard = ({ roulette, handleSelectRoulette }: RouletteCardTypes) => 
 	};
 
 	return (
-		<Item variant="outline">
+		<Item variant="muted">
 			<ItemContent className="space-y-3">
 				<div className="space-y-2">
 					<ItemTitle className="line-clamp-2 wrap-anywhere">
-						{name}
+						<div className="flex flex-col gap-1">
+							<span>{name}</span>
+							<span className="text-xs">
+								{nativeName}
+							</span>
+						</div>
 					</ItemTitle>
 				</div>
 				<div className="flex items-center justify-between pt-2">
@@ -49,7 +54,7 @@ const RouletteCard = ({ roulette, handleSelectRoulette }: RouletteCardTypes) => 
 			</ItemContent>
 			<ItemActions>
 				<Button size="icon" onClick={handleOpenJoinRoomModal}>
-					<ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+					<ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
 				</Button>
 			</ItemActions>
 		</Item>

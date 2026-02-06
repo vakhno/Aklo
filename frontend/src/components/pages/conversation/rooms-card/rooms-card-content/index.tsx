@@ -1,11 +1,11 @@
 import type { FilterRoomSchemaType } from "@/lib/types/room";
 
-import { LoginDialog } from "@/components/compound/login-dialog";
 import RoomCardList from "@/components/compound/room-card-list";
 import { CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ROOMS_LIMIT } from "@/lib/constants/room";
 import { cn } from "@/lib/utils/cn";
+import { useGetSession } from "@/queries/auth";
 import { useGetIdListOfOwnRooms, useGetRooms } from "@/queries/room";
 import { useAuthStore } from "@/store/auth-store";
 
@@ -16,7 +16,8 @@ interface RoomsCardContentProps {
 }
 
 const RoomsCardContent = ({ className, roomFilters, handleOpenCreateRoomModal }: RoomsCardContentProps) => {
-	const { session, showLoginModal, openLoginModal, closeLoginModal } = useAuthStore();
+	const { data: session } = useGetSession();
+	const { openLoginModal } = useAuthStore();
 
 	const { data: ownIds } = useGetIdListOfOwnRooms({});
 	const { isPending, fetchNextPage, data, hasNextPage, isFetchingNextPage } = useGetRooms({ limit: ROOMS_LIMIT, language: roomFilters.language });
@@ -49,7 +50,6 @@ const RoomsCardContent = ({ className, roomFilters, handleOpenCreateRoomModal }:
 					handleOpenCreateRoomModal={handleCreateRoomClick}
 				/>
 			</ScrollArea>
-			<LoginDialog open={showLoginModal} onOpenChange={closeLoginModal} />
 		</CardContent>
 	);
 };

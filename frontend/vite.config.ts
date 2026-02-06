@@ -9,12 +9,22 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
 	server: {
 		host: "0.0.0.0",
-		port: 5173,
+		port: Number(process.env.VITE_PORT) || 5173,
 		watch: {
 			usePolling: true,
 			interval: 100
 		},
-		allowedHosts: [""]
+		allowedHosts: (() => {
+			const allowedHosts = process.env.VITE_ALLOWED_HOSTS;
+
+			if (!allowedHosts) {
+				return true;
+			}
+
+			const allowedHostsList: string[] = allowedHosts.split(",").map((allowedHost: string) => allowedHost.trim()).filter((allowedHost: string) => allowedHost);
+
+			return allowedHostsList;
+		})()
 	},
 	plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), svgr(), react(), tailwindcss(), tsconfigPaths()]
 });

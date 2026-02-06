@@ -29,7 +29,7 @@ const Video = ({ ref, className, stream }: VideoProps & { ref?: RefObject<HTMLVi
 				playsInline
 				disablePictureInPicture
 				controls={false}
-				className="absolute inset-0 h-full w-full max-w-full max-h-full rounded-lg border-2 border-gray-300 object-cover bg-black"
+				className="absolute inset-0 h-full w-full max-w-full max-h-full rounded-xl object-cover bg-black"
 			/>
 		</div>
 	);

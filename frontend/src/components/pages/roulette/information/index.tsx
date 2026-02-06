@@ -23,7 +23,7 @@ const Information = () => {
 							</h1>
 
 							<p className="text-xl text-muted-foreground max-w-2xl leading-relaxed">
-								Surprise conversation with someone new from anywhere in the world —
+								Surprise conversation with someone new from anywhere in the world -
 								perfect for spontaneous language practice.
 							</p>
 						</div>
@@ -36,7 +36,7 @@ const Information = () => {
 								</CardHeader>
 								<CardContent>
 									<p className="text-muted-foreground">
-										Click “Next” anytime — you’re instantly connected to another language learner.
+										Click “Next” anytime - you’re instantly connected to another language learner.
 										No waiting, no planning.
 									</p>
 								</CardContent>
@@ -49,7 +49,7 @@ const Information = () => {
 								</CardHeader>
 								<CardContent>
 									<p className="text-muted-foreground">
-										Practice with native speakers and learners from every corner of the planet —
+										Practice with native speakers and learners from every corner of the planet -
 										every chat is a new culture and accent.
 									</p>
 								</CardContent>
@@ -65,7 +65,7 @@ const Information = () => {
 					<div className="text-center space-y-8">
 						<h2 className="text-3xl sm:text-4xl font-bold">Talk However Feels Natural</h2>
 						<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-							Check your mic, show your face, use chat — do whatever helps you speak more.
+							Check your mic, show your face, use chat - do whatever helps you speak more.
 						</p>
 
 						<div className="grid md:grid-cols-3 gap-8">
@@ -102,7 +102,7 @@ const Information = () => {
 						<div className="text-center">
 							<h2 className="text-3xl sm:text-4xl font-bold">Keep It Kind & Respectful</h2>
 							<p className="mt-4 text-lg text-muted-foreground">
-								Both of you can end the chat anytime — no hard feelings.
+								Both of you can end the chat anytime - no hard feelings.
 							</p>
 						</div>
 
@@ -116,7 +116,7 @@ const Information = () => {
 								</CardHeader>
 								<CardContent className="text-center">
 									<p className="text-muted-foreground">
-										Say hello, smile, help with corrections — make it fun for both.
+										Say hello, smile, help with corrections - make it fun for both.
 									</p>
 								</CardContent>
 							</Card>
@@ -130,7 +130,7 @@ const Information = () => {
 								</CardHeader>
 								<CardContent className="text-center">
 									<p className="text-muted-foreground">
-										No spark? Just hit “Next” — you’ll be matched with someone new instantly.
+										No spark? Just hit “Next” - you’ll be matched with someone new instantly.
 									</p>
 								</CardContent>
 							</Card>

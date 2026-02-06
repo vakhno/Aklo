@@ -29,7 +29,7 @@ const EmptyBlock = ({ title, description, icon, buttonTitle, buttonHandleClick, 
 				<EmptyDescription>{description}</EmptyDescription>
 			</EmptyHeader>
 			<EmptyContent>
-				{buttonTitle && <Button onClick={buttonHandleClick}>{buttonTitle}</Button>}
+				{buttonTitle && <Button variant="secondary" onClick={buttonHandleClick}>{buttonTitle}</Button>}
 			</EmptyContent>
 			{linkTitle && (
 				<Button

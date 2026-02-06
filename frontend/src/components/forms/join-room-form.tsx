@@ -49,7 +49,7 @@ const JoinRoomForm = ({ className, formId, videoStream, audioStream, selectedVid
 			audioDeviceId: selectedAudioDevice?.deviceId || "",
 			isVideoDeviceRequired: isCameraAvailable,
 			isAudioDeviceRequired: isMicAvailable,
-			acceptRules: false
+			acceptRules: true
 		}
 	});
 
