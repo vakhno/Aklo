@@ -13,8 +13,10 @@ import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as HomeRouteRouteImport } from './routes/_home/route'
 import { Route as BlankRouteRouteImport } from './routes/_blank/route'
 import { Route as HomeIndexRouteImport } from './routes/_home/index'
+import { Route as PublicTermsRouteImport } from './routes/_public/terms'
 import { Route as PublicRulesRouteImport } from './routes/_public/rules'
 import { Route as PublicRoomsRouteImport } from './routes/_public/rooms'
+import { Route as PublicPolicyRouteImport } from './routes/_public/policy'
 import { Route as BlankRouletteIdRouteImport } from './routes/_blank/roulette.$id'
 import { Route as BlankRoomIdRouteImport } from './routes/_blank/room.$id'
 import { Route as BlankAuthGoogleCallbackRouteImport } from './routes/_blank/auth/google/callback'
@@ -36,6 +38,11 @@ const HomeIndexRoute = HomeIndexRouteImport.update({
   path: '/',
   getParentRoute: () => HomeRouteRoute,
 } as any)
+const PublicTermsRoute = PublicTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicRulesRoute = PublicRulesRouteImport.update({
   id: '/rules',
   path: '/rules',
@@ -44,6 +51,11 @@ const PublicRulesRoute = PublicRulesRouteImport.update({
 const PublicRoomsRoute = PublicRoomsRouteImport.update({
   id: '/rooms',
   path: '/rooms',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicPolicyRoute = PublicPolicyRouteImport.update({
+  id: '/policy',
+  path: '/policy',
   getParentRoute: () => PublicRouteRoute,
 } as any)
 const BlankRouletteIdRoute = BlankRouletteIdRouteImport.update({
@@ -63,16 +75,20 @@ const BlankAuthGoogleCallbackRoute = BlankAuthGoogleCallbackRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/policy': typeof PublicPolicyRoute
   '/rooms': typeof PublicRoomsRoute
   '/rules': typeof PublicRulesRoute
+  '/terms': typeof PublicTermsRoute
   '/': typeof HomeIndexRoute
   '/room/$id': typeof BlankRoomIdRoute
   '/roulette/$id': typeof BlankRouletteIdRoute
   '/auth/google/callback': typeof BlankAuthGoogleCallbackRoute
 }
 export interface FileRoutesByTo {
+  '/policy': typeof PublicPolicyRoute
   '/rooms': typeof PublicRoomsRoute
   '/rules': typeof PublicRulesRoute
+  '/terms': typeof PublicTermsRoute
   '/': typeof HomeIndexRoute
   '/room/$id': typeof BlankRoomIdRoute
   '/roulette/$id': typeof BlankRouletteIdRoute
@@ -83,8 +99,10 @@ export interface FileRoutesById {
   '/_blank': typeof BlankRouteRouteWithChildren
   '/_home': typeof HomeRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
+  '/_public/policy': typeof PublicPolicyRoute
   '/_public/rooms': typeof PublicRoomsRoute
   '/_public/rules': typeof PublicRulesRoute
+  '/_public/terms': typeof PublicTermsRoute
   '/_home/': typeof HomeIndexRoute
   '/_blank/room/$id': typeof BlankRoomIdRoute
   '/_blank/roulette/$id': typeof BlankRouletteIdRoute
@@ -93,16 +111,20 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/policy'
     | '/rooms'
     | '/rules'
+    | '/terms'
     | '/'
     | '/room/$id'
     | '/roulette/$id'
     | '/auth/google/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/policy'
     | '/rooms'
     | '/rules'
+    | '/terms'
     | '/'
     | '/room/$id'
     | '/roulette/$id'
@@ -112,8 +134,10 @@ export interface FileRouteTypes {
     | '/_blank'
     | '/_home'
     | '/_public'
+    | '/_public/policy'
     | '/_public/rooms'
     | '/_public/rules'
+    | '/_public/terms'
     | '/_home/'
     | '/_blank/room/$id'
     | '/_blank/roulette/$id'
@@ -156,6 +180,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeIndexRouteImport
       parentRoute: typeof HomeRouteRoute
     }
+    '/_public/terms': {
+      id: '/_public/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof PublicTermsRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/rules': {
       id: '/_public/rules'
       path: '/rules'
@@ -168,6 +199,13 @@ declare module '@tanstack/react-router' {
       path: '/rooms'
       fullPath: '/rooms'
       preLoaderRoute: typeof PublicRoomsRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/policy': {
+      id: '/_public/policy'
+      path: '/policy'
+      fullPath: '/policy'
+      preLoaderRoute: typeof PublicPolicyRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_blank/roulette/$id': {
@@ -223,13 +261,17 @@ const HomeRouteRouteWithChildren = HomeRouteRoute._addFileChildren(
 )
 
 interface PublicRouteRouteChildren {
+  PublicPolicyRoute: typeof PublicPolicyRoute
   PublicRoomsRoute: typeof PublicRoomsRoute
   PublicRulesRoute: typeof PublicRulesRoute
+  PublicTermsRoute: typeof PublicTermsRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicPolicyRoute: PublicPolicyRoute,
   PublicRoomsRoute: PublicRoomsRoute,
   PublicRulesRoute: PublicRulesRoute,
+  PublicTermsRoute: PublicTermsRoute,
 }
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(

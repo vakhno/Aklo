@@ -6,11 +6,10 @@ import { cn } from "@/lib/utils/cn";
 import { loginWithGoogle } from "@/queries/auth";
 
 interface GoogleLoginButtonProps {
-	children?: React.ReactNode;
 	className?: string;
 }
 
-const GoogleLoginButton = ({ children, className }: GoogleLoginButtonProps) => {
+const GoogleLoginButton = ({ className }: GoogleLoginButtonProps) => {
 	const routerState = useRouterState();
 
 	const handleGoogleLogin = async () => {
@@ -30,14 +29,13 @@ const GoogleLoginButton = ({ children, className }: GoogleLoginButtonProps) => {
 		<Button
 			onClick={handleGoogleLogin}
 			className={cn(
-				"w-full h-11",
-				"flex items-center justify-center gap-3",
+				"w-full h-11 flex items-center justify-center gap-2",
 				className
 			)}
-			variant="outline"
+			variant="secondary"
 		>
 			<Google className="size-6" />
-			{children || "Sign in with Google"}
+			<span>Sign in with Google</span>
 		</Button>
 	);
 };

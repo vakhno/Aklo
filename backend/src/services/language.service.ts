@@ -50,3 +50,12 @@ export async function getLanguages(): Promise<LanguageDocLeanType[]> {
 		throw new Error(formatError(error));
 	}
 }
+
+export async function deleteAllLanguages(): Promise<void> {
+	try {
+		await LanguageModel.deleteMany();
+	}
+	catch (error) {
+		throw new Error(formatError(error));
+	}
+}

@@ -1,6 +1,6 @@
 import type { SearchSchemaInput } from "@tanstack/react-router";
 
-import { createRootRoute, Outlet, useNavigate, useSearch } from "@tanstack/react-router";
+import { createRootRoute, HeadContent, Outlet, useNavigate, useSearch } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
 import { toast, Toaster } from "sonner";
@@ -10,6 +10,11 @@ import useThemeStore from "@/store/theme-store";
 
 export const Route = createRootRoute({
 	component: () => RootLayout(),
+	head: () => ({
+		meta: [
+			{ title: "Aklo - language practice app" }
+		]
+	}),
 	validateSearch: (search?: Record<string, unknown> & SearchSchemaInput) => {
 		return {
 			error: search?.error
@@ -49,6 +54,7 @@ function RootLayout() {
 
 	return (
 		<>
+			<HeadContent />
 			<Outlet />
 			<Toaster />
 			<TanStackRouterDevtools />

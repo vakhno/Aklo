@@ -1,9 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Triangle } from "lucide-react";
 
 import LoginForm from "@/components/forms/login-form";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface LoginDialogProps {
 	open?: boolean;
@@ -13,38 +11,49 @@ interface LoginDialogProps {
 export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogTrigger asChild>
-				<Button variant="outline">Sign in</Button>
-			</DialogTrigger>
 			<DialogContent className="sm:max-w-[400px]">
-				<DialogHeader className="space-y-4 text-center">
-					<div className="mx-auto">
-						<Triangle width={48} height={48} stroke="#fddb00" fill="#ffdd00" />
-					</div>
-					<DialogTitle className="text-xl font-semibold text-center">
-						Sign in
+				<DialogHeader>
+					<DialogTitle>
+						Welcome to Aklo
 					</DialogTitle>
+					<DialogDescription>
+						Sign in to have access to all features and personal statistic.
+					</DialogDescription>
 				</DialogHeader>
 				<LoginForm />
-				<p className="text-xs text-center text-muted-foreground pt-4 pb-2">
-					By signing in, you agree with
-					{" "}
-					<Link to="/rules" className="underline hover:text-foreground transition-colors">
-						Rules
-					</Link>
-					,
-					{" "}
-					<Link to="/rules" className="underline hover:text-foreground transition-colors">
-						Privacy
-					</Link>
-					{" "}
-					and
-					{" "}
-					<Link to="/rules" className="underline hover:text-foreground transition-colors">
-						Terms
-					</Link>
-					.
-				</p>
+				<DialogFooter className="justify-center sm:justify-center">
+					<p className="text-center text-xs">
+						By signing in, you agree with
+						{" "}
+						<Link
+							to="/rules"
+							className="underline hover:text-foreground transition-colors"
+							onClick={() => onOpenChange?.(false)}
+						>
+							Rules
+						</Link>
+						,
+						{" "}
+						<Link
+							to="/policy"
+							className="underline hover:text-foreground transition-colors"
+							onClick={() => onOpenChange?.(false)}
+						>
+							Privacy
+						</Link>
+						{" "}
+						and
+						{" "}
+						<Link
+							to="/terms"
+							className="underline hover:text-foreground transition-colors"
+							onClick={() => onOpenChange?.(false)}
+						>
+							Terms
+						</Link>
+						.
+					</p>
+				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	);

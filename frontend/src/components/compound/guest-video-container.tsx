@@ -26,29 +26,38 @@ const GuestVideoContainer = ({ className, isCameraRequired, isLoading, isRecover
 	const [isHovered, setIsHovered] = useState(false);
 
 	useEffect(() => {
-		if (videoRef.current) {
+		if (videoRef.current && stream) {
 			videoRef.current.srcObject = stream;
+		}
+	}, [stream]);
+
+	useEffect(() => {
+		if (videoRef.current) {
 			videoRef.current.muted = isMuted;
 			videoRef.current.volume = volume;
 		}
-	}, [stream, isMuted, volume]);
+	}, [isMuted, volume]);
 
 	const toggleMute = () => {
 		setIsMuted((prev) => {
 			const newMutedState = !prev;
+
 			if (newMutedState) {
 				setVolume(0);
 			}
 			else {
 				setVolume(0.5);
 			}
+
 			return newMutedState;
 		});
 	};
 
 	const handleVolumeChange = (value: number[]) => {
 		const newVolume = value[0] / 100;
+
 		setVolume(newVolume);
+
 		if (newVolume > 0 && isMuted) {
 			setIsMuted(false);
 		}

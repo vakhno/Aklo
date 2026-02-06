@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import type { FilterRouletteSchemaType } from "@/lib/types/roulette";
 
@@ -15,26 +15,21 @@ const RoulettesCard = () => {
 
 	const { data } = useGetRoulettes({ language: rouletteFilters.language, limit: 20 });
 
-	const roulettes = useMemo(() => {
-		return data?.pages.flatMap(page => page.roulettes) ?? [];
-	}, [data]);
-
-	const totalActiveUsers = useMemo(() => {
-		return roulettes.reduce((sum, r) => sum + (r.activeUsersCount || 0), 0);
-	}, [roulettes]);
+	const roulettes = data?.pages.flatMap(page => page.roulettes) ?? [];
+	const totalActiveUsers = roulettes.reduce((sum, room) => sum + (room.activeUsersCount || 0), 0);
 
 	const onHandleFilterChange = (data: FilterRouletteSchemaType) => {
 		setRouletteFilters(data);
 	};
 
 	return (
-		<section id="roulettes">
-			<Card className="h-[80vh]">
+		<section id="roulettes" className="scroll-mt-[calc(var(--header-height)+var(--header-margin-bottom))]">
+			<Card>
 				<RoulettesCardHeader
 					onHandleFilterChange={onHandleFilterChange}
 					totalActiveUsers={totalActiveUsers}
 				/>
-				<RoulettesCardContent className="h-full" rouletteFilters={rouletteFilters} />
+				<RoulettesCardContent className="h-[50vh]" rouletteFilters={rouletteFilters} />
 			</Card>
 		</section>
 	);

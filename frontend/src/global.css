@@ -91,16 +91,15 @@
   /* Font */
   --font-fredoka: "Fredoka", ui-sans-serif, system-ui, sans-serif;
   /* Typography */
-  --text-scale: 1;
-  --text-xs: calc(clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem) * var(--text-scale));
-  --text-sm: calc(clamp(0.875rem, 0.8rem + 0.25vw, 1rem) * var(--text-scale));
-  --text-base: calc(clamp(1rem, 0.95rem + 0.25vw, 1.125rem) * var(--text-scale));
-  --text-lg: calc(clamp(1.125rem, 1rem + 0.5vw, 1.25rem) * var(--text-scale));
-  --text-xl: calc(clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem) * var(--text-scale));
-  --text-2xl: calc(clamp(1.5rem, 1.25rem + 1.25vw, 2rem) * var(--text-scale));
-  --text-3xl: calc(clamp(1.875rem, 1.5rem + 1.75vw, 2.25rem) * var(--text-scale));
-  --text-4xl: calc(clamp(2.25rem, 2rem + 2vw, 3rem) * var(--text-scale));
-  --text-5xl: calc(clamp(3rem, 2.5rem + 2.5vw, 3.75rem) * var(--text-scale));
+  --text-xs: clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8rem + 0.25vw, 1rem);
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.5vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.25rem + 1.25vw, 2rem);
+  --text-3xl: clamp(1.875rem, 1.5rem + 1.75vw, 2.25rem);
+  --text-4xl: clamp(2.25rem, 2rem + 2vw, 3rem);
+  --text-5xl: clamp(3rem, 2.5rem + 2.5vw, 3.75rem);
 }
 
 @layer base {
@@ -113,7 +112,7 @@
   }
 
   body {
-    @apply mx-4 font-fredoka text-base;
+    @apply mx-4 font-fredoka text-base leading-[initial];
   }
 
   h1,
@@ -126,27 +125,27 @@
   }
 
   h1 {
-    @apply text-5xl;
+    @apply text-5xl leading-[initial];
   }
 
   h2 {
-    @apply text-4xl;
+    @apply text-4xl leading-[initial];
   }
 
   h3 {
-    @apply text-3xl;
+    @apply text-3xl leading-[initial];
   }
 
   h4 {
-    @apply text-2xl;
+    @apply text-2xl leading-[initial];
   }
 
   h5 {
-    @apply text-xl;
+    @apply text-xl leading-[initial];
   }
 
   h6 {
-    @apply text-lg;
+    @apply text-lg leading-[initial];
   }
 
   :root {
@@ -157,10 +156,10 @@
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
+    --primary: oklch(0.86 0.19 95);
     --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.62 0.26 256);
+    --secondary-foreground: oklch(0.985 0 0);
     --muted: oklch(0.97 0 0);
     --muted-foreground: oklch(0.556 0 0);
     --accent: oklch(0.97 0 0);
@@ -193,10 +192,10 @@
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.205 0 0);
     --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
+    --primary: oklch(0.86 0.19 95);
     --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.62 0.26 256);
+    --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.269 0 0);
     --muted-foreground: oklch(0.708 0 0);
     --accent: oklch(0.269 0 0);

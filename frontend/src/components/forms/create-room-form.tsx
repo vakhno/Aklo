@@ -87,6 +87,7 @@ const CreateRoomForm = ({ className, formId, languageList, onHandleSubmit }: Cre
 							</div>
 							<FormControl>
 								<Switch
+									disabled={true}
 									checked={field.value}
 									onCheckedChange={field.onChange}
 								/>
@@ -107,6 +108,7 @@ const CreateRoomForm = ({ className, formId, languageList, onHandleSubmit }: Cre
 							</div>
 							<FormControl>
 								<Switch
+									disabled={true}
 									checked={field.value}
 									onCheckedChange={field.onChange}
 								/>

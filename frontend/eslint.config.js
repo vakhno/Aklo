@@ -43,4 +43,9 @@ export default antfu({
 		}]
 
 	}
+}, {
+	files: ["vite.config.ts"],
+	rules: {
+		"node/no-process-env": "off"
+	}
 });

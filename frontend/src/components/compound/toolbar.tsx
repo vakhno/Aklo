@@ -11,7 +11,7 @@ const Toolbar = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) 
 	return (
 		<div
 			data-slot="tools"
-			className={cn("w-full bg-background border-t", className)}
+			className={cn("w-full bg-muted/50 rounded-xl", className)}
 			{...props}
 		/>
 	);

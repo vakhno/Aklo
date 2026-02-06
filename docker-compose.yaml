@@ -1,16 +1,19 @@
-version: "v2.36.0-desktop.1"
+# Dev (default): docker compose down && docker compose up --build
+# Prod (VPS): docker compose --profile prod up -d --build
+# For prod, set VITE_APP_URL and VITE_SOCKET_URL in a root .env (see .env.example).
 
 services:
-
-  backend:
+  # --- Dev (default, no profile) ---
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: dev
+    container_name: backend-dev
     develop:
       watch:
         - action: rebuild
           path: ./backend/package.json
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend
     ports:
       - "3000:3000"
     volumes:
@@ -22,15 +25,16 @@ services:
     networks:
       - app-network
 
-  frontend:
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    container_name: frontend-dev
     develop:
       watch:
         - action: rebuild
           path: ./frontend/package.json
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: frontend
     ports:
       - "5173:5173"
     volumes:
@@ -39,6 +43,41 @@ services:
     env_file:
       - path: ./frontend/.env
         required: true
+    depends_on:
+      - backend-dev
+    networks:
+      - app-network
+
+  # --- Prod (profile: prod) ---
+  backend:
+    profiles: [prod]
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: prod
+    container_name: backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: ./backend/.env
+        required: true
+    networks:
+      - app-network
+
+  frontend:
+    profiles: [prod]
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: prod
+      args:
+        VITE_APP_URL: ${VITE_APP_URL}
+        VITE_SOCKET_URL: ${VITE_SOCKET_URL}
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "80:3000"
     depends_on:
       - backend
     networks:

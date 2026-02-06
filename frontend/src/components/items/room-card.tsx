@@ -1,4 +1,4 @@
-import { ArrowRight, Globe, Mic, Users, Video } from "lucide-react";
+import { ArrowUpRight, Globe, Mic, Users, Video } from "lucide-react";
 
 import type { RoomType } from "@/lib/types/room";
 
@@ -28,7 +28,7 @@ const RoomCard = ({ room, isOwn, handleSelectRoom }: RoomCardTypes) => {
 	};
 
 	return (
-		<Item variant="outline">
+		<Item variant="muted">
 			<ItemContent className="space-y-3">
 				<div className="space-y-2">
 					<div className="flex flex-wrap items-center gap-2">
@@ -58,7 +58,7 @@ const RoomCard = ({ room, isOwn, handleSelectRoom }: RoomCardTypes) => {
 			</ItemContent>
 			<ItemActions>
 				<Button size="icon" onClick={handleOpenClick} disabled={!isAvailable}>
-					<ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+					<ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
 				</Button>
 			</ItemActions>
 		</Item>

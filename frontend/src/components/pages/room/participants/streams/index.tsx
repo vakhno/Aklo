@@ -1,6 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Loader } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import type { RoomType, SettingsRoomSchemaType } from "@/lib/types/room";
 
@@ -8,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useMediaDevice } from "@/hooks/use-media-device";
 import { useWebRTC } from "@/hooks/use-webrtc";
 import { cn } from "@/lib/utils/cn";
-import { useCheckIsCreator, useDeleteRoom, useIsAvailableToVisit } from "@/queries/room";
+import { useDeleteRoom } from "@/queries/room";
 import useMediaDeviceStore from "@/store/media-device-store";
 
 import AcceptDeleteAlertDialog from "./accept-delete-alert-dialog";
@@ -20,20 +19,19 @@ import Tools from "./tools";
 
 interface StreamsProps {
 	room: RoomType;
+	isCreator?: boolean;
+	isAvailableToVisit?: boolean;
+	isErrorCheckIsCreator: boolean;
+	isErrorIsAvailableToVisit: boolean;
 }
 
-const Streams = ({ room }: StreamsProps) => {
+const Streams = ({ room, isCreator, isAvailableToVisit, isErrorCheckIsCreator, isErrorIsAvailableToVisit }: StreamsProps) => {
 	const navigate = useNavigate();
 
 	const { state: mediaDeviceStoreState } = useMediaDeviceStore();
 	const { mutate: deleteRoom } = useDeleteRoom({});
 	const { combinedStream, selectedAudioDevice, selectedVideoDevice, setupCombinedDevice, cleanCombinedStream, toggleCameraMute, toggleMicMute } = useMediaDevice({ isAudioAvailable: room?.isMicRequired, isVideoAvailable: room?.isCameraRequired, videoDeviceId: mediaDeviceStoreState.video || "", audioDeviceId: mediaDeviceStoreState.audio || "" });
-	const { data: IsAvailableToVisit, isPending: isPendingIsAvailableToVisit, isError: isErrorIsAvailableToVisit } = useIsAvailableToVisit({ id: room._id, options: { refetchOnWindowFocus: false, refetchOnReconnect: false, refetchOnMount: false, refetchInterval: false, staleTime: Infinity } });
-	const { data: isCreator, isPending: isPendingCheckIsCreator, isError: isErrorCheckIsCreator } = useCheckIsCreator({ id: room._id, options: { refetchOnWindowFocus: false, refetchOnReconnect: false, refetchOnMount: false, refetchInterval: false, staleTime: Infinity } });
 	const { remotePeers, isKicked, isFailed, isDeleted, handleKick, initSocket } = useWebRTC({ roomId: room._id, localStream: combinedStream });
-	const [isAcceptDeleteAlertDialogOpen, setIsAcceptDeleteAlertDialogOpen] = useState(false);
-	const [isAcceptKickAlertDialogOpen, setIsAcceptKickAlertDialogOpen] = useState(false);
-	const [isAcceptUnavailableAlertDialogOpen, setIsAcceptUnavailableAlertDialogOpen] = useState(false);
 
 	useEffect(() => {
 		setupCombinedDevice();
@@ -47,7 +45,7 @@ const Streams = ({ room }: StreamsProps) => {
 		if (isKicked || isDeleted || isFailed) {
 			cleanCombinedStream();
 		}
-	}, [isKicked, isDeleted]);
+	}, [isKicked, isDeleted, isFailed]);
 
 	const handleSubmitAcceptDeleteClick = () => {
 		navigate({ to: "/" });
@@ -86,28 +84,12 @@ const Streams = ({ room }: StreamsProps) => {
 	};
 
 	const onHandleLeaveSubmitClick = async () => {
-		navigate({ to: "/" });
+		navigate({ to: "/rooms" });
 	};
-
-	if (isPendingCheckIsCreator || isPendingIsAvailableToVisit) {
-		return (
-			<div className="w-full h-full flex items-center justify-center">
-				<Loader className="w-6 h-6 text-red animate-spin" />
-			</div>
-		);
-	}
-
-	if (isErrorCheckIsCreator || isErrorIsAvailableToVisit) {
-		return (
-			<div className="w-full h-full flex items-center justify-center">
-				Error
-			</div>
-		);
-	}
 
 	return (
 		<>
-			{IsAvailableToVisit && !isKicked && !isFailed && !isDeleted
+			{isAvailableToVisit && !isKicked && !isFailed && !isDeleted
 				? (
 						<Card className={cn("w-full h-full")}>
 							<CardContent className="w-full h-full">
@@ -116,7 +98,7 @@ const Streams = ({ room }: StreamsProps) => {
 										<div className={cn("grid gap-2 md:gap-3 w-full h-full", Object.keys(remotePeers).length === 0 && "grid-cols-1", Object.keys(remotePeers).length === 1 && "grid-cols-1 sm:grid-cols-2", Object.keys(remotePeers).length === 2 && "grid-cols-1 sm:grid-cols-3", Object.keys(remotePeers).length >= 3 && "grid-cols-2")}>
 											<LocaleStream isCameraRequired={room?.isCameraRequired} stream={combinedStream} />
 											{
-												Object.entries(remotePeers).map(([socketId, peer]) => <RemoteStream key={socketId} stream={peer.stream} isCameraRequired={room?.isCameraRequired} handleKickClick={() => handleKickClick(socketId)} />)
+												Object.entries(remotePeers).map(([socketId, peer]) => <RemoteStream key={socketId} stream={peer.stream} isCameraRequired={room?.isCameraRequired} handleKickClick={() => handleKickClick(socketId)} isKickUserAvailable={isCreator} />)
 											}
 										</div>
 									</div>
@@ -127,9 +109,9 @@ const Streams = ({ room }: StreamsProps) => {
 					)
 				: null}
 
-			<AcceptDeleteAlertDialog isOpen={isAcceptDeleteAlertDialogOpen} setIsOpen={setIsAcceptDeleteAlertDialogOpen} onHandleSubmitClick={handleSubmitAcceptDeleteClick} />
-			<AcceptKickAlertDialog isOpen={isAcceptKickAlertDialogOpen} setIsOpen={setIsAcceptKickAlertDialogOpen} onHandleSubmitClick={handleSubmitAcceptKickClick} />
-			<AcceptUnavailableAlertDialog isOpen={isAcceptUnavailableAlertDialogOpen} setIsOpen={setIsAcceptUnavailableAlertDialogOpen} onHandleSubmitClick={handleSubmitAcceptUnavailableClick} />
+			<AcceptDeleteAlertDialog isOpen={isDeleted} setIsOpen={() => {}} onHandleSubmitClick={handleSubmitAcceptDeleteClick} />
+			<AcceptKickAlertDialog isOpen={isKicked} setIsOpen={() => {}} onHandleSubmitClick={handleSubmitAcceptKickClick} />
+			<AcceptUnavailableAlertDialog isOpen={isFailed || isErrorCheckIsCreator || isErrorIsAvailableToVisit} setIsOpen={() => {}} onHandleSubmitClick={handleSubmitAcceptUnavailableClick} />
 		</>
 	);
 };

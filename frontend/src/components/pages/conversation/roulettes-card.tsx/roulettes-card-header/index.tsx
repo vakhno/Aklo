@@ -18,7 +18,13 @@ const RoulettesCardHeader = ({
 }: RoulettesCardHeaderProps) => {
 	return (
 		<CardHeader className="flex flex-col">
-			<h2 className="leading-none font-semibold">
+			<Badge variant="secondary" className="gap-2" aria-label={`${totalActiveUsers} users currently online`}>
+				<Users size={4} aria-hidden="true" />
+				<span>Online</span>
+				{" "}
+				<strong>{totalActiveUsers}</strong>
+			</Badge>
+			<h2>
 				Language Roulettes
 			</h2>
 			<CardDescription>
@@ -26,12 +32,6 @@ const RoulettesCardHeader = ({
 				Each roulette focuses on a specific language - select one, get matched instantly,
 				and start a real conversation.
 			</CardDescription>
-			<Badge variant="secondary" className="gap-1" aria-label={`${totalActiveUsers} users currently online`}>
-				<Users className="h-3 w-3" aria-hidden="true" />
-				<span>{totalActiveUsers}</span>
-				{" "}
-				<span>online</span>
-			</Badge>
 			<RoulettesCardHeaderFilters className="w-full" onHandleChange={onHandleFilterChange} />
 		</CardHeader>
 	);

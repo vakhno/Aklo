@@ -24,7 +24,7 @@ const Information = ({ className }: InformationProps) => {
 							</div>
 
 							<h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-								Welcome to thematic room
+								Welcome to topic room
 							</h1>
 
 							<p className="text-xl text-muted-foreground max-w-2xl leading-relaxed">
@@ -32,7 +32,7 @@ const Information = ({ className }: InformationProps) => {
 								{" "}
 								<strong>your space</strong>
 								{" "}
-								to speak freely, make mistakes, laugh, and improve —
+								to speak freely, make mistakes, laugh, and improve -
 								with real people who share your passion for languages.
 							</p>
 						</div>
@@ -45,8 +45,8 @@ const Information = ({ className }: InformationProps) => {
 								</CardHeader>
 								<CardContent>
 									<p className="text-muted-foreground">
-										Set any topic you want — “English morning coffee”, “Japanese anime talk”,
-										“Spanish travel stories” — and attract people who truly share your interests.
+										Set any topic you want - “English morning coffee”, “Japanese anime talk”,
+										“Spanish travel stories” - and attract people who truly share your interests.
 									</p>
 								</CardContent>
 							</Card>
@@ -58,7 +58,7 @@ const Information = ({ className }: InformationProps) => {
 								</CardHeader>
 								<CardContent>
 									<p className="text-muted-foreground">
-										Up to 4 learners at once. No teachers, no pressure — just real conversation
+										Up to 4 learners at once. No teachers, no pressure - just real conversation
 										with people who want to improve like you.
 									</p>
 								</CardContent>
@@ -72,9 +72,9 @@ const Information = ({ className }: InformationProps) => {
 				<div className="container mx-auto px-4 max-w-5xl space-y-20">
 
 					<div className="text-center space-y-8">
-						<h2 className="text-3xl sm:text-4xl font-bold">Speak Freely — However You Want</h2>
+						<h2 className="text-3xl sm:text-4xl font-bold">Speak Freely - However You Want</h2>
 						<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-							Turn your camera on or off, mute when you need a break, type in chat —
+							Turn your camera on or off, mute when you need a break, type in chat -
 							everything is allowed. This is a safe space to learn.
 						</p>
 
@@ -112,7 +112,7 @@ const Information = ({ className }: InformationProps) => {
 						<div className="text-center">
 							<h2 className="text-3xl sm:text-4xl font-bold">Let’s Make This Room Awesome Together</h2>
 							<p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-								We’re all here to practice and help each other — just a few simple things to remember.
+								We’re all here to practice and help each other - just a few simple things to remember.
 							</p>
 						</div>
 
@@ -127,7 +127,7 @@ const Information = ({ className }: InformationProps) => {
 								</CardHeader>
 								<CardContent>
 									<p className="text-muted-foreground">
-										Smile, say hello, help with corrections — we’re all learning.
+										Smile, say hello, help with corrections - we’re all learning.
 									</p>
 								</CardContent>
 							</Card>
