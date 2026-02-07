@@ -1,6 +1,6 @@
-import { client } from "./client";
-import { roomIndexSearch } from "./room/room.search";
-import { rouletteIndexSearch } from "./roulette/roulette.search";
+import { client } from "./client.js";
+import { roomIndexSearch } from "./room/room.search.js";
+import { rouletteIndexSearch } from "./roulette/roulette.search.js";
 
 export const initCache = async () => {
 	await client.connect();

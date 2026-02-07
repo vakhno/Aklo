@@ -1,11 +1,11 @@
 import type { RouletteCacheType, RouletteDocLeanType } from "../libs/types/roulette.type";
 
-import { client as redisClient } from "../cache/client";
-import { ROULETTE_PREFIX } from "../libs/constants/redis";
-import { RouletteModel } from "../routes/roulette/roulette.model";
-import { convertObjToRedisHash } from "../utils/convert-obj-to-redis-hash";
-import { convertRedisHashToRouletteCache } from "../utils/convert-redis-hash-to-roulette-cache";
-import { formatError } from "../utils/format-error";
+import { client as redisClient } from "../cache/client.js";
+import { ROULETTE_PREFIX } from "../libs/constants/redis.js";
+import { RouletteModel } from "../routes/roulette/roulette.model.js";
+import { convertObjToRedisHash } from "../utils/convert-obj-to-redis-hash.js";
+import { convertRedisHashToRouletteCache } from "../utils/convert-redis-hash-to-roulette-cache.js";
+import { formatError } from "../utils/format-error.js";
 
 export const createRouletteCache = async (rouletteId: string): Promise<void> => {
 	try {

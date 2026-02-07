@@ -1,8 +1,8 @@
 import type { LanguageDocLeanType, LanguageDocType, LanguageInputSchemaType } from "../libs/types/language.type";
 
-import { LanguageReadySchema } from "../libs/zod-schemas/language.schema";
-import { LanguageModel } from "../routes/language/language.model";
-import { formatError } from "../utils/format-error";
+import { LanguageReadySchema } from "../libs/zod-schemas/language.schema.js";
+import { LanguageModel } from "../routes/language/language.model.js";
+import { formatError } from "../utils/format-error.js";
 
 export async function createLanguage(languageInput: LanguageInputSchemaType): Promise<LanguageDocType> {
 	try {

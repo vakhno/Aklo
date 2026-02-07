@@ -3,11 +3,11 @@ import { Types } from "mongoose";
 import type { LanguageDocLeanType } from "../libs/types/language.type";
 import type { RouletteDocLeanPopulatedType, RouletteDocType, RouletteInputSchemaType, RouletteSchemaType } from "../libs/types/roulette.type";
 
-import { RouletteReadySchema } from "../libs/zod-schemas/roulette.schema";
-import { LanguageModel } from "../routes/language/language.model";
-import { RouletteModel } from "../routes/roulette/roulette.model";
-import { formatError } from "../utils/format-error";
-import { createRouletteCache } from "./roulette-cache.service";
+import { RouletteReadySchema } from "../libs/zod-schemas/roulette.schema.js";
+import { LanguageModel } from "../routes/language/language.model.js";
+import { RouletteModel } from "../routes/roulette/roulette.model.js";
+import { formatError } from "../utils/format-error.js";
+import { createRouletteCache } from "./roulette-cache.service.js";
 
 export async function createRoulette(rouletteInput: RouletteInputSchemaType): Promise<RouletteDocType> {
 	try {

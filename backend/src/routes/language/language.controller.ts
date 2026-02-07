@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 
-import { LanguageInputSchema } from "../../libs/zod-schemas/language.schema";
-import * as languageService from "../../services/language.service";
+import { LanguageInputSchema } from "../../libs/zod-schemas/language.schema.js";
+import * as languageService from "../../services/language.service.js";
 
 export async function createLanguage(req: Request, res: Response) {
 	try {

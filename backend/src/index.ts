@@ -4,11 +4,11 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 
-import { auth } from "./auth";
+import { auth } from "./auth/index.js";
 import { initCache } from "./cache/index.js";
 import { initDb } from "./db/index.js";
-import { setupRoomListener } from "./listeners/room.listener";
-import { initRoutes } from "./routes";
+import { setupRoomListener } from "./listeners/room.listener.js";
+import { initRoutes } from "./routes/index.js";
 import { initSocketEvents } from "./sockets/index.js";
 import { initSocketServer } from "./sockets/server.js";
 

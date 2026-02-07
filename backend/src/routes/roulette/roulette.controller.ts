@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
 
-import { RouletteInputSchema } from "../../libs/zod-schemas/roulette.schema";
-import * as rouletteCacheService from "../../services/roulette-cache.service";
-import * as rouletteService from "../../services/roulette.service";
-import { parseGetAllRoulettesQueries } from "../../utils/parse-get-all-roulettes-queries";
+import { RouletteInputSchema } from "../../libs/zod-schemas/roulette.schema.js";
+import * as rouletteCacheService from "../../services/roulette-cache.service.js";
+import * as rouletteService from "../../services/roulette.service.js";
+import { parseGetAllRoulettesQueries } from "../../utils/parse-get-all-roulettes-queries.js";
 
 export async function createRoulette(req: Request, res: Response) {
 	try {

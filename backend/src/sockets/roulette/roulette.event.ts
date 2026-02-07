@@ -1,7 +1,7 @@
 import type { Server } from "socket.io";
 
-import { joinRouletteCache, leftRouletteCache } from "../../services/roulette-cache.service";
-import { joinRoulette, leftRoulette } from "../../services/roulette.service";
+import { joinRouletteCache, leftRouletteCache } from "../../services/roulette-cache.service.js";
+import { joinRoulette, leftRoulette } from "../../services/roulette.service.js";
 
 export function registerRouletteSocketEvents(io: Server) {
 	const namespace = io.of("/roulette");

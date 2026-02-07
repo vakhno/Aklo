@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import * as rouletteController from "./roulette.controller";
+import * as rouletteController from "./roulette.controller.js";
 
 const router = Router();
 
