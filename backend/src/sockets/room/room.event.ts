@@ -1,8 +1,8 @@
 import type { Server } from "socket.io";
 
-import { joinRoomCache, leftRoomCache } from "../../services/room-cache.service";
-import { joinRoom, leftRoom } from "../../services/room.service";
-import { getCookies } from "../../utils/get-cookies";
+import { joinRoomCache, leftRoomCache } from "../../services/room-cache.service.js";
+import { joinRoom, leftRoom } from "../../services/room.service.js";
+import { getCookies } from "../../utils/get-cookies.js";
 
 export function registerRoomSocketEvents(io: Server) {
 	const namespace = io.of("/room");

@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
 
-import { RoomInputSchema } from "../../libs/zod-schemas/room.schema";
-import * as roomCacheService from "../../services/room-cache.service";
-import * as roomService from "../../services/room.service";
-import { getCookies } from "../../utils/get-cookies";
-import { parseGetAllRoomsQueries } from "../../utils/parse-get-all-rooms-queries";
+import { RoomInputSchema } from "../../libs/zod-schemas/room.schema.js";
+import * as roomCacheService from "../../services/room-cache.service.js";
+import * as roomService from "../../services/room.service.js";
+import { getCookies } from "../../utils/get-cookies.js";
+import { parseGetAllRoomsQueries } from "../../utils/parse-get-all-rooms-queries.js";
 
 export async function createRoom(req: Request, res: Response) {
 	try {

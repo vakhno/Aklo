@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 
-import { getMongoClient } from "../db";
+import { getMongoClient } from "../db/index.js";
 
 const client = getMongoClient();
 const db = client.db();

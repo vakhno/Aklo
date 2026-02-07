@@ -1,6 +1,6 @@
 import type { RedisClientType } from "redis";
 
-import { client } from "./client";
+import { client } from "./client.js";
 
 export const subscriber = client.duplicate() as RedisClientType;
 

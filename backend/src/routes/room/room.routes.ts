@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import * as roomController from "./room.controller";
+import * as roomController from "./room.controller.js";
 
 const router = Router();
 

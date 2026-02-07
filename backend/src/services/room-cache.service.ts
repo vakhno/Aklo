@@ -1,11 +1,11 @@
 import type { RoomCacheType, RoomDocLeanType } from "../libs/types/room.type";
 
-import { client as redisClient } from "../cache/client";
-import { ROOM_PREFIX } from "../libs/constants/redis";
-import { RoomModel } from "../routes/room/room.model";
-import { convertObjToRedisHash } from "../utils/convert-obj-to-redis-hash";
-import { convertRedisHashToRoomCache } from "../utils/convert-redis-hash-to-room-cache";
-import { formatError } from "../utils/format-error";
+import { client as redisClient } from "../cache/client.js";
+import { ROOM_PREFIX } from "../libs/constants/redis.js";
+import { RoomModel } from "../routes/room/room.model.js";
+import { convertObjToRedisHash } from "../utils/convert-obj-to-redis-hash.js";
+import { convertRedisHashToRoomCache } from "../utils/convert-redis-hash-to-room-cache.js";
+import { formatError } from "../utils/format-error.js";
 
 export const createRoomCache = async (roomId: string): Promise<void> => {
 	try {

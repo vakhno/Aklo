@@ -1,7 +1,7 @@
 import type { Server } from "socket.io";
 
-import { RoomModel } from "../routes/room/room.model";
-import * as roomCacheService from "../services/room-cache.service";
+import { RoomModel } from "../routes/room/room.model.js";
+import * as roomCacheService from "../services/room-cache.service.js";
 
 export const setupRoomListener = (io: Server): void => {
 	const namespace = io.of("/room");

@@ -4,11 +4,11 @@ import { v4 as uuidv4 } from "uuid";
 import type { LanguageDocLeanType } from "../libs/types/language.type";
 import type { RoomDocLeanPopulatedType, RoomDocLeanType, RoomDocType, RoomInputSchemaType, RoomReadySchemaType, RoomSchemaType } from "../libs/types/room.type";
 
-import { RoomReadySchema } from "../libs/zod-schemas/room.schema";
-import { LanguageModel } from "../routes/language/language.model";
-import { RoomModel } from "../routes/room/room.model";
-import { formatError } from "../utils/format-error";
-import { createRoomCache } from "./room-cache.service";
+import { RoomReadySchema } from "../libs/zod-schemas/room.schema.js";
+import { LanguageModel } from "../routes/language/language.model.js";
+import { RoomModel } from "../routes/room/room.model.js";
+import { formatError } from "../utils/format-error.js";
+import { createRoomCache } from "./room-cache.service.js";
 
 export async function createRoom(roomInput: RoomInputSchemaType): Promise<RoomDocType> {
 	try {
