@@ -1,5 +1,6 @@
 {
 	"watch": ["src"],
-	"ext": "ts",
-	"exec": "node --import tsx ./src/index.ts"
+	"ext": "ts,json",
+	"legacyWatch": true,
+	"exec": "tsx ./src/index.ts"
 }
