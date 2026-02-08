@@ -150,8 +150,8 @@ export async function deleteRoom(req: Request, res: Response) {
 			return;
 		}
 
-		await roomService.deleteRoom(id);
 		await roomCacheService.deleteRoomCache(id);
+		await roomService.deleteRoom(id);
 
 		req.app.get("io").to(id).emit("room-deleted", { roomId: id });
 

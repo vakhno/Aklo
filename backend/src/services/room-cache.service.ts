@@ -181,7 +181,7 @@ export const deleteRoomCache = async (roomId: string): Promise<void> => {
 		const exists = await redisClient.exists(key);
 
 		if (!exists) {
-			throw new Error("Room cache not found");
+			return;
 		}
 
 		await redisClient.del(key);

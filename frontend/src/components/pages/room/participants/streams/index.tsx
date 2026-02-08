@@ -48,15 +48,15 @@ const Streams = ({ room, isCreator, isAvailableToVisit, isErrorCheckIsCreator, i
 	}, [isKicked, isDeleted, isFailed]);
 
 	const handleSubmitAcceptDeleteClick = () => {
-		navigate({ to: "/" });
+		navigate({ to: "/rooms" });
 	};
 
 	const handleSubmitAcceptKickClick = () => {
-		navigate({ to: "/" });
+		navigate({ to: "/rooms" });
 	};
 
 	const handleSubmitAcceptUnavailableClick = () => {
-		navigate({ to: "/" });
+		navigate({ to: "/rooms" });
 	};
 
 	const handleKickClick = (socketId: string) => {
@@ -81,6 +81,8 @@ const Streams = ({ room, isCreator, isAvailableToVisit, isErrorCheckIsCreator, i
 
 	const onHandleDeleteClick = async () => {
 		await deleteRoom({ id: room._id });
+
+		navigate({ to: "/rooms" });
 	};
 
 	const onHandleLeaveSubmitClick = async () => {
