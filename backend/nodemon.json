@@ -1,5 +1,6 @@
 {
 	"watch": ["src"],
-	"ext": "ts",
-	"exec": "node --env-file=.env.development --loader ts-node/esm ./src/index.ts"
+	"ext": "ts,json",
+	"legacyWatch": true,
+	"exec": "tsx ./src/index.ts"
 }
