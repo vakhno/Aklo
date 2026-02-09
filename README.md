@@ -2,6 +2,8 @@
 
 **Aklo** - is an app for practicing languages with other learners. It offers video rooms (create or join by language and topic) and roulette-style matching for real-time voice and video conversation.
 
+**[Live app](https://aklo-ldriy.ondigitalocean.app/)**
+
 ## Built with
 
 <p>
