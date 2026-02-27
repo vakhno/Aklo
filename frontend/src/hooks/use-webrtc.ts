@@ -206,6 +206,15 @@ export const useWebRTC = ({
 				socket.emit("room-disconnect");
 			});
 
+			socket.on("admin-room-kick", () => {
+				setKicked(true);
+
+				disconnectAllPeers();
+				disconnectSocket();
+
+				socket.emit("room-disconnect");
+			});
+
 			socket.on("room-disconnect-success", () => {
 				disconnectAllPeers();
 				disconnectSocket();

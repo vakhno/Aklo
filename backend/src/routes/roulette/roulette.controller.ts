@@ -5,6 +5,59 @@ import * as rouletteCacheService from "../../services/roulette-cache.service.js"
 import * as rouletteService from "../../services/roulette.service.js";
 import { parseGetAllRoulettesQueries } from "../../utils/parse-get-all-roulettes-queries.js";
 
+export async function updateRoulette(req: Request, res: Response) {
+	try {
+		const { id } = req.params;
+		if (!id) {
+			res.status(400).json({ error: "Roulette id is required" });
+			return;
+		}
+
+		const updated = await rouletteService.updateRoulette(id, req.body);
+		res.status(200).json(updated);
+	}
+	catch (error) {
+		res.status(500).json({ error: String(error) });
+	}
+}
+
+export async function getRouletteUsers(req: Request, res: Response) {
+	try {
+		const { id } = req.params;
+		if (!id) {
+			res.status(400).json({ error: "Roulette id is required" });
+			return;
+		}
+
+		const socketIds = await rouletteCacheService.getRouletteAvailableUsersList(id);
+		res.status(200).json({ users: socketIds });
+	}
+	catch (error) {
+		res.status(500).json({ error: String(error) });
+	}
+}
+
+export async function removeRouletteUser(req: Request, res: Response) {
+	try {
+		const { id, userId: socketId } = req.params;
+		if (!id || !socketId) {
+			res.status(400).json({ error: "Roulette id and socket id are required" });
+			return;
+		}
+
+		await rouletteCacheService.leftRouletteCache(id, socketId);
+
+		const io = req.app.get("io");
+		const rouletteNamespace = io.of("/roulette");
+		rouletteNamespace.to(socketId).emit("admin-roulette-kick");
+
+		res.status(200).json({ success: true });
+	}
+	catch (error) {
+		res.status(500).json({ error: String(error) });
+	}
+}
+
 export async function createRoulette(req: Request, res: Response) {
 	try {
 		const data = req.body;

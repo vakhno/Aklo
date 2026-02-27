@@ -1,14 +1,16 @@
-import { useInfiniteQuery, useMutation, type UseMutationOptions, useQuery, type UseQueryOptions } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, type UseMutationOptions, useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 
 import type { LanguageType } from "@/lib/types/language";
 import type { NewRoomSchemaType, RoomType } from "@/lib/types/room";
+
+const API_URL = `${import.meta.env.VITE_SOCKET_URL}/api/room`;
 
 type getRoomProps = {
 	id: string;
 };
 
 const getRoom = async ({ id }: getRoomProps): Promise<RoomType> => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/${id}`, {
+	const response = await fetch(`${API_URL}/${id}`, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
@@ -46,7 +48,7 @@ type getUseIsAvailableToVisitProps = {
 };
 
 const getIsAvailableToVisit = async ({ id }: getUseIsAvailableToVisitProps): Promise<boolean> => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/${id}/is-available-to-visit`, {
+	const response = await fetch(`${API_URL}/${id}/is-available-to-visit`, {
 		method: "GET",
 		credentials: "include"
 	});
@@ -78,8 +80,7 @@ type createRoomProps = {
 };
 
 const createRoom = async ({ newRoomData }: createRoomProps): Promise<RoomType> => {
-	const url = `${import.meta.env.VITE_SOCKET_URL}/api/room`;
-	const response = await fetch(url, {
+	const response = await fetch(API_URL, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json"
@@ -115,7 +116,7 @@ type deleteRoomProps = {
 };
 
 const deleteRoom = async ({ id }: deleteRoomProps): Promise<boolean> => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/${id}`, {
+	const response = await fetch(`${API_URL}/${id}`, {
 		method: "DELETE",
 		credentials: "include"
 	});
@@ -141,7 +142,7 @@ export const useDeleteRoom = ({ options }: useDeleteRoomProps) => {
 };
 
 const getAllRooms = async ({ limit, page, language }: { limit: number; page: number; language?: string }) => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room?page=${page}&limit=${limit}${language ? `&language=${language}` : ""}`, {
+	const response = await fetch(`${API_URL}?page=${page}&limit=${limit}${language ? `&language=${language}` : ""}`, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
@@ -174,8 +175,7 @@ export const useGetRooms = ({ language, limit }: UseGetRoomsProps) => {
 };
 
 const joinRoom = async ({ roomId }: { roomId: string }): Promise<void> => {
-	const url = `${import.meta.env.VITE_SOCKET_URL}/api/room/${roomId}/join`;
-	const response = await fetch(url, {
+	const response = await fetch(`${API_URL}/${roomId}/join`, {
 		method: "POST"
 
 	});
@@ -204,7 +204,7 @@ type checkIsCreatorProps = {
 };
 
 const checkIsCreator = async ({ id }: checkIsCreatorProps): Promise<boolean> => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/${id}/is-creator`, {
+	const response = await fetch(`${API_URL}/${id}/is-creator`, {
 		method: "GET",
 		credentials: "include"
 	});
@@ -234,7 +234,7 @@ export const useCheckIsCreator = ({ id, options }: useCheckIsCreatorProps) => {
 };
 
 const getIdListOfOwnRooms = async (): Promise<string[]> => {
-	const response = await fetch(`${import.meta.env.VITE_SOCKET_URL}/api/room/own-room-ids`, {
+	const response = await fetch(`${API_URL}/own-room-ids`, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
@@ -266,8 +266,7 @@ export const useGetIdListOfOwnRooms = ({ options }: useGetIdListOfOwnRoomsProps)
 };
 
 const getRoomsLanguages = async (): Promise<LanguageType[]> => {
-	const url = `${import.meta.env.VITE_SOCKET_URL}/api/room/language`;
-	const response = await fetch(url, {
+	const response = await fetch(`${API_URL}/language`, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
@@ -293,5 +292,94 @@ export const useGetRoomsLanguages = ({ options }: useGetRoomsLanguagesProps = {}
 		queryKey: ["room-languages"],
 		queryFn: getRoomsLanguages,
 		...options
+	});
+};
+
+const adminRoomFetch = async (url: string, options?: RequestInit) => {
+	const response = await fetch(`${API_URL}${url}`, {
+		...options,
+		credentials: "include",
+		headers: {
+			"Content-Type": "application/json",
+			...options?.headers
+		}
+	});
+
+	if (!response.ok) {
+		const error = await response.json().catch(() => ({ error: "Request failed" }));
+		throw new Error(error.error || "Request failed");
+	}
+
+	if (response.status === 204) {
+		return null;
+	}
+
+	return response.json();
+};
+
+export const useAdminGetRooms = ({ options }: { options?: Partial<UseQueryOptions<RoomType[], Error>> } = {}) => {
+	return useQuery({
+		queryKey: ["admin-rooms"],
+		queryFn: async () => {
+			const data = await adminRoomFetch("");
+			return data.rooms as RoomType[];
+		},
+		...options
+	});
+};
+
+/** Payload for PUT /api/room/:id – language is the language id (string). */
+export type AdminUpdateRoomPayload = {
+	title?: string;
+	language?: string;
+	isCameraRequired?: boolean;
+	isMicRequired?: boolean;
+	maxUsersCount?: number;
+};
+
+export const useAdminUpdateRoom = ({ options }: { options?: UseMutationOptions<RoomType, Error, { id: string; data: AdminUpdateRoomPayload }> } = {}) => {
+	const queryClient = useQueryClient();
+	const { onSuccess, ...restOptions } = options ?? {};
+	return useMutation({
+		mutationFn: ({ id, data }: { id: string; data: AdminUpdateRoomPayload }) => adminRoomFetch(`/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+		...restOptions,
+		onSuccess: (...args) => {
+			queryClient.invalidateQueries({ queryKey: ["admin-rooms"] });
+			onSuccess?.(...args);
+		}
+	});
+};
+
+export const useAdminDeleteRoom = ({ options }: { options?: UseMutationOptions<null, Error, string> } = {}) => {
+	const queryClient = useQueryClient();
+	const { onSuccess, ...restOptions } = options ?? {};
+	return useMutation({
+		mutationFn: (id: string) => adminRoomFetch(`/${id}`, { method: "DELETE" }),
+		...restOptions,
+		onSuccess: (...args) => {
+			queryClient.invalidateQueries({ queryKey: ["admin-rooms"] });
+			onSuccess?.(...args);
+		}
+	});
+};
+
+export const useAdminGetRoomUsers = ({ id, options }: { id: string; options?: Partial<UseQueryOptions<{ users: string[] }, Error>> }) => {
+	return useQuery({
+		queryKey: ["admin-room-users", id],
+		queryFn: () => adminRoomFetch(`/${id}/users`),
+		...options
+	});
+};
+
+export const useAdminRemoveRoomUser = ({ options }: { options?: UseMutationOptions<unknown, Error, { roomId: string; userId: string }> } = {}) => {
+	const queryClient = useQueryClient();
+	const { onSuccess, ...restOptions } = options ?? {};
+	return useMutation({
+		mutationFn: ({ roomId, userId }: { roomId: string; userId: string }) => adminRoomFetch(`/${roomId}/users/${userId}`, { method: "DELETE" }),
+		...restOptions,
+		onSuccess: (...args) => {
+			queryClient.invalidateQueries({ queryKey: ["admin-room-users", args[1].roomId] });
+			onSuccess?.(...args);
+		}
 	});
 };

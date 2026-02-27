@@ -58,23 +58,34 @@ export async function getRoulette(rouletteId: string): Promise<RouletteDocLeanPo
 
 export async function getAllRoulettes({ language, limit, page }: { language?: string; limit: number; page: number }): Promise<{ roulettes: RouletteDocLeanPopulatedType[]; isHasMore: boolean }> {
 	try {
-		const offset = (page - 1) * limit;
 		const rouletteFilters: Partial<RouletteSchemaType> = {};
 
 		if (language) {
 			rouletteFilters.language = new Types.ObjectId(language);
 		}
 
-		const roulettePopulatedLeanModel = await RouletteModel.find(rouletteFilters)
-			.skip(offset)
-			.limit(limit)
-			.sort({ activeUsersCount: -1, priority: 1 })
-			.lean()
-			.populate("language") as unknown as RouletteDocLeanPopulatedType[];
-		const total = await RouletteModel.countDocuments(rouletteFilters);
-		const isHasMore = Number(page) * limit < total;
+		if (limit && page) {
+			const offset = (page - 1) * limit;
 
-		return { roulettes: roulettePopulatedLeanModel, isHasMore };
+			const roulettePopulatedLeanModel = await RouletteModel.find(rouletteFilters)
+				.skip(offset)
+				.limit(limit)
+				.sort({ activeUsersCount: -1, priority: 1 })
+				.lean()
+				.populate("language") as unknown as RouletteDocLeanPopulatedType[];
+			const total = await RouletteModel.countDocuments(rouletteFilters);
+			const isHasMore = Number(page) * limit < total;
+
+			return { roulettes: roulettePopulatedLeanModel, isHasMore };
+		}
+		else {
+			const roulettePopulatedLeanModel = await RouletteModel.find(rouletteFilters)
+				.sort({ activeUsersCount: -1, priority: 1 })
+				.lean()
+				.populate("language") as unknown as RouletteDocLeanPopulatedType[];
+
+			return { roulettes: roulettePopulatedLeanModel, isHasMore: false };
+		}
 	}
 	catch (error) {
 		throw new Error(formatError(error));
@@ -161,6 +172,32 @@ export async function leftRoulette(rouletteId: string): Promise<void> {
 		if (!updateRoulette) {
 			throw new Error("Roulette not found");
 		}
+	}
+	catch (error) {
+		throw new Error(formatError(error));
+	}
+}
+
+export async function updateRoulette(rouletteId: string, updateData: Partial<{ language: string; isCameraRequired: boolean; isMicRequired: boolean; priority: number }>): Promise<RouletteDocLeanPopulatedType> {
+	try {
+		if (!Types.ObjectId.isValid(rouletteId)) {
+			throw new Error("Invalid roulette id");
+		}
+
+		const setData: Record<string, unknown> = { ...updateData };
+		if (updateData.language) {
+			setData.language = new Types.ObjectId(updateData.language);
+		}
+
+		const updated = await RouletteModel.findByIdAndUpdate(rouletteId, { $set: setData }, { new: true })
+			.populate("language")
+			.lean() as RouletteDocLeanPopulatedType | null;
+
+		if (!updated) {
+			throw new Error("Roulette not found");
+		}
+
+		return updated;
 	}
 	catch (error) {
 		throw new Error(formatError(error));

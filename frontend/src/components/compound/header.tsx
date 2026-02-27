@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Menu, Moon, Sun } from "lucide-react";
+import { ArrowUpRight, LayoutDashboard, Menu, Moon, Sun } from "lucide-react";
 import { useState } from "react";
 
 import Logo from "@/assets/icon/logo.svg?react";
@@ -127,6 +127,14 @@ const Header = ({ className = "" }: HeaderProps) => {
 													</div>
 												</div>
 												<Separator />
+												{(user as { role?: string }).role === "admin" && (
+													<Button variant="secondary" className="w-full justify-start gap-2" asChild>
+														<Link to="/dashboard" onClick={() => setIsProfileDialogOpen(false)}>
+															<LayoutDashboard className="h-4 w-4" />
+															Dashboard
+														</Link>
+													</Button>
+												)}
 												<Button
 													variant="destructive"
 													className="w-full justify-start gap-2"

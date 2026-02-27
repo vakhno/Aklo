@@ -23,6 +23,7 @@ interface useRouletteWebRTCProps {
 export function useRouletteWebRTC({ localStream, rouletteId }: useRouletteWebRTCProps) {
 	const [isSearching, setSearching] = useState(false);
 	const [isFound, setFound] = useState(false);
+	const [isKicked, setKicked] = useState(false);
 	const [remotePeer, setRemotePeer] = useState<RemotePeer | null>(null);
 
 	const socketRef = useRef<Socket | null>(null);
@@ -138,6 +139,14 @@ export function useRouletteWebRTC({ localStream, rouletteId }: useRouletteWebRTC
 				socket.emit("roulette-start-search-after-opponent-skip");
 			});
 
+			socket.on("admin-roulette-kick", () => {
+				setSearching(false);
+				setFound(false);
+				setKicked(true);
+				closePeer();
+				disconnectSocket();
+			});
+
 			socket.on("roulette-detect", async ({ partnerSocketId, isInitiator }) => {
 				const peer = createPeer({ stream: localStream, handleOnTrack: handleOnTrack(partnerSocketId), handleOnIceCandidate: handleOnIceCandidate(partnerSocketId) });
 
@@ -205,5 +214,5 @@ export function useRouletteWebRTC({ localStream, rouletteId }: useRouletteWebRTC
 		};
 	}, []);
 
-	return { remotePeer, isSearching, isFound, handleStartSearch, handlePauseSearch, handleStopSearch, handleSkipOpponent, initSocket };
+	return { remotePeer, isSearching, isFound, isKicked, handleStartSearch, handlePauseSearch, handleStopSearch, handleSkipOpponent, initSocket };
 }

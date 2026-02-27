@@ -51,6 +51,42 @@ export async function getLanguages(): Promise<LanguageDocLeanType[]> {
 	}
 }
 
+export async function updateLanguage(languageId: string, languageInput: Partial<LanguageInputSchemaType>): Promise<LanguageDocLeanType> {
+	try {
+		if (!languageId) {
+			throw new Error("No id provided");
+		}
+
+		const updated = await LanguageModel.findByIdAndUpdate(languageId, { $set: languageInput }, { new: true }).lean();
+
+		if (!updated) {
+			throw new Error("Language not found");
+		}
+
+		return updated;
+	}
+	catch (error) {
+		throw new Error(formatError(error));
+	}
+}
+
+export async function deleteLanguage(languageId: string): Promise<void> {
+	try {
+		if (!languageId) {
+			throw new Error("No id provided");
+		}
+
+		const deleted = await LanguageModel.findByIdAndDelete(languageId);
+
+		if (!deleted) {
+			throw new Error("Language not found");
+		}
+	}
+	catch (error) {
+		throw new Error(formatError(error));
+	}
+}
+
 export async function deleteAllLanguages(): Promise<void> {
 	try {
 		await LanguageModel.deleteMany();
