@@ -126,6 +126,7 @@ export const deleteAllRoulettesCache = async (): Promise<void> => {
 export const deleteRouletteCache = async (rouletteId: string): Promise<void> => {
 	try {
 		const key = `${ROULETTE_PREFIX}${rouletteId}`;
+		const listKey = `${ROULETTE_PREFIX}${rouletteId}:availableUsers`;
 		const exists = await redisClient.exists(key);
 
 		if (!exists) {
@@ -133,6 +134,7 @@ export const deleteRouletteCache = async (rouletteId: string): Promise<void> => 
 		}
 
 		await redisClient.del(key);
+		await redisClient.del(listKey);
 	}
 	catch (error) {
 		throw new Error(formatError(error));
@@ -156,6 +158,22 @@ export const getRouletteCache = async (rouletteId: string): Promise<RouletteCach
 		const convertedCache = convertRedisHashToRouletteCache(cache);
 
 		return convertedCache;
+	}
+	catch (error) {
+		throw new Error(formatError(error));
+	}
+};
+
+export const getRouletteAvailableUsersList = async (rouletteId: string): Promise<string[]> => {
+	try {
+		if (!rouletteId) {
+			throw new Error("No roulette id provided");
+		}
+
+		const listKey = `${ROULETTE_PREFIX}${rouletteId}:availableUsers`;
+		const list = await redisClient.lRange(listKey, 0, -1);
+
+		return list ?? [];
 	}
 	catch (error) {
 		throw new Error(formatError(error));

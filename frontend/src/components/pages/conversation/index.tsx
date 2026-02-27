@@ -1,5 +1,5 @@
 import RoomsCard from "./rooms-card";
-import RoulettesCard from "./roulettes-card.tsx";
+import RoulettesCard from "./roulettes-card";
 
 const ConversationPage = () => {
 	return (

@@ -17,6 +17,7 @@ import { Route as PublicTermsRouteImport } from './routes/_public/terms'
 import { Route as PublicRulesRouteImport } from './routes/_public/rules'
 import { Route as PublicRoomsRouteImport } from './routes/_public/rooms'
 import { Route as PublicPolicyRouteImport } from './routes/_public/policy'
+import { Route as PublicDashboardRouteImport } from './routes/_public/dashboard'
 import { Route as BlankRouletteIdRouteImport } from './routes/_blank/roulette.$id'
 import { Route as BlankRoomIdRouteImport } from './routes/_blank/room.$id'
 import { Route as BlankAuthGoogleCallbackRouteImport } from './routes/_blank/auth/google/callback'
@@ -58,6 +59,11 @@ const PublicPolicyRoute = PublicPolicyRouteImport.update({
   path: '/policy',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicDashboardRoute = PublicDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const BlankRouletteIdRoute = BlankRouletteIdRouteImport.update({
   id: '/roulette/$id',
   path: '/roulette/$id',
@@ -75,6 +81,7 @@ const BlankAuthGoogleCallbackRoute = BlankAuthGoogleCallbackRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/dashboard': typeof PublicDashboardRoute
   '/policy': typeof PublicPolicyRoute
   '/rooms': typeof PublicRoomsRoute
   '/rules': typeof PublicRulesRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/auth/google/callback': typeof BlankAuthGoogleCallbackRoute
 }
 export interface FileRoutesByTo {
+  '/dashboard': typeof PublicDashboardRoute
   '/policy': typeof PublicPolicyRoute
   '/rooms': typeof PublicRoomsRoute
   '/rules': typeof PublicRulesRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/_blank': typeof BlankRouteRouteWithChildren
   '/_home': typeof HomeRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
+  '/_public/dashboard': typeof PublicDashboardRoute
   '/_public/policy': typeof PublicPolicyRoute
   '/_public/rooms': typeof PublicRoomsRoute
   '/_public/rules': typeof PublicRulesRoute
@@ -111,6 +120,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/dashboard'
     | '/policy'
     | '/rooms'
     | '/rules'
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/auth/google/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/dashboard'
     | '/policy'
     | '/rooms'
     | '/rules'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/_blank'
     | '/_home'
     | '/_public'
+    | '/_public/dashboard'
     | '/_public/policy'
     | '/_public/rooms'
     | '/_public/rules'
@@ -208,6 +220,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicPolicyRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/dashboard': {
+      id: '/_public/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof PublicDashboardRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_blank/roulette/$id': {
       id: '/_blank/roulette/$id'
       path: '/roulette/$id'
@@ -261,6 +280,7 @@ const HomeRouteRouteWithChildren = HomeRouteRoute._addFileChildren(
 )
 
 interface PublicRouteRouteChildren {
+  PublicDashboardRoute: typeof PublicDashboardRoute
   PublicPolicyRoute: typeof PublicPolicyRoute
   PublicRoomsRoute: typeof PublicRoomsRoute
   PublicRulesRoute: typeof PublicRulesRoute
@@ -268,6 +288,7 @@ interface PublicRouteRouteChildren {
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicDashboardRoute: PublicDashboardRoute,
   PublicPolicyRoute: PublicPolicyRoute,
   PublicRoomsRoute: PublicRoomsRoute,
   PublicRulesRoute: PublicRulesRoute,

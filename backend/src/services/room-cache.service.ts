@@ -102,7 +102,7 @@ export const leftRoomCache = async (roomId: string, userId: string, creator: str
 		const { availableUsers, creatorId, activeUsersCount } = convertedRoomCache;
 
 		if (!availableUsers.includes(userId)) {
-			throw new Error("User is not in the room");
+			return;
 		}
 
 		const isCreator = creator === creatorId;
@@ -117,7 +117,7 @@ export const leftRoomCache = async (roomId: string, userId: string, creator: str
 		else {
 			const updatedRoomCache = {
 				availableUsers: availableUsers.filter(id => id !== userId),
-				activeUsersCount: activeUsersCount - 1,
+				activeUsersCount: Math.max(0, activeUsersCount - 1),
 			};
 
 			await redisClient.hSet(key, convertObjToRedisHash(updatedRoomCache));

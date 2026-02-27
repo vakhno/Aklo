@@ -18,22 +18,23 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils/cn";
 import { NewRoomSchema } from "@/lib/zod-schemas/new-room.schema";
 
-interface CreateRoomFormProps {
+interface RoomFormProps {
 	className?: string;
 	formId: string;
 	languageList: ComboboxValueType[];
+	defaultValue?: Partial<NewRoomSchemaType>;
 	onHandleSubmit: (data: NewRoomSchemaType) => void;
 }
 
-const CreateRoomForm = ({ className, formId, languageList, onHandleSubmit }: CreateRoomFormProps) => {
+const RoomForm = ({ className, formId, languageList, defaultValue, onHandleSubmit }: RoomFormProps) => {
 	const form = useForm<NewRoomSchemaType>({
 		resolver: zodResolver(NewRoomSchema),
 		defaultValues: {
-			title: "",
-			language: "",
-			isCameraRequired: true,
-			isMicRequired: true,
-			maxUsersCount: 1
+			title: defaultValue?.title || "",
+			language: defaultValue?.language || "",
+			isCameraRequired: defaultValue?.isCameraRequired || true,
+			isMicRequired: defaultValue?.isMicRequired || true,
+			maxUsersCount: defaultValue?.maxUsersCount || 1
 		}
 	});
 
@@ -121,4 +122,4 @@ const CreateRoomForm = ({ className, formId, languageList, onHandleSubmit }: Cre
 	);
 };
 
-export default CreateRoomForm;
+export default RoomForm;

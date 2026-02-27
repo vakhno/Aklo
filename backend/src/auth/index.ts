@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { admin } from "better-auth/plugins";
 
 import { getMongoClient } from "../db/index.js";
 
@@ -13,6 +14,9 @@ export const auth = betterAuth({
 	basePath: "/api/auth",
 	baseURL: process.env.BETTER_AUTH_URL || "",
 	secret: process.env.BETTER_AUTH_SECRET || "",
+	plugins: [
+		admin(),
+	],
 	socialProviders: {
 		google: {
 			clientId: process.env.GOOGLE_AUTH_CLIENT_ID || "",

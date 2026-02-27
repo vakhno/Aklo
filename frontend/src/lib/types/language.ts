@@ -1,3 +1,7 @@
+import type { z } from "zod";
+
+import type { NewLanguageSchema } from "@/lib/zod-schemas/new-language.schema";
+
 export type LanguageType = {
 	_id: string;
 	name: string;
@@ -5,3 +9,5 @@ export type LanguageType = {
 	code: string;
 	locale: string;
 };
+
+export type NewLanguageSchemaType = z.infer<typeof NewLanguageSchema>;

@@ -58,23 +58,33 @@ export async function getRoom(roomId: string): Promise<RoomDocLeanType | null> {
 
 export async function getAllRooms({ language, limit, page }: { language?: string; limit: number; page: number }): Promise<{ rooms: RoomDocLeanPopulatedType[]; isHasMore: boolean }> {
 	try {
-		const offset = (page - 1) * limit;
 		const roomFilters: Partial<RoomSchemaType> = {};
 
 		if (language) {
 			roomFilters.language = new Types.ObjectId(language);
 		}
 
-		const roomPopulatedLeanModel = await RoomModel.find(roomFilters)
-			.skip(offset)
-			.limit(limit)
-			.sort({ activeUsersCount: -1, priority: 1 })
-			.lean()
-			.populate("language") as unknown as RoomDocLeanPopulatedType[];
-		const total = await RoomModel.countDocuments(roomFilters);
-		const isHasMore = Number(page) * limit < total;
+		if (limit && page) {
+			const offset = (page - 1) * limit;
+			const roomPopulatedLeanModel = await RoomModel.find(roomFilters)
+				.skip(offset)
+				.limit(limit)
+				.sort({ activeUsersCount: -1, priority: 1 })
+				.lean()
+				.populate("language") as unknown as RoomDocLeanPopulatedType[];
+			const total = await RoomModel.countDocuments(roomFilters);
+			const isHasMore = Number(page) * limit < total;
 
-		return { rooms: roomPopulatedLeanModel, isHasMore };
+			return { rooms: roomPopulatedLeanModel, isHasMore };
+		}
+		else {
+			const roomPopulatedLeanModel = await RoomModel.find(roomFilters)
+				.sort({ activeUsersCount: -1, priority: 1 })
+				.lean()
+				.populate("language") as unknown as RoomDocLeanPopulatedType[];
+
+			return { rooms: roomPopulatedLeanModel, isHasMore: false };
+		}
 	}
 	catch (error) {
 		throw new Error(formatError(error));
@@ -175,12 +185,42 @@ export async function leftRoom(roomId: string, creator: string | undefined): Pro
 		const { creatorId } = roomLeanModel;
 
 		if (creator !== creatorId) {
-			const updateRoom = await RoomModel.findByIdAndUpdate(roomId, { $inc: { activeUsersCount: -1 } }, { new: true });
+			const updateRoom = await RoomModel.findByIdAndUpdate(
+				roomId,
+				[{ $set: { activeUsersCount: { $max: [0, { $add: ["$activeUsersCount", -1] }] } } }],
+				{ new: true },
+			);
 
 			if (!updateRoom) {
 				throw new Error("Room not found");
 			}
 		}
+	}
+	catch (error) {
+		throw new Error(formatError(error));
+	}
+}
+
+export async function updateRoom(roomId: string, updateData: Partial<{ title: string; language: string; isCameraRequired: boolean; isMicRequired: boolean; maxUsersCount: number }>): Promise<RoomDocLeanPopulatedType> {
+	try {
+		if (!Types.ObjectId.isValid(roomId)) {
+			throw new Error("Invalid room id");
+		}
+
+		const setData: Record<string, unknown> = { ...updateData };
+		if (updateData.language) {
+			setData.language = new Types.ObjectId(updateData.language);
+		}
+
+		const updated = await RoomModel.findByIdAndUpdate(roomId, { $set: setData }, { new: true })
+			.populate("language")
+			.lean() as RoomDocLeanPopulatedType | null;
+
+		if (!updated) {
+			throw new Error("Room not found");
+		}
+
+		return updated;
 	}
 	catch (error) {
 		throw new Error(formatError(error));

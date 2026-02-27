@@ -1,5 +1,6 @@
 import { useMutation, type UseMutationOptions, useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 import { createAuthClient } from "better-auth/client";
+import { adminClient } from "better-auth/client/plugins";
 
 const API_BASE_URL = import.meta.env.VITE_SOCKET_URL || "";
 
@@ -7,7 +8,10 @@ export const authClient = createAuthClient({
 	baseURL: `${API_BASE_URL}/api/auth`,
 	fetchOptions: {
 		credentials: "include"
-	}
+	},
+	plugins: [
+		adminClient()
+	]
 });
 
 export type Session = {
@@ -26,6 +30,7 @@ export type Session = {
 		image?: string;
 		picture?: string;
 		createdAt: Date;
+		role?: string;
 	};
 } | null;
 

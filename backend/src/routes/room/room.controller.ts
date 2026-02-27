@@ -6,6 +6,60 @@ import * as roomService from "../../services/room.service.js";
 import { getCookies } from "../../utils/get-cookies.js";
 import { parseGetAllRoomsQueries } from "../../utils/parse-get-all-rooms-queries.js";
 
+export async function updateRoom(req: Request, res: Response) {
+	try {
+		const { id } = req.params;
+		if (!id) {
+			res.status(400).json({ error: "Room id is required" });
+			return;
+		}
+
+		const updated = await roomService.updateRoom(id, req.body);
+		res.status(200).json(updated);
+	}
+	catch (error) {
+		res.status(500).json({ error: String(error) });
+	}
+}
+
+export async function getRoomUsers(req: Request, res: Response) {
+	try {
+		const { id } = req.params;
+		if (!id) {
+			res.status(400).json({ error: "Room id is required" });
+			return;
+		}
+
+		const cache = await roomCacheService.getRoomCache(id);
+		res.status(200).json({ users: cache.availableUsers });
+	}
+	catch (error) {
+		res.status(500).json({ error: String(error) });
+	}
+}
+
+export async function removeRoomUser(req: Request, res: Response) {
+	try {
+		const { id, userId } = req.params;
+		if (!id || !userId) {
+			res.status(400).json({ error: "Room id and user id are required" });
+			return;
+		}
+
+		await roomCacheService.leftRoomCache(id, userId, undefined);
+		await roomService.leftRoom(id, undefined);
+
+		const io = req.app.get("io");
+		const roomNamespace = io.of("/room");
+		roomNamespace.to(userId).emit("admin-room-kick");
+
+		res.status(200).json({ success: true });
+	}
+	catch (error) {
+		res.status(500).json({ error: String(error) });
+	}
+}
+
 export async function createRoom(req: Request, res: Response) {
 	try {
 		const data = req.body;
