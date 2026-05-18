@@ -13,7 +13,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run test --workspace=@shared/routes
-      - run: turbo run lint
+      - run: npm run lint
 
   e2e:
     runs-on: ubuntu-latest
@@ -26,10 +26,8 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Install Playwright Chromium
-        run: npx playwright install chromium --with-deps
-        working-directory: apps/frontend
+        run: npm run playwright:install --workspace=@shared/e2e
       - name: Run Playwright
-        run: npm run test:e2e
-        working-directory: apps/frontend
+        run: npm run test --workspace=@shared/e2e
         env:
           CI: true
