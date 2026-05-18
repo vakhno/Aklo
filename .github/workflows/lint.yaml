@@ -18,6 +18,11 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27018:27017
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,3 +36,4 @@ jobs:
         run: npm run test --workspace=@shared/e2e
         env:
           CI: true
+          MONGODB_URI: mongodb://localhost:27018

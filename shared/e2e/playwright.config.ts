@@ -21,12 +21,12 @@ export default defineConfig({
 	// checks to pass before running any test.
 	webServer: [
 		{
-			// Minimal Express + better-auth server with in-memory MongoDB and
-			// MSW interceptors for Google APIs (see src/server/test-server.ts).
+			// Minimal Express + better-auth server (MongoMemoryServer locally, or
+			// MONGODB_URI in CI) and MSW interceptors (see src/server/test-server.ts).
 			command: "npm run test-server",
 			url: `${BACKEND_URL}/api/auth/ok`,
 			reuseExistingServer: !process.env.CI,
-			timeout: 30_000,
+			timeout: process.env.CI ? 120_000 : 30_000,
 		},
 		{
 			command: "npm run dev -w frontend",
@@ -34,12 +34,11 @@ export default defineConfig({
 			reuseExistingServer: !process.env.CI,
 			timeout: 60_000,
 			env: {
-				...process.env,
-				VITE_PORT:          String(FRONTEND_PORT),
-				VITE_APP_URL:       FRONTEND_URL,
+				VITE_PORT: String(FRONTEND_PORT),
+				VITE_APP_URL: FRONTEND_URL,
 				// Point auth and socket calls at the local test backend instead
 				// of the Cloudflare tunnel defined in .env.
-				VITE_API_URL:    BACKEND_URL,
+				VITE_API_URL: BACKEND_URL,
 				VITE_ALLOWED_HOSTS: "localhost",
 			},
 		},

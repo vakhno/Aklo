@@ -56,9 +56,17 @@ const mswServer = setupServer(
 mswServer.listen({ onUnhandledRequest: "bypass" });
 
 // ─── MongoDB + better-auth ────────────────────────────────────────────────────
+//
+// CI: use MONGODB_URI (GitHub Actions service container) to avoid downloading
+// MongoDB binaries via mongodb-memory-server.
+// Local: fall back to MongoMemoryServer on TEST_MONGO_PORT.
 
-const mongod = await MongoMemoryServer.create({ instance: { port: TEST_MONGO_PORT } });
-const mongoClient = new MongoClient(mongod.getUri());
+let mongod: MongoMemoryServer | null = null;
+
+const mongoUri = process.env.MONGODB_URI
+	?? (mongod = await MongoMemoryServer.create({ instance: { port: TEST_MONGO_PORT } })).getUri();
+
+const mongoClient = new MongoClient(mongoUri);
 await mongoClient.connect();
 const db = mongoClient.db("better-auth-test");
 
@@ -122,7 +130,9 @@ app.listen(TEST_BACKEND_PORT, () => {
 const shutdown = async () => {
 	mswServer.close();
 	await mongoClient.close();
-	await mongod.stop();
+	if (mongod) {
+		await mongod.stop();
+	}
 	process.exit(0);
 };
 
