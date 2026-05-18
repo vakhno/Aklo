@@ -1,47 +1,49 @@
 # Dev (default): docker compose down && docker compose up --build
 # Prod (VPS): docker compose --profile prod up -d --build
-# For prod, set VITE_APP_URL and VITE_SOCKET_URL in a root .env (see .env.example).
+# For prod, set VITE_APP_URL and VITE_API_URL in a root .env (see .env.example).
 
 services:
   # --- Dev (default, no profile) ---
   backend-dev:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/backend/Dockerfile
       target: dev
     container_name: backend-dev
     develop:
       watch:
         - action: rebuild
-          path: ./backend/package.json
+          path: ./apps/backend/package.json
     ports:
       - "3000:3000"
     volumes:
-      - ./backend:/app
+      - ./apps/backend:/app/apps/backend
+      - ./shared:/app/shared
       - /app/node_modules
     env_file:
-      - path: ./backend/.env
+      - path: ./.env
         required: true
     networks:
       - app-network
 
   frontend-dev:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/frontend/Dockerfile
       target: dev
     container_name: frontend-dev
     develop:
       watch:
         - action: rebuild
-          path: ./frontend/package.json
+          path: ./apps/frontend/package.json
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend:/app
+      - ./apps/frontend:/app/apps/frontend
+      - ./shared:/app/shared
       - /app/node_modules
     env_file:
-      - path: ./frontend/.env
+      - path: ./.env
         required: true
     depends_on:
       - backend-dev
@@ -52,15 +54,15 @@ services:
   backend:
     profiles: [prod]
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/backend/Dockerfile
       target: prod
     container_name: backend
     restart: unless-stopped
     ports:
       - "3000:3000"
     env_file:
-      - path: ./backend/.env
+      - path: ./.env
         required: true
     networks:
       - app-network
@@ -68,12 +70,12 @@ services:
   frontend:
     profiles: [prod]
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/frontend/Dockerfile
       target: prod
       args:
         VITE_APP_URL: ${VITE_APP_URL}
-        VITE_SOCKET_URL: ${VITE_SOCKET_URL}
+        VITE_API_URL: ${VITE_API_URL}
     container_name: frontend
     restart: unless-stopped
     ports:

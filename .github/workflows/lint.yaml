@@ -12,6 +12,28 @@ jobs:
           node-version: '22.x'
           cache: 'npm'
       - run: npm ci
-      - run: npm ci --prefix frontend
-      - run: npm ci --prefix backend
+      - run: npm run test --workspace=@shared/routes
       - run: npm run lint
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27018:27017
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+      - run: npm ci
+      - name: Install Playwright Chromium
+        run: npm run playwright:install --workspace=@shared/e2e
+      - name: Run Playwright
+        run: npm run test --workspace=@shared/e2e
+        env:
+          CI: true
+          MONGODB_URI: mongodb://localhost:27018

@@ -1,0 +1,38 @@
+{
+	"name": "@shared/mongo",
+	"type": "module",
+	"version": "1.0.0",
+	"description": "Shared MongoDB connection, domain services, and utilities",
+	"main": "./src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./connection": "./src/connection/index.ts",
+		"./object-id": "./src/utils/object-id.ts",
+		"./room": "./src/models/room.model.ts",
+		"./language": "./src/models/language.model.ts",
+		"./roulette": "./src/models/roulette.model.ts",
+		"./profile": "./src/models/profile.model.ts",
+		"./types/language": "./src/types/language.ts",
+		"./types/room": "./src/types/room.ts",
+		"./types/roulette": "./src/types/roulette.ts",
+		"./types/profile": "./src/types/profile.ts",
+		"./services/language.service": "./src/services/language.service.ts",
+		"./services/room.service": "./src/services/room.service.ts",
+		"./services/roulette.service": "./src/services/roulette.service.ts",
+		"./services/profile.service": "./src/services/profile.service.ts"
+	},
+	"scripts": {
+		"build": "tsc",
+		"lint": "tsc --noEmit",
+		"lint:fix": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@shared/schemas": "file:../schemas",
+		"mongodb": "^7.0.0",
+		"mongoose": "^8.19.3",
+		"zod": "^4.0.0"
+	},
+	"devDependencies": {
+		"typescript": "^5.8.3"
+	}
+}

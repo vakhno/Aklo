@@ -1,0 +1,29 @@
+{
+	"name": "@shared/sockets",
+	"type": "module",
+	"version": "1.0.0",
+	"description": "Shared Socket.IO server setup and room/roulette event handlers",
+	"main": "./src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./server": "./src/server/index.ts",
+		"./utils/get-cookies": "./src/utils/get-cookies.ts"
+	},
+	"scripts": {
+		"build": "tsc",
+		"lint": "tsc --noEmit",
+		"lint:fix": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@shared/mongo": "file:../mongo",
+		"@shared/redis": "file:../redis",
+		"cookie": "^1.0.2",
+		"express": "^5.1.0",
+		"socket.io": "^4.8.1"
+	},
+	"devDependencies": {
+		"@types/cookie": "^0.6.0",
+		"@types/express": "^5.0.2",
+		"typescript": "^5.8.3"
+	}
+}
