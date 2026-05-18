@@ -12,6 +12,24 @@ jobs:
           node-version: '22.x'
           cache: 'npm'
       - run: npm ci
-      - run: npm ci --prefix frontend
-      - run: npm ci --prefix backend
-      - run: npm run lint
+      - run: npm run test --workspace=@shared/routes
+      - run: turbo run lint
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+      - run: npm ci
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+        working-directory: apps/frontend
+      - name: Run Playwright
+        run: npm run test:e2e
+        working-directory: apps/frontend
+        env:
+          CI: true

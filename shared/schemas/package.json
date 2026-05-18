@@ -1,0 +1,31 @@
+{
+	"name": "@shared/schemas",
+	"type": "module",
+	"version": "1.0.0",
+	"description": "Shared Zod schemas for backend and frontend",
+	"main": "./src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./room": "./src/schemas/room.schema.ts",
+		"./language": "./src/schemas/language.schema.ts",
+		"./new-room": "./src/schemas/new-room.schema.ts",
+		"./filter-room": "./src/schemas/filter-room.schema.ts",
+		"./filter-roulette": "./src/schemas/filter-roulette.schema.ts",
+		"./roulette": "./src/schemas/roulette.schema.ts",
+		"./join-room": "./src/schemas/join-room.schema.ts",
+		"./join-roulette": "./src/schemas/join-roulette.schema.ts",
+		"./settings": "./src/schemas/settings.schema.ts",
+		"./settings-room": "./src/schemas/settings-room.schema.ts"
+	},
+	"scripts": {
+		"build": "tsc",
+		"lint": "tsc --noEmit",
+		"lint:fix": "tsc --noEmit"
+	},
+	"dependencies": {
+		"zod": "^4.0.0"
+	},
+	"devDependencies": {
+		"typescript": "^5.8.3"
+	}
+}
