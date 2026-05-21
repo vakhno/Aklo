@@ -14,6 +14,7 @@ jobs:
       - run: npm ci
       - run: npm run test --workspace=@shared/routes
       - run: npm run lint
+      - run: npm run build --workspace=storybook
 
   e2e:
     runs-on: ubuntu-latest

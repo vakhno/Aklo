@@ -6,3 +6,6 @@ dist
 playwright-report/
 test-results/
 .playwright-mcp/
+
+.agents
+skills-lock.json
