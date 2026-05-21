@@ -1,3 +1,0 @@
-import{j as m}from"./jsx-runtime-D_zvdyIk.js";import{a as c}from"./cn-DclmTqRz.js";function s({className:o,...n}){return m.jsx("div",{"data-slot":"empty",className:c("flex min-w-0 flex-1 flex-col items-center justify-center gap-6 rounded-lg border-dashed p-6 text-center text-balance md:p-12",o),...n})}s.__docgenInfo={description:"",methods:[],displayName:"Empty"};const i={title:"UI/Empty",component:s,tags:["autodocs"]},e={args:{}};var t,a,r;e.parameters={...e.parameters,docs:{...(t=e.parameters)==null?void 0:t.docs,source:{originalSource:`{
-  args: {}
-}`,...(r=(a=e.parameters)==null?void 0:a.docs)==null?void 0:r.source}}};const l=["Default"];export{e as Default,l as __namedExportsOrder,i as default};

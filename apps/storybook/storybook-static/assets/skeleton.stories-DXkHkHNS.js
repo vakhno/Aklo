@@ -1,3 +1,0 @@
-import{j as c}from"./jsx-runtime-D_zvdyIk.js";import{a as m}from"./cn-DclmTqRz.js";function s({className:r,...n}){return c.jsx("div",{"data-slot":"skeleton",className:m("bg-accent animate-pulse rounded-md",r),...n})}s.__docgenInfo={description:"",methods:[],displayName:"Skeleton"};const p={title:"UI/Skeleton",component:s,tags:["autodocs"]},e={args:{}};var t,o,a;e.parameters={...e.parameters,docs:{...(t=e.parameters)==null?void 0:t.docs,source:{originalSource:`{
-  args: {}
-}`,...(a=(o=e.parameters)==null?void 0:o.docs)==null?void 0:a.source}}};const i=["Default"];export{e as Default,i as __namedExportsOrder,p as default};

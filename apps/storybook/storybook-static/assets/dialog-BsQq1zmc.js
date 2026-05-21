@@ -1,1 +1,0 @@
-import{j as t}from"./jsx-runtime-D_zvdyIk.js";import{R as a}from"./index-kfWXPj3I.js";function i({...o}){return t.jsx(a,{"data-slot":"dialog",...o})}i.__docgenInfo={description:"",methods:[],displayName:"Dialog"};export{i as D};
